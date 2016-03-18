@@ -1,0 +1,103 @@
+#pragma once
+#include <stdio.h>
+
+
+extern const double DTR;
+extern const int F;
+extern const int I;
+extern int new;
+extern const float Pi;
+extern long random_seed;
+extern const double RTD;
+
+
+// This file is a patch with all the extern declarations that didn't exist in the original codebase
+// but are now needed for VS2013 to compile. (I don't know why it worked originally.)
+
+extern int ActiveOccupant;
+extern int AdaptiveZoneApplies;
+extern int AnnualHoursWithGlare;
+extern float **AnnualLightExposure;
+extern float AnnualNumberOfActivatedElectricLighting[11];
+extern float AnnualNumberOfOccupiedHours;
+extern int **BlindGroup;
+extern char BlindGroupName[11][1024];
+extern char con_da_active_RGB_file[1024];
+extern char con_da_passive_RGB_file[1024];
+extern float **continuous_daylight_autonomy;
+extern float *da;
+extern char da_active_RGB_file[1024];
+extern char da_passive_RGB_file[1024];
+extern char da_availability_active_RGB_file[1024];
+extern char da_availability_passive_RGB_file[1024];
+extern float **DA_max;
+extern char DA_max_active_RGB_file[1024];
+extern char DA_max_passive_RGB_file[1024];
+extern int *day_1;
+extern float **daylight_autonomy;
+extern float *daylight_factor;
+extern float **daylight_illuminances;
+extern float **DaylightSaturationPercentage;
+extern char df_RGB_file[1024];
+extern int DGP_filesDoNotExist;
+extern float *dgp_profile;
+extern float *dir;
+extern int *****direct_sun;
+extern char DGP_Profiles_file[100][1024];
+extern char DSP_active_RGB_file[1024];
+extern char DSP_passive_RGB_file[1024];
+extern FILE *EL_LIGHTING_FILE;
+extern float ***effective_dgp;
+extern char Effective_DGP_file[1024];
+extern float **electric_lighting_profile;
+extern float *ext_sensor_ill;
+extern int first_weekday;
+extern float *hour_1;
+extern float HoursWithAView[11];
+extern long idum;
+extern float ill_min;
+extern int IllumianceSensorExists;
+extern char input_file[200];
+extern float *int_sensor_ill;
+extern char lighting_scenario_name[10][1024];
+extern int **LightingGroup;
+extern float LightingGroupEnergyUse[11][13];
+extern float LightPower[10];
+extern int LightingSystemType[10];
+extern float ***MaximumBlindGroupIlluminance_Internal;
+extern float ***MaximumBlindGroupIlluminance_External;
+extern float MinDimLevel[10];
+extern float MinIllLevel[10];
+extern float ***MaximumIlluminanancePerBlindGroup;
+extern float **minimum_work_plane_ill;
+extern int *month_1;
+extern int number_of_sensors;
+extern int number_of_view_points;
+extern int NumberOfBlindGroups;
+extern int NumberOfLightingGroups;
+extern int  NumberOfSettingsInBlindgroup[11];
+extern int *occ_profile;
+extern int OccSenDelayTime[10];
+extern float schedule_start[10];
+extern float schedule_end[10];
+extern char sensor_file[1024];
+extern char shading_illuminance_file[100][1024];
+extern int **shading_profile;
+extern int simple_blinds_model;
+extern float StandbyPower[10];
+extern char thermal_sim_file_active[1024];
+extern char thermal_sim_file_passive[1024];
+extern int PassiveOccupant;
+extern float ****raw_illuminances;
+extern int time_step;
+extern int TotalNumberOfDCFiles;
+extern float **UDI_100;
+extern float **UDI_100_2000;
+extern char UDI_100_2000_active_RGB_file[1024];
+extern char UDI_100_2000_passive_RGB_file[1024];
+extern char UDI_100_active_RGB_file[1024];
+extern char UDI_100_passive_RGB_file[1024];
+extern float **UDI_2000;
+extern char UDI_2000_active_RGB_file[1024];
+extern char UDI_2000_passive_RGB_file[1024];
+extern float ***work_plane_ill;
