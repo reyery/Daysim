@@ -1,17 +1,9 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <rterror.h>
 #define NR_END 1
 #define FREE_ARG char*
-
-void nrerror(char error_text[])
-/* Numerical Recipes standard error handler */
-{
-	fprintf(stderr,"Numerical Recipes run-time error...\n");
-	fprintf(stderr,"%s\n",error_text);
-	fprintf(stderr,"...now exiting to system...\n");
-	exit(1);
-}
 
 float *vector(long nl, long nh)
 /* allocate a float vector with subscript range v[nl..nh] */
@@ -19,7 +11,7 @@ float *vector(long nl, long nh)
 	float *v;
 
 	v=(float *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(float)));
-	if (!v) nrerror("allocation failure in vector()");
+	if (!v) error(SYSTEM, "allocation failure in vector()");
 	return v-nl+NR_END;
 }
 
@@ -29,7 +21,7 @@ int *ivector(long nl, long nh)
 	int *v;
 
 	v=(int *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(int)));
-	if (!v) nrerror("allocation failure in ivector()");
+	if (!v) error(SYSTEM, "allocation failure in ivector()");
 	return v-nl+NR_END;
 }
 
@@ -39,7 +31,7 @@ unsigned char *cvector(long nl, long nh)
 	unsigned char *v;
 
 	v=(unsigned char *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(unsigned char)));
-	if (!v) nrerror("allocation failure in cvector()");
+	if (!v) error(SYSTEM, "allocation failure in cvector()");
 	return v-nl+NR_END;
 }
 
@@ -49,7 +41,7 @@ unsigned long *lvector(long nl, long nh)
 	unsigned long *v;
 
 	v=(unsigned long *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(long)));
-	if (!v) nrerror("allocation failure in lvector()");
+	if (!v) error(SYSTEM, "allocation failure in lvector()");
 	return v-nl+NR_END;
 }
 
@@ -59,7 +51,7 @@ double *dvector(long nl, long nh)
 	double *v;
 
 	v=(double *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(double)));
-	if (!v) nrerror("allocation failure in dvector()");
+	if (!v) error(SYSTEM, "allocation failure in dvector()");
 	return v-nl+NR_END;
 }
 
@@ -71,13 +63,13 @@ float **matrix(long nrl, long nrh, long ncl, long nch)
 
 	/* allocate pointers to rows */
 	m=(float **) malloc((size_t)((nrow+NR_END)*sizeof(float*)));
-	if (!m) nrerror("allocation failure 1 in matrix()");
+	if (!m) error(SYSTEM, "allocation failure 1 in matrix()");
 	m += NR_END;
 	m -= nrl;
 
 	/* allocate rows and set pointers to them */
 	m[nrl]=(float *) malloc((size_t)((nrow*ncol+NR_END)*sizeof(float)));
-	if (!m[nrl]) nrerror("allocation failure 2 in matrix()");
+	if (!m[nrl]) error(SYSTEM, "allocation failure 2 in matrix()");
 	m[nrl] += NR_END;
 	m[nrl] -= ncl;
 
@@ -95,13 +87,13 @@ double **dmatrix(long nrl, long nrh, long ncl, long nch)
 
 	/* allocate pointers to rows */
 	m=(double **) malloc((size_t)((nrow+NR_END)*sizeof(double*)));
-	if (!m) nrerror("allocation failure 1 in matrix()");
+	if (!m) error(SYSTEM, "allocation failure 1 in matrix()");
 	m += NR_END;
 	m -= nrl;
 
 	/* allocate rows and set pointers to them */
 	m[nrl]=(double *) malloc((size_t)((nrow*ncol+NR_END)*sizeof(double)));
-	if (!m[nrl]) nrerror("allocation failure 2 in matrix()");
+	if (!m[nrl]) error(SYSTEM, "allocation failure 2 in matrix()");
 	m[nrl] += NR_END;
 	m[nrl] -= ncl;
 
@@ -119,14 +111,14 @@ int **imatrix(long nrl, long nrh, long ncl, long nch)
 
 	/* allocate pointers to rows */
 	m=(int **) malloc((size_t)((nrow+NR_END)*sizeof(int*)));
-	if (!m) nrerror("allocation failure 1 in matrix()");
+	if (!m) error(SYSTEM, "allocation failure 1 in matrix()");
 	m += NR_END;
 	m -= nrl;
 
 
 	/* allocate rows and set pointers to them */
 	m[nrl]=(int *) malloc((size_t)((nrow*ncol+NR_END)*sizeof(int)));
-	if (!m[nrl]) nrerror("allocation failure 2 in matrix()");
+	if (!m[nrl]) error(SYSTEM, "allocation failure 2 in matrix()");
 	m[nrl] += NR_END;
 	m[nrl] -= ncl;
 
@@ -145,7 +137,7 @@ float **submatrix(float **a, long oldrl, long oldrh, long oldcl, long oldch,
 
 	/* allocate array of pointers to rows */
 	m=(float **) malloc((size_t) ((nrow+NR_END)*sizeof(float*)));
-	if (!m) nrerror("allocation failure in submatrix()");
+	if (!m) error(SYSTEM, "allocation failure in submatrix()");
 	m += NR_END;
 	m -= newrl;
 
@@ -167,7 +159,7 @@ and ncol=nch-ncl+1. The routine should be called with the address
 
 	/* allocate pointers to rows */
 	m=(float **) malloc((size_t) ((nrow+NR_END)*sizeof(float*)));
-	if (!m) nrerror("allocation failure in convert_matrix()");
+	if (!m) error(SYSTEM, "allocation failure in convert_matrix()");
 	m += NR_END;
 	m -= nrl;
 
@@ -186,19 +178,19 @@ float ***f3tensor(long nrl, long nrh, long ncl, long nch, long ndl, long ndh)
 
 	/* allocate pointers to pointers to rows */
 	t=(float ***) malloc((size_t)((nrow+NR_END)*sizeof(float**)));
-	if (!t) nrerror("allocation failure 1 in f3tensor()");
+	if (!t) error(SYSTEM, "allocation failure 1 in f3tensor()");
 	t += NR_END;
 	t -= nrl;
 
 	/* allocate pointers to rows and set pointers to them */
 	t[nrl]=(float **) malloc((size_t)((nrow*ncol+NR_END)*sizeof(float*)));
-	if (!t[nrl]) nrerror("allocation failure 2 in f3tensor()");
+	if (!t[nrl]) error(SYSTEM, "allocation failure 2 in f3tensor()");
 	t[nrl] += NR_END;
 	t[nrl] -= ncl;
 
 	/* allocate rows and set pointers to them */
 	t[nrl][ncl]=(float *) malloc((size_t)((nrow*ncol*ndep+NR_END)*sizeof(float)));
-	if (!t[nrl][ncl]) nrerror("allocation failure 3 in f3tensor()");
+	if (!t[nrl][ncl]) error(SYSTEM, "allocation failure 3 in f3tensor()");
 	t[nrl][ncl] += NR_END;
 	t[nrl][ncl] -= ndl;
 

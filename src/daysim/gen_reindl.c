@@ -1,12 +1,21 @@
 /*	This program has been written by Oliver Walkenhorst at the
-*	Fraunhofer Institute for Solar Energy Systems in Freiburg, Germany
-*	last changes were added in January 2001
-*/
+ *	Fraunhofer Institute for Solar Energy Systems in Freiburg, Germany
+ *	last changes were added in January 2001
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
+ */
 
 #include  <stdio.h>
 #include  <string.h>
 #include  <math.h>
 #include  <stdlib.h>
+#include  <rterror.h>
+
+#include "file.h"
+#include "sun.h"
+#include "nrutil.h"
+#include "numerical.h"
+#include "skartveit.h"
 
 
 char *header;
@@ -58,13 +67,9 @@ const double RTD = 57.2957795; //180/Pi;
 const int F = sizeof(float);
 const int I = sizeof(int);
 
-/*  header files used  */
+/*  versioning  */
 
-#include "file.h"
-#include "sun.h"
-#include "nrutil.h"
-#include "numerical.h"
-#include "skartveit.h"
+extern char  VersionID[];	/* Radiance version ID string */
 
 
 void solar_elev_azi_ecc(float latitude, float longitude, float time_zone, int jday, float time, int solar_time, float *solar_elevation, float *solar_azimuth, float *eccentricity_correction)
@@ -107,7 +112,7 @@ float diffuse_fraction(float irrad_glo, float solar_elevation, float eccentricit
 	if (irrad_ex > 0)   index_glo_ex = irrad_glo / irrad_ex;
 	else  return 0;
 
-	if (index_glo_ex < 0)  { fprintf(stderr, "negative irrad_glo in diffuse_fraction_th\n"); exit(1); }
+	if (index_glo_ex < 0)  { error(INTERNAL, "negative irrad_glo in diffuse_fraction_th"); }
 	if (index_glo_ex > 1)  { index_glo_ex = 1; }
 
 	if (index_glo_ex <= 0.3)
@@ -155,9 +160,14 @@ int main(int argc, char *argv[])
 	if (argc > 1)
 	{
 
-		for (i = 1; i < argc; i++)
-			if (argv[i][0] == '-')
-				switch (argv[i][1])
+		for (i = 1; i < argc; i++) {
+			if (argv[i] == NULL || argv[i][0] != '-')
+				break;			/* break from options */
+			if (!strcmp(argv[i], "-version")) {
+				puts(VersionID);
+				exit(0);
+			}
+			switch (argv[i][1])
 			{
 				case 'a':
 					latitude = atof(argv[++i]);
@@ -186,11 +196,12 @@ int main(int argc, char *argv[])
 					break;
 
 			}
+		}
 	}
 
 	if ((!command_line && (file_input_output<2)) || argc == 1)
 	{
-		fprintf(stdout, "\ngen_reindl: \n");
+		fprintf(stdout, "\n%s: \n", argv[0]);
 		printf("Program that splits input global irradiances into direct normal and diffuse horizontal irradiances using the Reindl model. ");
 		printf("The program has a command line and an input file option depending on wheter a single or mutliple irradiances are to be converted.\n");
 		printf("\n");
@@ -202,24 +213,24 @@ int main(int argc, char *argv[])
 		printf("-i\t input file [format: month day hour global_irradiation] \n");
 		printf("-o\t output file [format: month day hour dir_norm_irrad dif_hor_irrad] \n");
 		printf("Example: \n");
-		printf("\tgen_reindl -a 42.3 -o 71 -m 75 -g 6 21 12.0 800 \n");
-		printf("\tgen_reindl -a 42.3 -o 71 -m 75 -i input_file.txt -o output_file.txt\n");
+		printf("\t%s -a 42.3 -o 71 -m 75 -g 6 21 12.0 800 \n", argv[0]);
+		printf("\t%s -a 42.3 -o 71 -m 75 -i input_file.txt -o output_file.txt\n", argv[0]);
 		exit(0);
 	}
-	if ((times = malloc(24 * F)) == NULL)     { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((irrads_glo = malloc(24 * F)) == NULL)        { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((irrads_beam_nor = malloc(24 * F)) == NULL)   { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((irrads_dif = malloc(24 * F)) == NULL)   { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((indices_glo = malloc(24 * F)) == NULL)        { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((indices_beam = malloc(24 * F)) == NULL)   { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((sr_ss_indices_glo = malloc(3 * F)) == NULL)   { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((daylight_status = malloc(24 * I)) == NULL)   { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
+	if ((times = malloc(24 * F)) == NULL) goto memerr;
+	if ((irrads_glo = malloc(24 * F)) == NULL) goto memerr;
+	if ((irrads_beam_nor = malloc(24 * F)) == NULL) goto memerr;
+	if ((irrads_dif = malloc(24 * F)) == NULL) goto memerr;
+	if ((indices_glo = malloc(24 * F)) == NULL) goto memerr;
+	if ((indices_beam = malloc(24 * F)) == NULL) goto memerr;
+	if ((sr_ss_indices_glo = malloc(3 * F)) == NULL) goto memerr;
+	if ((daylight_status = malloc(24 * I)) == NULL) goto memerr;
 
-	if ((irrads_glo_st = malloc(sph*F)) == NULL)        { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((irrads_glo_clear_st = malloc(sph*F)) == NULL)        { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((irrads_beam_nor_st = malloc(sph*F)) == NULL)   { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((irrads_dif_st = malloc(sph*F)) == NULL)   { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
-	if ((indices_glo_st = malloc(sph*F)) == NULL)      { fprintf(stderr, "Out of memory in function main\n");  exit(1); }
+	if ((irrads_glo_st = malloc(sph*F)) == NULL) goto memerr;
+	if ((irrads_glo_clear_st = malloc(sph*F)) == NULL) goto memerr;
+	if ((irrads_beam_nor_st = malloc(sph*F)) == NULL) goto memerr;
+	if ((irrads_dif_st = malloc(sph*F)) == NULL) goto memerr;
+	if ((indices_glo_st = malloc(sph*F)) == NULL) goto memerr;
 
 
 
@@ -281,6 +292,8 @@ int main(int argc, char *argv[])
 		close_file(SHORT_TERM_DATA);
 	}
 
-  exit(0);
+	exit(0);
 
+memerr:
+	error(SYSTEM, "out of memory in function main");
 }

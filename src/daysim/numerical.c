@@ -1,6 +1,7 @@
 #include  <stdio.h>
 #include <stdlib.h>
 #include  <math.h>
+#include  <rterror.h>
 
 #include "numerical.h"
 #include "nrutil.h"
@@ -42,7 +43,7 @@ float betai(float a,float b,float x)
 {
 	float bt, help;
 	
-	if (x < 0.0 || x > 1.0)    nrerror("Bad x in routine BETAI");  
+	if (x < 0.0 || x > 1.0)    error(INTERNAL, "Bad x in routine BETAI");  
 	if (x == 0.0 || x == 1.0) bt=0.0;
 	else
 		bt=exp(gammln(a+b)-gammln(a)-gammln(b)+a*log(x)+b*log(1.0-x));
@@ -142,7 +143,7 @@ float ran1 ( long *idum )
 	ix2=(IA2*ix2+IC2) % M2;
 	ix3=(IA3*ix3+IC3) % M3;
 	j=1 + ((97*ix3)/M3);
-	if (j > 97 || j < 1) nrerror("RAN1: This cannot happen.");
+	if (j > 97 || j < 1) error(INTERNAL, "RAN1: This cannot happen");
 	temp=r[j];
 	r[j]=(ix1+ix2*RM2)*RM1;
 	return temp;
@@ -237,7 +238,7 @@ void sort(unsigned long n, float arr[])
 			arr[l+1]=arr[j];
 			arr[j]=a;
 			jstack += 2;
-			if (jstack > NSTACK) nrerror("NSTACK too small in sort.");
+			if (jstack > NSTACK) error(INTERNAL, "NSTACK too small in sort");
 			if (ir-i+1 >= j-l) {
 				istack[jstack]=ir;
 				istack[jstack-1]=i;
@@ -355,9 +356,8 @@ float mean ( int n, float *array )
   int i;
   float sum = 0;
   
-  if ( n <= 0 )  {  fprintf ( stderr, "bad n in function MEAN" );
-                    exit(1);
-		 }   
+  if ( n <= 0 ) error(USER, "bad n in function MEAN");
+
   for ( i=1 ; i<=n ; i++ )  sum += array[i-1];
   return  sum / n;
 }  
@@ -367,8 +367,8 @@ void mean_var_99 ( float *data, int n, float *mean, float *var)     /*  data in 
    int j,counter=0;
    float sum, dev;
   
-   if (n <= 1) { printf("n must be at least 2 in mean_sdev"); exit(1); }
-   
+   if (n <= 1) error(USER, "n must be at least 2 in mean_sdev");
+
    sum = 0.0;
    for (j=0;j<n;j++)   
     if ( data[j]>-98 ) 
