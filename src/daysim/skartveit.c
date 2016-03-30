@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <rterror.h>
 
 #include "globals.h"
 #include "numerical.h"
@@ -12,7 +13,7 @@ void skartveit ( float *indices_glo, float index_beam, int sph, float previous_l
   int *glo_ranking;
   float sigma_glo, sigma_beam, act_ligoh;
 
-  if ( (glo_ranking = malloc ((sph+1)*I)) == NULL  )   {   fprintf(stderr,"Out of memory in function skartveit\n");  exit(1);  }
+  if ( (glo_ranking = malloc ((sph+1)*I)) == NULL  )   { error(SYSTEM, "out of memory in skartveit"); }
 
   estimate_sigmas ( &indices_glo[0], index_beam, sph, &sigma_glo, &sigma_beam );
 
@@ -92,14 +93,14 @@ void estimate_indices_glo_st ( float index_glo, float index_beam, int sph, float
   float *t, *cdf;
   float *t_st;
 
-  if ( (indices_glo_st_order = malloc (sph*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function estimate_indices_glo_st\n");  exit(1);  }
-  if ( (ar1_series1 = malloc ((sph+1)*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function estimate_indices_glo_st\n");  exit(1);  }
-  if ( (ar1_series2 = malloc ((sph+1)*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function estimate_indices_glo_st\n");  exit(1);  }
-  if ( (indx = malloc ((sph+1)*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function estimate_indices_glo_st\n");  exit(1);  }
-  if ( (irank = malloc ((sph+1)*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function estimate_indices_glo_st\n");  exit(1);  }
-  if ( (t_st = malloc ((sph+1)*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function estimate_indices_glo_st\n");  exit(1);  }
-  if ( (t = malloc ((steps_cdf+1)*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function estimate_indices_glo_st\n");  exit(1);  }
-  if ( (cdf = malloc ((steps_cdf+1)*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function estimate_indices_glo_st\n");  exit(1);  }
+  if ((indices_glo_st_order = malloc(sph*F)) == NULL) goto memerr;
+  if ((ar1_series1 = malloc((sph + 1)*F)) == NULL) goto memerr;
+  if ((ar1_series2 = malloc((sph + 1)*F)) == NULL) goto memerr;
+  if ((indx = malloc((sph + 1)*F)) == NULL) goto memerr;
+  if ((irank = malloc((sph + 1)*F)) == NULL) goto memerr;
+  if ((t_st = malloc((sph + 1)*F)) == NULL) goto memerr;
+  if ((t = malloc((steps_cdf + 1)*F)) == NULL) goto memerr;
+  if ((cdf = malloc((steps_cdf + 1)*F)) == NULL) goto memerr;
 
   if ( new )
   {
@@ -259,5 +260,9 @@ void estimate_indices_glo_st ( float index_glo, float index_beam, int sph, float
   free(cdf);
   free(ar1_series1);
   free(ar1_series2);
+  return;
+
+memerr:
+  error(SYSTEM, "out of memory in estimate_indices_glo_st");
 }
 

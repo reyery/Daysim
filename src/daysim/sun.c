@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdio.h>
+#include <rterror.h>
 
 #include "globals.h"
 
@@ -44,7 +45,8 @@ int day_to_month (int day)                    /*  gives the month to which the d
   if ( day <= 669 )  return 10;
   if ( day <= 699 )  return 11;
   if ( day <= 730 )  return 12;
-  else	{  fprintf(stderr, "bad day");  return 0;  }
+  error(WARNING, "bad day");
+  return 0;
 }
 
 int julian_day_to_day_of_month (int day)
@@ -73,7 +75,8 @@ int julian_day_to_day_of_month (int day)
   if ( day <= 669 )  return day-638;
   if ( day <= 699 )  return day-669;
   if ( day <= 730 )  return day-699;
-  else	{  fprintf(stderr, "bad day");  return 0;  }
+  error(WARNING, "bad day");
+  return 0;
 }
 
 int month_and_day_to_julian_day (int month, int day)
@@ -90,7 +93,8 @@ int month_and_day_to_julian_day (int month, int day)
   if ( month == 10 )  return day+273;
   if ( month == 11 )  return day+304;
   if ( month == 12 )  return day+334;
-  else  {  fprintf(stderr, "bad month");  return 0;  }
+  error(WARNING, "bad month");
+  return 0;
 }
 
 int jday_first_of_month (int month)
@@ -107,5 +111,6 @@ int jday_first_of_month (int month)
   if ( month == 10 )  return 274;
   if ( month == 11 )  return 305;
   if ( month == 12 )  return 335;
-  else  {  fprintf(stderr, "bad month");  return 0;  }
+  error(WARNING, "bad month");
+  return 0;
 }
