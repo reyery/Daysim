@@ -30,8 +30,9 @@ add_subdirectory(px)
 add_subdirectory(rt)
 add_subdirectory(util)
 add_subdirectory(daysim)
-# only use qtrvu if qt5 is found
-if(Qt5Widgets_DIR)
-  add_subdirectory(qtrvu)
+if(NOT BUILD_HEADLESS)
+  # only use qtrvu if qt5 is found
+  if(Qt5Widgets_DIR)
+    add_subdirectory(qtrvu)
+  endif()
 endif()
-
