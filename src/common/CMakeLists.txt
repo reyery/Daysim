@@ -4,7 +4,7 @@ set(rtrad_SOURCES
   chanvalue.c clip.c color.c colrops.c cone.c cvtcmd.c dircode.c disk2square.c ealloc.c
   eputs.c erf.c error.c expandarg.c ezxml.c face.c falsecolor.c fdate.c
   fgetline.c fgetval.c fgetword.c fixargv0.c font.c fputword.c free_os.c
-  fropen.c fvect.c gendaylit.c gethomedir.c getlibpath.c getpath.c header.c hilbert.c
+  fropen.c fvect.c gethomedir.c getlibpath.c getpath.c header.c hilbert.c
   image.c instance.c invmat4.c lamps.c linregr.c loadbsdf.c loadvars.c lookup.c
   mat4.c mesh.c modobject.c multisamp.c myhostname.c objset.c octree.c otypes.c
   paths.c plocate.c portio.c process.c quit.c readfargs.c readmesh.c readobj.c

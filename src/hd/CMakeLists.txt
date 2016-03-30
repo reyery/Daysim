@@ -7,7 +7,7 @@ target_link_libraries(rhcopy rtrad)
 add_executable(rhinfo rhinfo.c holo.c holofile.c)
 target_link_libraries(rhinfo rtrad)
 if(UNIX)
-  set(VERSION_FILE "${radiance_BINARY_DIR}/src/hd/Version.c")
+  set(VERSION_FILE "${daysim_BINARY_DIR}/src/hd/Version.c")
   create_version_file("${VERSION_FILE}")
 
   add_executable(rholo rholo.c rholo2.c rholo2l.c rholo3.c rholo4.c holo.c

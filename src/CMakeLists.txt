@@ -14,9 +14,9 @@ macro(create_version_file version_file)
     OUTPUT "${version_file}"
     COMMAND "${CMAKE_COMMAND}"
     -DVERSION_OUT_FILE="${version_file}"
-    -DVERSION_IN_FILE="${radiance_SOURCE_DIR}/src/rt/VERSION"
-    -DVERSION_GOLD="${radiance_SOURCE_DIR}/src/rt/Version.c"
-    -P "${radiance_SOURCE_DIR}/src/rt/create_version.cmake"
+    -DVERSION_IN_FILE="${daysim_SOURCE_DIR}/src/rt/VERSION"
+    -DVERSION_GOLD="${daysim_SOURCE_DIR}/src/rt/Version.c"
+    -P "${daysim_SOURCE_DIR}/src/rt/create_version.cmake"
     )
 endmacro()
 add_subdirectory(common)

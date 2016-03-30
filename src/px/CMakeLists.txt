@@ -84,7 +84,7 @@ if(NOT TIFF_FOUND)
   find_library(TIFF_LIBRARY NAMES libtiff.a tiff tiff3 libtiff
     PATHS
       ${CMAKE_CURRENT_SOURCE_DIR}/tiff/libtiff/.libs
-      ${radiance_BINARY_DIR}/Downloads/Source/radiance_support/src/px/tiff/libtiff/.libs
+      ${daysim_BINARY_DIR}/Downloads/Source/radiance_support/src/px/tiff/libtiff/.libs
       "C:/Program Files/GnuWin32/lib"
       "C:/Program Files (x86)/GnuWin32/lib"
   )
@@ -102,7 +102,7 @@ if(NOT TIFF_FOUND)
   endif()
   #if tiff.h couldn't be found, default to the version in the support tarball
   if(NOT TIFF_INCLUDE_DIR)
-    set(TIFF_INCLUDE_DIR "${radiance_BINARY_DIR}/Downloads/Source/radiance_support/src/px/tiff/libtiff" CACHE PATH "Directory containing tiff.h" FORCE)
+    set(TIFF_INCLUDE_DIR "${daysim_BINARY_DIR}/Downloads/Source/radiance_support/src/px/tiff/libtiff" CACHE PATH "Directory containing tiff.h" FORCE)
   endif()
     
   find_library(Z_LIBRARY z)

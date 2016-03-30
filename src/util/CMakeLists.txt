@@ -1,4 +1,4 @@
-set(VERSION_FILE "${radiance_BINARY_DIR}/src/util/Version.c")
+set(VERSION_FILE "${daysim_BINARY_DIR}/src/util/Version.c")
 create_version_file("${VERSION_FILE}")
 
 add_executable(dctimestep dctimestep.c cmbsdf.c cmatrix.c)

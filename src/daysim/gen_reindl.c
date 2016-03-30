@@ -40,7 +40,7 @@ int new=1;
 float latitude=45.32;
 float longitude=75.67;
 float time_zone=75.0;
-float site_elevation=0.0;                   /*  in metres  */
+//float site_elevation=0.0;                   /*  in metres  */
 float linke_turbidity_factor_am2[12];       /*  monthly means for jan-dec  */
 char horizon_data_in[200];            /*  name of the horizon data file for the station where the input irradiance data were collected  */
                                       /*  (the file contains 36 horizon heights in degrees starting from N to E)                        */

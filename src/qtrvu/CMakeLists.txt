@@ -8,7 +8,7 @@ qt5_wrap_ui(view_dialog_ui viewdialog.ui)
 qt5_wrap_ui(increments_dialog_ui incrementsdialog.ui)
 qt5_wrap_ui(commands_dialog_ui commandsdialog.ui)
 
-include_directories(${radiance_SOURCE_DIR}/src/rt
+include_directories(${daysim_SOURCE_DIR}/src/rt
   ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(qtrvu  qt.c rvuwidget.cxx qt_rvu_main.cxx mainwindow.cxx

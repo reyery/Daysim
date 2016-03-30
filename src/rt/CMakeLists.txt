@@ -1,4 +1,4 @@
-set(VERSION_FILE "${radiance_BINARY_DIR}/src/rt/Version.c")
+set(VERSION_FILE "${daysim_BINARY_DIR}/src/rt/Version.c")
 create_version_file("${VERSION_FILE}")
 
 add_library(radiance
