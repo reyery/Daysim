@@ -12,7 +12,7 @@
 #include  <rterror.h>
 #include  <paths.h>
 
-#include "file.h"
+#include "fropen.h"
 #include "sun.h"
 #include "nrutil.h"
 #include "numerical.h"
