@@ -2,13 +2,10 @@
 #include <stdio.h>
 
 
-extern const double DTR;
 extern const int F;
 extern const int I;
 extern int new;
-extern const float Pi;
 extern long random_seed;
-extern const double RTD;
 
 
 // This file is a patch with all the extern declarations that didn't exist in the original codebase

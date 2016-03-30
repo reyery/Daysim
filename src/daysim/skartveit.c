@@ -1,4 +1,4 @@
-#include <math.h>
+#include <rtmath.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <rterror.h>
@@ -60,7 +60,7 @@ void estimate_sigmas ( float *indices_glo, float index_beam, int sph, float *sig
   ran = ran1 ( &random_seed );
   s = 1/alpha * exp ( 1/gam * log ( log ( 1/(1-ran) ) ) );
   sigg5 = s * sigstar;
-  sigb5 = sigg5 * ( 15 * exp ( -0.15 * pow ( indices_glo[1] - 0.65 , 2 ) ) - 14.08 + 1.85 * ( sigg5 - 0.42 ) * sin ( 1.5 * Pi * indices_glo[1] ) );
+  sigb5 = sigg5 * ( 15 * exp ( -0.15 * pow ( indices_glo[1] - 0.65 , 2 ) ) - 14.08 + 1.85 * ( sigg5 - 0.42 ) * sin ( 1.5 * PI * indices_glo[1] ) );
   if ( sigb5 < 0 )   sigb5 = 0;
 
   time_step = 60.0 / sph;

@@ -11,12 +11,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <math.h>
+#include <rtmath.h>
 #include <string.h>
 #include <errno.h>
 
 #include "fropen.h"
 #include "read_in_header.h"
+
+#define DTR (PI/180.0)
 
 //===============
 //project details
@@ -539,7 +541,7 @@ void read_in_header( char *header_file )
 		else if( !strcmp(keyword,"time_zone") ){
 			fscanf(HEADER_FILE,"%f",&s_meridian);
 			if( (s_meridian > 180.0 )|| (s_meridian < -180.0)) fprintf(stderr," WARNING: time_zone lies out of range (%.2f)!\n",s_meridian);
-			s_meridian *= (M_PI/180.);
+			s_meridian *= DTR;
 		}
 		else if( !strcmp(keyword,"time_step")){
 			fscanf(HEADER_FILE,"%d",&time_step);
@@ -552,7 +554,7 @@ void read_in_header( char *header_file )
 			fscanf(HEADER_FILE,"%f",&s_longitude);
 			if( s_longitude >180 || s_longitude < -180)
 				fprintf(stderr," WARNING: longitude lies out of range (%.2f)!\n",s_longitude);
-			s_longitude *= (M_PI/180.);
+			s_longitude *= DTR;
 		}
 		else if( !strcmp(keyword,"site_elevation") ){
 			fscanf(HEADER_FILE,"%f",&site_elevation);
@@ -564,7 +566,7 @@ void read_in_header( char *header_file )
 			fscanf(HEADER_FILE,"%f",&s_latitude);
 			if( s_latitude >90 || s_latitude <-90)
 				fprintf(stderr," WARNING: longitude lies out of range (%.2f)!\n",s_latitude);
-			s_latitude *= (M_PI/180.);
+			s_latitude *= DTR;
 		}
 		else if( !strcmp(keyword,"lower_direct_threshold") ){
 			fscanf(HEADER_FILE,"%f",&dir_threshold);

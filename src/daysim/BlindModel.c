@@ -6,11 +6,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include <rtmath.h>
 #include <string.h>
 #include <errno.h>
 
-#include  "sun.h"
+#include "sun.h"
 #include "fropen.h"
 #include "read_in_header.h"
 #include "BlindModel.h"
@@ -230,8 +230,8 @@ int getBlindSettings(int UserBehaviorBlinds)
 						}
 						sd=sdec(JulianDay);
 						solar_time=1.0*j*(time_step/60.0)+stadj(JulianDay);
-						alt = (180.0/M_PI)*salt( sd,solar_time);
-						azi = (180/M_PI)*sazi(sd,solar_time);
+						alt = RTD * salt(sd, solar_time);
+						azi = RTD * sazi(sd, solar_time);
 	
 						GlareCondition=0;
 						// Test for glare: The glare condition is that the sun is in a predetermined azimuth altitude 

@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include <rtmath.h>
 #include <string.h>
 #include <errno.h>
 
@@ -302,14 +302,14 @@ sprintf(MainTextString,"%s<p>\n",MainTextString);
 	sprintf(MainTextString,"%s<ul><font color=\"#000000\">\n",MainTextString);
 	sprintf(MainTextString,"%s The investigated building is located in %s ",MainTextString,place);
 	if(s_latitude>0)
-		sprintf(MainTextString,"%s(%2.2f N/",MainTextString,s_latitude*(180.0/M_PI));
+		sprintf(MainTextString, "%s(%2.2f N/", MainTextString, s_latitude * RTD);
 	else
-		sprintf(MainTextString,"%s(%2.2f S/",MainTextString,s_latitude*(-180.0/M_PI));
+		sprintf(MainTextString, "%s(%2.2f S/", MainTextString, s_latitude * -RTD);
 
 	if(s_longitude>0)
-		sprintf(MainTextString,"%s %2.2f E). ",MainTextString,s_longitude*(180.0/M_PI));
+		sprintf(MainTextString, "%s %2.2f E). ", MainTextString, s_longitude * RTD);
 	else
-		sprintf(MainTextString,"%s %2.2f W). ",MainTextString,s_longitude*(-180.0/M_PI));
+		sprintf(MainTextString, "%s %2.2f W). ", MainTextString, s_longitude * -RTD);
 	
 	sprintf(MainTextString,"%s</ul>\n",MainTextString);
 	sprintf(MainTextString,"%s\n<p>\n",MainTextString);

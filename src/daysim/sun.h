@@ -7,6 +7,12 @@
 
 #pragma once
 
+#ifndef PI
+#include <rtmath.h>
+#endif
+
+#define DTR (PI/180.0)
+#define RTD (180.0/PI)
 
 int    jdate( int month, int day);     /* Julian date (days into year) */
 double stadj( int jd);                 /* solar time adjustment from Julian date */
@@ -17,11 +23,6 @@ float  solar_sunset(int month,int day);
 double sazi( double sd,  double st);	 /* solar azimuth from solar declination and solar time */
 double salt( double sd, double st);	   /* solar altitude from solar declination and solar time */
 double f_salt( double sd, double alt); /* solar altitude from solar declination and solar time */
-
-
-
-
-
 
 void solar_elev_azi_ecc ( float latitude, float longitude, float time_zone, int jday, float time, int solar_time, \
                           float *solar_elevation, float *solar_azimuth, float *eccentricity_correction);

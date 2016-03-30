@@ -5,15 +5,11 @@
  *  written by Christoph Reinhart
  */
 
-#define _USE_MATH_DEFINES
 #include <rtmath.h>
 #include <stdio.h>
 #include <rterror.h>
 
 #include "sun.h"
-
-#define DTR PI/180.0
-#define RTD 180.0/PI
 
 
 int jdate( int month, int day)		/* Julian date (days into year) */
@@ -50,9 +46,7 @@ float f_altitude(float lat,float sd,float st)
 
 float f_azimuth(float latitude_rad, float sd, float st,float altitude)
 {
-    float azi=0;
-    azi = (180/PI)*sazi(  sd,   st);
-    return(azi);
+	return RTD*sazi(sd, st);
 }
 
 float solar_sunset(int month,int day)
@@ -102,7 +96,9 @@ void sunrise_sunset_localtime ( float latitude, float longitude, float time_zone
 
 int day_to_month (int day)                    /*  gives the month to which the day belongs ( year with 365 days )  */
 {
-  if ( day >= 1 && day <= 31 )  return 1;
+	while (day < 1) day += 365;
+	day = (day - 1) % 365 + 1;
+  if ( day <= 31 )  return 1;
   if ( day <= 59 )  return 2;
   if ( day <= 90 )  return 3;
   if ( day <= 120 )  return 4;
@@ -113,26 +109,14 @@ int day_to_month (int day)                    /*  gives the month to which the d
   if ( day <= 273 )  return 9;
   if ( day <= 304 )  return 10;
   if ( day <= 334 )  return 11;
-  if ( day <= 365 )  return 12;
-  if ( day <= 396 )  return 1;
-  if ( day <= 424 )  return 2;
-  if ( day <= 455 )  return 3;
-  if ( day <= 485 )  return 4;
-  if ( day <= 516 )  return 5;
-  if ( day <= 546 )  return 6;
-  if ( day <= 577 )  return 7;
-  if ( day <= 608 )  return 8;
-  if ( day <= 638 )  return 9;
-  if ( day <= 669 )  return 10;
-  if ( day <= 699 )  return 11;
-  if ( day <= 730 )  return 12;
-  error(WARNING, "bad day");
-  return 0;
+  return 12;
 }
 
 int julian_day_to_day_of_month (int day)
 {
-  if ( day >= 1 && day <= 31 )  return day;
+	while (day < 1) day += 365;
+	day = (day - 1) % 365 + 1;
+  if ( day <= 31 )  return day;
   if ( day <= 59 )  return day-31;
   if ( day <= 90 )  return day-59;
   if ( day <= 120 )  return day-90;
@@ -143,21 +127,7 @@ int julian_day_to_day_of_month (int day)
   if ( day <= 273 )  return day-243;
   if ( day <= 304 )  return day-273;
   if ( day <= 334 )  return day-304;
-  if ( day <= 365 )  return day-334;
-  if ( day <= 396 )  return day-365;
-  if ( day <= 424 )  return day-396;
-  if ( day <= 455 )  return day-424;
-  if ( day <= 485 )  return day-455;
-  if ( day <= 516 )  return day-485;
-  if ( day <= 546 )  return day-516;
-  if ( day <= 577 )  return day-546;
-  if ( day <= 608 )  return day-577;
-  if ( day <= 638 )  return day-608;
-  if ( day <= 669 )  return day-638;
-  if ( day <= 699 )  return day-669;
-  if ( day <= 730 )  return day-699;
-  error(WARNING, "bad day");
-  return 0;
+  return day-334;
 }
 
 int month_and_day_to_julian_day (int month, int day)

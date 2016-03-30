@@ -7,7 +7,7 @@
 
 #include  <stdio.h>
 #include  <string.h>
-#include  <math.h>
+#include  <rtmath.h>
 #include  <stdlib.h>
 #include  <rterror.h>
 #include  <paths.h>
@@ -61,10 +61,7 @@ int linke_estimation=1;                   /*  flag that indicates if estimation 
 
 /*  constants used  */
 
-const float Pi=3.14159265;
 const float solar_constant_e = 1367.0;
-const double DTR = 0.017453292; //Pi/180;
-const double RTD = 57.2957795; //180/Pi;
 const int F = sizeof(float);
 const int I = sizeof(int);
 
@@ -82,16 +79,16 @@ void solar_elev_azi_ecc(float latitude, float longitude, float time_zone, int jd
 
 	/*  solar elevation and azimuth formulae from sun.c  */
 	if (solar_time == 1)   sol_time = time;
-	if (solar_time == 0)   sol_time = time + 0.170 * sin((4 * Pi / 373) * (jday - 80)) - 0.129 * sin((2 * Pi / 355) * (jday - 8)) + 12 / 180.0 * (time_zone - longitude);
+	if (solar_time == 0)   sol_time = time + 0.170 * sin((4 * PI / 373) * (jday - 80)) - 0.129 * sin((2 * PI / 355) * (jday - 8)) + 12 / 180.0 * (time_zone - longitude);
 
-	solar_declination = RTD * 0.4093 * sin((2 * Pi / 368) * (jday - 81));
-	jday_angle = 2 * Pi*(jday - 1) / 365;
+	solar_declination = RTD * 0.4093 * sin((2 * PI / 368) * (jday - 81));
+	jday_angle = 2 * PI*(jday - 1) / 365;
 
-	*solar_elevation = RTD * asin(sin(latitude*DTR) * sin(solar_declination*DTR) - cos(latitude*DTR) * cos(solar_declination*DTR) * cos(sol_time*(Pi / 12)));
+	*solar_elevation = RTD * asin(sin(latitude*DTR) * sin(solar_declination*DTR) - cos(latitude*DTR) * cos(solar_declination*DTR) * cos(sol_time*(PI / 12)));
 
-	*solar_azimuth = RTD * (-atan2(cos(solar_declination*DTR) * sin(sol_time*(Pi / 12)),
+	*solar_azimuth = RTD * (-atan2(cos(solar_declination*DTR) * sin(sol_time*(PI / 12)),
 		-cos(latitude*DTR)*sin(solar_declination*DTR) -
-		sin(latitude*DTR)*cos(solar_declination*DTR)*cos(sol_time*(Pi / 12))));
+		sin(latitude*DTR)*cos(solar_declination*DTR)*cos(sol_time*(PI / 12))));
 
 	/*  eccentricity_correction formula used in genjdaylit.c */
 
