@@ -10,6 +10,7 @@
 #include  <math.h>
 #include  <stdlib.h>
 #include  <rterror.h>
+#include  <paths.h>
 
 #include "file.h"
 #include "sun.h"
@@ -201,7 +202,8 @@ int main(int argc, char *argv[])
 
 	if ((!command_line && (file_input_output<2)) || argc == 1)
 	{
-		fprintf(stdout, "\n%s: \n", argv[0]);
+		char *progname = fixargv0(argv[0]);
+		fprintf(stdout, "\n%s: \n", progname);
 		printf("Program that splits input global irradiances into direct normal and diffuse horizontal irradiances using the Reindl model. ");
 		printf("The program has a command line and an input file option depending on wheter a single or mutliple irradiances are to be converted.\n");
 		printf("\n");
@@ -213,8 +215,8 @@ int main(int argc, char *argv[])
 		printf("-i\t input file [format: month day hour global_irradiation] \n");
 		printf("-o\t output file [format: month day hour dir_norm_irrad dif_hor_irrad] \n");
 		printf("Example: \n");
-		printf("\t%s -a 42.3 -o 71 -m 75 -g 6 21 12.0 800 \n", argv[0]);
-		printf("\t%s -a 42.3 -o 71 -m 75 -i input_file.txt -o output_file.txt\n", argv[0]);
+		printf("\t%s -a 42.3 -o 71 -m 75 -g 6 21 12.0 800 \n", progname);
+		printf("\t%s -a 42.3 -o 71 -m 75 -i input_file.txt -o output_file.txt\n", progname);
 		exit(0);
 	}
 	if ((times = malloc(24 * F)) == NULL) goto memerr;
