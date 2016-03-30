@@ -11,6 +11,7 @@
 #include "fropen.h"
 #include "read_in_header.h"
 #include "occ_func.h"
+#include "sun.h"
 
 //=======================================================================
 //procedure create occupancy routine for Lightswitch Wizard single office

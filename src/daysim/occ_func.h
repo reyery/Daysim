@@ -19,7 +19,6 @@
 #define M3 243000
 #define IA3 4561
 #define IC3 51349
-#define PI 3.1415926
 
 
 void generate_routine_file(char *filename,int weekday,char *filename1);

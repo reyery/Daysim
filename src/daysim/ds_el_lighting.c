@@ -14,7 +14,35 @@
 #include  <string.h>
 #include  <math.h>
 #include  <stdlib.h>
-#include <errno.h>
+#include  <errno.h>
+#include  <paths.h>
+
+#include  "read_in_header.h"
+#include  "sun.h"
+#include  "fropen.h"
+#include  "occ_func.h"
+#include  "daylightfactor.h"
+#include  "BlindModel.h"
+
+
+/* In allocate_memory.c */
+extern void allocate_memory();
+
+/* In get_illuminances.c */
+extern void get_DGP_profiles();
+extern void get_illuminances();
+extern void get_daylight_illuminances();
+
+/* In lightswitch.c */
+extern void lightswitch_function(int UserLight);
+
+/* In analysis_data.c */
+extern void get_electric_lighting_energy_use(int UserLight, int UserBlind);
+extern void genLightExposureAndDaylightAutonomy(int BlindBehavior);
+extern void writeRGB_DA_Files();
+
+/* In simulation_assumptions.c */
+extern void simulation_assumptions();
 
 /*=======================*/
 /* initialize variables */
@@ -78,28 +106,32 @@ float HoursWithAView[11];
 float AnnualNumberOfActivatedElectricLighting[11];
 char histo_file[200]="";// plus line below
 
-#include  "read_in_header.h"
-#include  "sun.h"
-#include  "fropen.h"
-#include  "occ_func.h"
-#include  "daylightfactor.h"
-#include  "BlindModel.h"
-
 float MeanLightingSystemEnergy=0;
 float MeanLightingSystemStDev=0;
+
+/*  versioning  */
+
+extern char  VersionID[];	/* Radiance version ID string */
 
 int main(int argc, char** argv )
 {	int  i,j,k,l;
 	int behavior=0;
 	float x,y,last_time_step=0;
 	FILE *SUN_DIR;
-	if (argc >= 2){
-		strcpy(input_file, argv[1]);
-	}else{fprintf(stderr,"WARNING ds_el_lighting: input file missing\n");
-		fprintf(stderr,"start program with:  ds_el_lighting  <header file>\n ");
+	
+	if (argc == 1) {
+		char *progname = fixargv0(argv[0]);
+		fprintf(stderr, "\n%s:\n", progname);
+		fprintf(stderr, "Program that predicts the status of the electric lighting and blinds in an office throughout the year based on user occupancy and indoor illuminances.\n\n");
+		fprintf(stderr, "Example:\n");
+		fprintf(stderr, "\t%s header_file\n", progname);
 		exit(1);
 	}
-
+	if (!strcmp(argv[1], "-version")) {
+		puts(VersionID);
+		exit(0);
+	}
+	strcpy(input_file, argv[1]);
 
 	for (i=0 ; i<501 ; i++)
 		histo[0][i]=0;
