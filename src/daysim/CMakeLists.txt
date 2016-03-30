@@ -5,6 +5,7 @@ create_version_file("${VERSION_FILE}")
 
 add_executable(gen_reindl gen_reindl.c file.c nrutil.c numerical.c skartveit.c sun.c "${VERSION_FILE}")
 target_link_libraries(gen_reindl rtrad)
+<<<<<<< HEAD
 
 #install(TARGETS gen_reindl RUNTIME DESTINATION bin)
 
@@ -21,5 +22,7 @@ target_link_libraries(ds_el_lighting rtrad daysim_common)
 
 #gendaylit.c included in rtrad now!
 #BlindModel.c and occ_func.c shifted to executable line
+=======
+>>>>>>> 96d211ab5e3125f6c7947272c2c6bd6e2af0743e
 
 #install(TARGETS gen_reindl RUNTIME DESTINATION bin)
