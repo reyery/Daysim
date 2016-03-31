@@ -3,12 +3,15 @@
  *  written by Christoph Reinhart
  *  National Research Council Canada
  *  Institute for Research in Construction
-*/
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
+ */
 
 // The Lightswitch Algorithm is described in
 // Reinhart,
 
-#include "globals.h"
+#include "numerical.h"
+#include "ds_el_lighting.h"
 
 //======================================
 // Hunt's Switch On Probability function

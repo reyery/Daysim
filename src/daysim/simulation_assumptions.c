@@ -2,10 +2,9 @@
  *  written by Christoph Reinhart
  *  National Research Council Canada
  *  Institute for Research in Construction
-*/
-
-
-
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
+ */
 
 
 #include <stdio.h>
@@ -17,10 +16,8 @@
 #include "fropen.h"
 #include "read_in_header.h"
 #include "sun.h"
-
-
-
-#include "globals.h"
+#include "daylightfactor.h"
+#include "ds_el_lighting.h"
 
 /* this function write out the DAYSIM simulation results including simulation assumptions in
    html format.

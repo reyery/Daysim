@@ -3,11 +3,17 @@
 #include <stdlib.h>
 #include <rterror.h>
 
-#include "globals.h"
 #include "numerical.h"
 #include "skartveit.h"
 
-void skartveit ( float *indices_glo, float index_beam, int sph, float previous_ligoh, float *indices_glo_st, float *actual_ligoh )
+
+/* Defined in gen_reindl.c */
+extern const size_t F;
+extern const size_t I;
+extern int new;
+extern long random_seed;
+
+void skartveit(float *indices_glo, float index_beam, int sph, float previous_ligoh, float *indices_glo_st, float *actual_ligoh)
 {
   int i, est_glo=1;
   int *glo_ranking;

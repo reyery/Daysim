@@ -2,7 +2,9 @@
  *  written by Christoph Reinhart
  *  National Research Council Canada
  *  Institute for Research in Construction
-*/
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
+ */
 
 /* ds_el_lighting is a DAYSIM subprogram that predicts the status of the electric
    lighting and blinds in an office throughout the year based on user
@@ -119,7 +121,7 @@ int main(int argc, char** argv )
 	float x,y,last_time_step=0;
 	FILE *SUN_DIR;
 	
-	if (argc == 1) {
+	if (argc == 1 || argv[1] == NULL) {
 		char *progname = fixargv0(argv[0]);
 		fprintf(stderr, "\n%s:\n", progname);
 		fprintf(stderr, "Program that predicts the status of the electric lighting and blinds in an office throughout the year based on user occupancy and indoor illuminances.\n\n");

@@ -3,12 +3,17 @@
  *  written by Christoph Reinhart
  *  National Research Council Canada
  *  Institute for Research in Construction
-*/
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
+ */
 
 /* routine reads in illuminances for all work plane sensors and assigns	*/
 /* dgp values [if available]	   	to	DaylightGlareProbability[]		*/
 
-#include "globals.h"
+#include <stdlib.h>
+#include "rterror.h"
+#include "fropen.h"
+#include "ds_el_lighting.h"
 
 void get_illuminances( )
 {
@@ -67,14 +72,17 @@ void get_daylight_illuminances( )
 	float x;
 	float current_raw_illuminance=0;
 	float** Daylight_Illuminance_No_Blinds;
+	int time_steps_in_year = 8760 * (int)(60 / time_step);
 	
 	//allocate memory for Daylight_Illuminance_No_Blinds[TimeState][NumberOfSensors]
-	Daylight_Illuminance_No_Blinds=(float**) malloc (sizeof(float*)*8760*(int)(60/time_step));
-	for (i=0 ; i<8760*(int)(60/time_step) ; i++)
-		Daylight_Illuminance_No_Blinds[i]=(float*) malloc (sizeof(float)*number_of_sensors);
-	for (i=0 ; i<760*(int)(60/time_step) ; i++)
-		for (j=0 ; j<number_of_sensors ; j++)
-			Daylight_Illuminance_No_Blinds[i][j]=0;
+	Daylight_Illuminance_No_Blinds = (float**)malloc(sizeof(float*)*time_steps_in_year);
+	if (Daylight_Illuminance_No_Blinds == NULL) goto memerr;
+	for (i = 0; i < time_steps_in_year; i++) {
+		Daylight_Illuminance_No_Blinds[i] = (float*)malloc(sizeof(float)*number_of_sensors);
+		if (Daylight_Illuminance_No_Blinds[i] == NULL) goto memerr;
+		for (j = 0; j < number_of_sensors; j++)
+			Daylight_Illuminance_No_Blinds[i][j] = 0;
+	}
 
 	
 	
@@ -109,6 +117,8 @@ void get_daylight_illuminances( )
 		}
 	}
 	
+	for (i = 0; i < time_steps_in_year; i++)
+		free(Daylight_Illuminance_No_Blinds[i]);
 	free(Daylight_Illuminance_No_Blinds);
 	
 	//get minimum work plane illuminance
@@ -129,6 +139,8 @@ void get_daylight_illuminances( )
 			}			
 		}	
 	}
+memerr:
+	error(SYSTEM, "out of memory in get_daylight_illuminances");
 }
 				
 

@@ -2,12 +2,6 @@
 #include <stdio.h>
 
 
-extern const int F;
-extern const int I;
-extern int new;
-extern long random_seed;
-
-
 // This file is a patch with all the extern declarations that didn't exist in the original codebase
 // but are now needed for VS2013 to compile. (I don't know why it worked originally.)
 

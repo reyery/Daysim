@@ -62,8 +62,8 @@ int linke_estimation=1;                   /*  flag that indicates if estimation 
 /*  constants used  */
 
 const float solar_constant_e = 1367.0;
-const int F = sizeof(float);
-const int I = sizeof(int);
+const size_t F = sizeof(float);
+const size_t I = sizeof(int);
 
 /*  versioning  */
 

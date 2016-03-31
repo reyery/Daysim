@@ -3,7 +3,9 @@
  *  written by Christoph Reinhart
  *  National Research Council Canada
  *  Institute for Research in Construction
-*/
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
+ */
 
 
 /* function calculates the electric lighting use per time step,
@@ -14,7 +16,10 @@
 	(2)	UserBlind 		1  user uses blinds daily (active use of blinds)
 */
 
-#include "globals.h"
+#include <stdlib.h>
+#include "rterror.h"
+#include "fropen.h"
+#include "ds_el_lighting.h"
 
 void get_electric_lighting_energy_use(int UserLight,int UserBlind)
 {
@@ -546,12 +551,12 @@ void writeRGB_DA_Files()
 
 	//read in sensor coordiantes
 	sensor_points=(float**) malloc (sizeof(float*)*number_of_sensors);
+	if (sensor_points == NULL) goto memerr;
 	for (i=0 ; i<(number_of_sensors) ; i++){
 		sensor_points[i]=(float*)malloc (sizeof(float)*6);
-	}
-   	for (k=0 ; k<(number_of_sensors) ; k++){
-		for (i=0 ; i<6 ; i++){
-			sensor_points[k][i]=0.0;
+		if (sensor_points[i] == NULL) goto memerr;
+		for (k=0 ; k<6 ; k++){
+			sensor_points[i][k]=0.0;
 		}
 	}
 	PTS_FILE=open_input(sensor_file);
@@ -629,7 +634,9 @@ void writeRGB_DA_Files()
 			}
 		}
 	}
-
+	for (i = 0; i<(number_of_sensors); i++)
+		free(sensor_points[i]);
+	free(sensor_points);
 
 	if( strcmp(da_availability_active_RGB_file,"") )
 		close_file(FILE_RGB_ACTIVE_DA_AVAILABILITY);
@@ -682,4 +689,7 @@ void writeRGB_DA_Files()
 	if( strcmp(DSP_passive_RGB_file,"") )
 		close_file(FILE_RGB_PASSIVE_DSP);
 
+	return;
+memerr:
+	error(SYSTEM, "out of memory in writeRGB_DA_Files");
 }
