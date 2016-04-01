@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 			SunType=cSkyVault::MANY_SUNS;
 			counter++;
 		}
-		else if (argv[counter][0]=='-' && argv[counter][1]=='d' && argv[counter][2]==' ' )
+		else if (argv[counter][0]=='-' && argv[counter][1]=='d' && argv[counter][2]=='\0' )
 		{
 			DoDiffuse=false;
 			counter++;
