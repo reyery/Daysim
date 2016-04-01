@@ -9,6 +9,7 @@ add_executable(gen_reindl gen_reindl.c nrutil.c numerical.c skartveit.c)
 target_link_libraries(gen_reindl rtrad daysim_common)
 
 add_executable(gencumsky gendiscretesky.cpp climateFile.cpp cPerezSkyModel.cpp cSkyVault.cpp cSun.cpp)
+target_link_libraries(gencumsky rtrad daysim_common)
 
 add_executable(ds_el_lighting ds_el_lighting.c allocate_memory.c analysis_data.c get_illuminances.c lightswitch.c simulation_assumptions.c BlindModel.c occ_func.c)
 target_link_libraries(ds_el_lighting rtrad daysim_common)

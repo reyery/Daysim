@@ -1,8 +1,15 @@
 #include <cstdio>
+#include  <string.h>
 
+//#include "paths.h"
 #include "gencumsky.h"
-
 #include "cSkyVault.h"
+
+extern "C" char *fixargv0(char *av0);
+
+/*  versioning  */
+
+extern "C" char  VersionID[];	/* Radiance version ID string */
 
 int main(int argc, char* argv[])
 {
@@ -27,11 +34,19 @@ int main(int argc, char* argv[])
 
 	bool DoDiffuse;
 
+	char *progname = fixargv0(argv[0]);
+
 	if (!(argc>1))
 	{
 		// User didn't give any command line arguments
-		fprintf(stderr,"GenCumulativeSky: Error - invalid input parameters\n");
+		fprintf(stderr, "%s: Error - invalid input parameters\n", progname);
 		goto USAGEERROR;
+	}
+
+	if (!strcmp(argv[1], "-version"))
+	{
+		puts(VersionID);
+		exit(0);
 	}
 
 	counter=1;
@@ -51,6 +66,8 @@ int main(int argc, char* argv[])
 
 	while (counter<argc-1)
 	{
+		if (argv[counter] == NULL)
+			break;			/* break from options */
 		if (argv[counter][0]=='+' && argv[counter][1]=='s' && argv[counter][2]=='1')
 		{
 			SunType=cSkyVault::CUMULATIVE_SUN;
@@ -145,7 +162,7 @@ int main(int argc, char* argv[])
 				goto USAGEERROR;
 			}
 		}
-		else if (argv[counter][0]=='-' && argv[counter][1]=='t' && argv[counter][2]=='i' && argv[counter][3]=='m' && argv[counter][4]=='e'  )
+		else if (!strcmp(argv[counter], "-time"))
 		{
 			if ((argc-counter)>3 )
 			{
@@ -154,7 +171,7 @@ int main(int argc, char* argv[])
 				counter+=3;
 				if(sky.StartTime<0 || sky.StartTime >24 || sky.EndTime<0 || sky.EndTime >24 || sky.EndTime <= sky.StartTime)
 				{
-					fprintf(stderr, "GenCumulativeSky: Error - invalid start time (%.3f) or end time (%.3f)\n", sky.StartTime, sky.EndTime);
+					fprintf(stderr, "%s: Error - invalid start time (%.3f) or end time (%.3f)\n", progname, sky.StartTime, sky.EndTime);
 					goto USAGEERROR;
 				}
 			}
@@ -164,7 +181,7 @@ int main(int argc, char* argv[])
 			}
 
 		}
-		else if (argv[counter][0]=='-' && argv[counter][1]=='d' && argv[counter][2]=='a' && argv[counter][3]=='t' && argv[counter][4]=='e'  )
+		else if (!strcmp(argv[counter], "-date"))
 		{
 			if ((argc-counter)>5 )
 			{
@@ -175,7 +192,7 @@ int main(int argc, char* argv[])
 				counter+=5;
 				if(sky.StartDay<0 || sky.StartDay >31.0 ||sky.EndDay<0.0 || sky.EndDay >31.0 ||sky.StartMonth<0.0 || sky.StartMonth >12.0 ||sky.EndMonth<0.0 || sky.EndMonth >12.0)
 				{
-					fprintf(stderr, "GenCumulativeSky: Error - invalid start date (%2.0f//%2.0f) or end date (%2.0f//%2.0f)\n", sky.StartMonth, sky.StartDay, sky.EndMonth, sky.EndDay);
+					fprintf(stderr, "%s: Error - invalid start date (%2.0f//%2.0f) or end date (%2.0f//%2.0f)\n", progname, sky.StartMonth, sky.StartDay, sky.EndMonth, sky.EndDay);
 					goto USAGEERROR;
 				}
 			}
@@ -187,7 +204,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			fprintf(stderr, "GenCumulativeSky: Error - invalid input parameter '%s'\n\n", argv[counter]);
+			fprintf(stderr, "%s: Error - invalid input parameter '%s'\n\n", progname, argv[counter]);
 			goto USAGEERROR;
 		}
 	}
@@ -196,7 +213,7 @@ int main(int argc, char* argv[])
 	
 	if (!sky.LoadClimateFile(filename, ClimateFileFormat, sky.StartTime, sky.EndTime, sky.StartDay, sky.EndDay, sky.StartMonth, sky.EndMonth))
 	{
-		fprintf(stderr, "GenCumulativeSky: Error reading climate file %s\n\n", filename);
+		fprintf(stderr, "%s: Error reading climate file %s\n\n", progname, filename);
 		goto USAGEERROR;
 	}
 
@@ -207,11 +224,11 @@ int main(int argc, char* argv[])
 
 
 
-	fprintf(stderr, "{ This .cal file was generated automatically by GenCumulativeSky }\n");
+	fprintf(stdout, "{ This .cal file was generated automatically by %s }\n", progname);
 	fprintf(stdout, "{ ");
 	for (j=0; j<argc; j++)
 		fprintf(stdout, "%s ", argv[j]);
-	fprintf(stdout, " }\n\n");
+	fprintf(stdout, "}\n\n");
 	fprintf(stdout, "skybright=");
 	for (j=0; j<7; j++)
 	{
@@ -242,7 +259,7 @@ int main(int argc, char* argv[])
 	return 0;
 
 USAGEERROR:
-	fprintf(stderr, "Usage: GenCumulativeSky [-d] [+s1|+s2] [-a latitude] [-o longitude] [-l] [-m standard meridian] [-h hourshift] [-G|-B|-E] <climate file>\n");
+	fprintf(stderr, "Usage: %s [-d] [+s1|+s2] [-a latitude] [-o longitude] [-l] [-m standard meridian] [-h hourshift] [-G|-B|-E] <climate file>\n", progname);
 	fprintf(stderr, "(Note: longitude +ve East of Greenwich)\n\n");
 	fprintf(stderr, "\t-d\tIgnore diffuse irradiance\n");
 	fprintf(stderr, "\t+s1\tUse \"smeared sun\" approach (default)\n");
