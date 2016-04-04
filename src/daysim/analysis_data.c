@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include "rterror.h"
 #include "fropen.h"
+#include "read_in_header.h"
+#include "daylightfactor.h"
 #include "ds_el_lighting.h"
 
 void get_electric_lighting_energy_use(int UserLight,int UserBlind)

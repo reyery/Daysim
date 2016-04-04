@@ -25,23 +25,10 @@
 #include  "occ_func.h"
 #include  "daylightfactor.h"
 #include  "BlindModel.h"
-
-
-/* In allocate_memory.c */
-extern void allocate_memory();
-
-/* In get_illuminances.c */
-extern void get_DGP_profiles();
-extern void get_illuminances();
-extern void get_daylight_illuminances();
-
-/* In lightswitch.c */
-extern void lightswitch_function(int UserLight);
-
-/* In analysis_data.c */
-extern void get_electric_lighting_energy_use(int UserLight, int UserBlind);
-extern void genLightExposureAndDaylightAutonomy(int BlindBehavior);
-extern void writeRGB_DA_Files();
+#include  "allocate_memory.h"
+#include  "get_illuminances.h"
+#include  "lightswitch.h"
+#include  "analysis_data.h"
 
 /* In simulation_assumptions.c */
 extern void simulation_assumptions();
