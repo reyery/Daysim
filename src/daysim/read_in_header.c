@@ -15,6 +15,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "sun.h"
 #include "fropen.h"
 #include "read_in_header.h"
 
@@ -376,13 +377,6 @@ float dpPARAM;								//	Variable holding the dp parameter for rtrace
 int rotationNumber= 0;
 enum RotationAxis rotationAxis[3];
 double rotationAngle[3]= { 0.0, 0.0, 0.0 };
-
-int julian_date( int month, int day)		/* Julian date (days into year) */
-{
-	static short  mo_da[12] = {0,31,59,90,120,151,181,212,243,273,304,334};
-	
-	return(mo_da[month-1] + day);
-}
 
 /**
  * Initialise default radiance and photon map options.
@@ -836,11 +830,11 @@ void read_in_header( char *header_file )
 					{
 						BlindSystemType[i]=4;
 						fscanf(HEADER_FILE,"%d %d",&month,&day); //start month and day
-						BlindGroupCoolingPeriodJulianDay[i][0]=julian_date( month, day);
+						BlindGroupCoolingPeriodJulianDay[i][0]=jdate( month, day);
 						BlindGroupCoolingPeriodJulianDay[i][2]=month;
 						BlindGroupCoolingPeriodJulianDay[i][3]=day;			
 						fscanf(HEADER_FILE,"%d %d",&month,&day); //end month and day
-						BlindGroupCoolingPeriodJulianDay[i][1]=julian_date( month, day);
+						BlindGroupCoolingPeriodJulianDay[i][1]=jdate( month, day);
 						BlindGroupCoolingPeriodJulianDay[i][4]=month;
 						BlindGroupCoolingPeriodJulianDay[i][5]=day;
 
@@ -861,11 +855,11 @@ void read_in_header( char *header_file )
 						fscanf(HEADER_FILE,"%f",&BlindGroupAltitudeRange[i][0]); //lower altitude
 						fscanf(HEADER_FILE,"%f",&BlindGroupAltitudeRange[i][1]); //higher altitude
 						fscanf(HEADER_FILE,"%d %d",&month,&day); //start month and day
-						BlindGroupCoolingPeriodJulianDay[i][0]=julian_date( month, day);
+						BlindGroupCoolingPeriodJulianDay[i][0]=jdate( month, day);
 						BlindGroupCoolingPeriodJulianDay[i][2]=month;
 						BlindGroupCoolingPeriodJulianDay[i][3]=day;			
 						fscanf(HEADER_FILE,"%d %d",&month,&day); //end month and day
-						BlindGroupCoolingPeriodJulianDay[i][1]=julian_date( month, day);
+						BlindGroupCoolingPeriodJulianDay[i][1]=jdate( month, day);
 						BlindGroupCoolingPeriodJulianDay[i][4]=month;
 						BlindGroupCoolingPeriodJulianDay[i][5]=day;
 					}else if (!strcmp(blind_control_name[i], "AnnualShadingSchedule"))
