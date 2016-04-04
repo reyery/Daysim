@@ -2,6 +2,8 @@
  *  National Research Council Canada
  *  Fraunhofer Institute for Solar Energy Systems
  *  written by Christoph Reinhart
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
  */
 
 /* function to generate daylight factors from a daylight coefficient file

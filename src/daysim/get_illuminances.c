@@ -14,6 +14,7 @@
 #include "rterror.h"
 #include "fropen.h"
 #include "read_in_header.h"
+#include "BlindModel.h"
 #include "ds_el_lighting.h"
 
 void get_illuminances( )

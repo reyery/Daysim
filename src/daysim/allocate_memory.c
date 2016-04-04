@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include "rterror.h"
 #include "read_in_header.h"
+#include "BlindModel.h"
 #include "ds_el_lighting.h"
 
 #define NUM_BLINDS_SETTINGS	11
