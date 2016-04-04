@@ -31,7 +31,6 @@ extern float ***MaximumIlluminanancePerBlindGroup;
 extern float **minimum_work_plane_ill;
 //extern int *month_1;
 extern int PassiveOccupant;
-extern int time_steps_in_year;
 //extern float ****raw_illuminances;
 extern float **UDI_100;
 extern float **UDI_100_2000;

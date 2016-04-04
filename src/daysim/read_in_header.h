@@ -38,10 +38,9 @@ extern char TemplateFileName[1024]; 	// name of template file
 /*================
  *site information
  *================*/
-extern int  month, day;
-extern float hour;
 extern float site_elevation;       /*  in metres */
 extern int time_step;   		   /* time_step in minutes */
+extern int time_steps_in_year;
 extern int first_weekday; 			/* 1= Monday... 7= Sunday */
 extern int daylight_savings_time;    /* switched daylight savings time on/off (0/1) */
 extern float  s_latitude;  		/* in RADIANS North is positive */

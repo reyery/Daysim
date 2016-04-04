@@ -562,7 +562,6 @@ void occupancy_profile(int occupancy_mode, int daylight_savings_time, int start_
 	char  line_string[1000000]="";
 
 
-	k=8760*(int)(60/time_step);
 	// create occupancy routine file
 	if(occupancy_mode==0)
     {

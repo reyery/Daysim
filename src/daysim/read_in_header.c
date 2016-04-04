@@ -35,8 +35,6 @@ char TemplateFileName[1024]=""; 		// name of template file
 //================
 //site information
 //================
-int		month, day;
-float	hour;
 float	site_elevation=0.0;		//  in metres
 int		time_step=5;   			// time_step in minutes
 int		time_steps_in_year = HOURS_PER_YEAR * 60 / 5;
