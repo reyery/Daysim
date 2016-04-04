@@ -19,6 +19,7 @@
 #include "read_in_header.h"
 
 #define DTR (PI/180.0)
+#define HOURS_PER_YEAR	8760
 
 //===============
 //project details
@@ -38,6 +39,7 @@ int		month, day;
 float	hour;
 float	site_elevation=0.0;		//  in metres
 int		time_step=5;   			// time_step in minutes
+int		time_steps_in_year = HOURS_PER_YEAR * 60 / 5;
 int		first_weekday=1; 		// 1= Monday... 7= Sunday
 int		daylight_savings_time=1;// switched daylight savings time on/off (0/1)
 float	s_latitude=-999;  		// in RADIANS North is positive
@@ -549,6 +551,7 @@ void read_in_header( char *header_file )
 				fprintf(stderr,"read_in_header: variable \'time_step\' out of bound (%d)\n",time_step);
 				exit(1);
 			}
+			time_steps_in_year = HOURS_PER_YEAR * 60 / time_step;
 		}
 		else if( !strcmp(keyword,"longitude") ){
 			fscanf(HEADER_FILE,"%f",&s_longitude);

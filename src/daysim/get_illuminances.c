@@ -33,7 +33,7 @@ void get_illuminances( )
 			//printf("open shading file: %s\n",shading_illuminance_file[counter]);
 			ILL_INPUT =open_input(shading_illuminance_file[counter]);
 			counter++;
-			for (j=0 ; j<8760*(int)(60/time_step) ; j++)
+			for (j = 0; j < time_steps_in_year; j++)
 			{
 				fscanf(ILL_INPUT, "%d %d %f ",&k,&l,&x); //read in month day hour
 				MaximumBlindGroupIlluminance_Internal[i][Setting_Index][j]=-999;
@@ -74,7 +74,6 @@ void get_daylight_illuminances( )
 	float x;
 	float current_raw_illuminance=0;
 	float** Daylight_Illuminance_No_Blinds;
-	int time_steps_in_year = 8760 * (int)(60 / time_step);
 	
 	//allocate memory for Daylight_Illuminance_No_Blinds[TimeState][NumberOfSensors]
 	Daylight_Illuminance_No_Blinds = (float**)malloc(sizeof(float*)*time_steps_in_year);
@@ -94,7 +93,7 @@ void get_daylight_illuminances( )
 		{
 			ILL_INPUT =open_input(shading_illuminance_file[counter]);
 			counter++;
-			for (Time_Index=0 ; Time_Index<8760*(int)(60/time_step) ; Time_Index++)
+			for (Time_Index = 0; Time_Index < time_steps_in_year; Time_Index++)
 			{
 				fscanf(ILL_INPUT, "%d %d %f ",&k,&l,&x); //read in month day hour
 				
@@ -124,7 +123,7 @@ void get_daylight_illuminances( )
 	free(Daylight_Illuminance_No_Blinds);
 	
 	//get minimum work plane illuminance
-	for (Time_Index=0 ; Time_Index<8760*(int)(60/time_step) ; Time_Index++)
+	for (Time_Index = 0; Time_Index < time_steps_in_year; Time_Index++)
 	{
 		for(LG_Index=1 ; LG_Index<= NumberOfLightingGroups ; LG_Index++)
 			minimum_work_plane_ill[LG_Index][Time_Index]=100000.0;
@@ -214,7 +213,7 @@ void get_DGP_profiles( )
 				
 				//printf("Number of dgp columns in %s is %d.\n",DGP_Profiles_file[counter], number_of_view_points);
 				rewind(ILL_INPUT);	
-					for (j=0 ; j<8760*(int)(60/time_step) ; j++)
+				for (j = 0; j < time_steps_in_year; j++)
 					{
 							fscanf(ILL_INPUT,"%d %d %f ",&k,&l,&x);// read in month day time
 							if(AdaptiveZoneApplies == 1 )

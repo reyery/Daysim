@@ -135,7 +135,7 @@
 		//      - type of lighting system.
 
 	// get length of absence
-	while(occ_profile[current_time+k]==0 && (current_time+k) < 8760*(int)(60/time_step))
+	while (occ_profile[current_time + k] == 0 && (current_time + k) < time_steps_in_year)
 		k++;
 
 	//=============================================================================
@@ -231,7 +231,7 @@ for (LightingGroupIndex=1 ; LightingGroupIndex<= NumberOfLightingGroups ; Lighti
 	//===============
 	// loop over year
 	//===============
-	for (i=1 ; i<8760*(int)(60/time_step) ; i+=24*(int)(60/time_step))
+	for (i = 1; i < time_steps_in_year; i += 24 * (int)(60 / time_step))
 	{
 
 		/*============================================*/

@@ -27,6 +27,8 @@
 void get_electric_lighting_energy_use(int UserLight,int UserBlind)
 {
 	int i,j=0;
+	int month, day;
+	float hour;
 	int SwitchForThermalOutput=0; //0=no thermal output, 1=active thermal file; 2=passive thermal file
 	int LightingGroupIndex,BlindGroupIndex;
 	int CounterThermalFile;
@@ -41,7 +43,7 @@ void get_electric_lighting_energy_use(int UserLight,int UserBlind)
 
 	//calculate percentage of hours with a view
 	//=========================================
-	for (i=1 ; i<8760*(int)(60/time_step) ; i++)
+	for (i = 1; i < time_steps_in_year; i++) //TODO why does this not start with 0?
 	{
 		if(occ_profile[i]==1)
 			AnnualNumberOfOccupiedHours+=1.0*time_step/60;
@@ -61,7 +63,7 @@ void get_electric_lighting_energy_use(int UserLight,int UserBlind)
 		MeanLightEnergyOutput[LightingGroupIndex]=0.0;
 	}
 	
-	for (i=1 ; i<8760*(int)(60/time_step) ; i++)
+	for (i = 1; i < time_steps_in_year; i++) //TODO why does this not start with 0?
 	{
 		for (LightingGroupIndex=1 ; LightingGroupIndex<= NumberOfLightingGroups ; LightingGroupIndex++)
 		{
@@ -115,7 +117,7 @@ void get_electric_lighting_energy_use(int UserLight,int UserBlind)
 		if(!DGP_filesDoNotExist) //write out effective dgp profile
 		{
 			//fprintf(THERMAL_FILE,",Daylight Glare Probability");
-			for (i=1 ; i<8760*(int)(60/time_step) ; i++)
+			for (i = 1; i < time_steps_in_year; i++) //TODO why does this not start with 0?
 			{
 				dgp_profile[i]=effective_dgp[0][1][i]; // set dgp originally to the all blinds up case
 				if(NumberOfBlindGroups>0)
@@ -162,8 +164,10 @@ void get_electric_lighting_energy_use(int UserLight,int UserBlind)
 	
 	/* loop over the year */
 	CounterThermalFile=0;
-	for (i=0 ; i<8760*(int)(60/time_step) ; i++){
-		
+	month = day = 1;
+	hour = time_step / 120.0f;
+	for (i = 0; i < time_steps_in_year; i++) {
+
 		//write time stamp and occupancy
 		if(SwitchForThermalOutput>0)
 		{
@@ -173,7 +177,7 @@ void get_electric_lighting_energy_use(int UserLight,int UserBlind)
 				mean_occ=0;
 				for (j=0 ; j< (int)(60/time_step); j++)
 					mean_occ+=occ_profile[i-j]*(time_step/60.0);
-				fprintf(THERMAL_FILE,"%d,%d,%.3f,%.1f", month_1[i],day_1[i],hour_1[i],mean_occ);	
+				fprintf(THERMAL_FILE,"%d,%d,%.3f,%.1f", month, day, hour, mean_occ);	
 			}
 		}
 		
@@ -277,7 +281,7 @@ void get_electric_lighting_energy_use(int UserLight,int UserBlind)
 			LightingGroupEnergyUse[LightingGroupIndex][0]+=LightEnergyOutput*(LightPower[LightingGroupIndex]+StandbyPower[LightingGroupIndex])/1000.0;	
 
 			/* monthly electric lighting energy demand */
-			LightingGroupEnergyUse[LightingGroupIndex][month_1[i]]+=LightEnergyOutput*(LightPower[LightingGroupIndex]+StandbyPower[LightingGroupIndex])/1000.0;
+			LightingGroupEnergyUse[LightingGroupIndex][month]+=LightEnergyOutput*(LightPower[LightingGroupIndex]+StandbyPower[LightingGroupIndex])/1000.0;
 
 			/* thermal simulation profile */
 			if(SwitchForThermalOutput>0){
@@ -318,10 +322,29 @@ void get_electric_lighting_energy_use(int UserLight,int UserBlind)
 				if(mean_dgp>0.4)
 					AnnualHoursWithGlare++;
 				//fprintf(THERMAL_FILE,",%.3f",1.0*mean_dgp);
-				fprintf(EFFECTIVE_DGP_FILE,"%d %d %.3f %.3f\n",month_1[i], day_1[i], hour_1[i],1.0*mean_dgp);
-				
+				fprintf(EFFECTIVE_DGP_FILE, "%d %d %.3f %.3f\n", month, day, hour, 1.0*mean_dgp);
+
 			}
 			fprintf(THERMAL_FILE,"\n");
+		}
+
+		/* increment month, day, and hour */
+		hour += time_step / 60.0f;
+		if (hour >= 24.0f){
+			hour = time_step / 120.0f;
+			day++;
+			if (month == 1 && day>31){ month++; day -= 31; }
+			else if (month == 2 && day>28){ month++; day -= 28; }
+			else if (month == 3 && day>31){ month++; day -= 31; }
+			else if (month == 4 && day>30){ month++; day -= 30; }
+			else if (month == 5 && day>31){ month++; day -= 31; }
+			else if (month == 6 && day>30){ month++; day -= 30; }
+			else if (month == 7 && day>31){ month++; day -= 31; }
+			else if (month == 8 && day>31){ month++; day -= 31; }
+			else if (month == 9 && day>30){ month++; day -= 30; }
+			else if (month == 10 && day>31){ month++; day -= 31; }
+			else if (month == 11 && day>30){ month++; day -= 30; }
+			else if (month == 12 && day>31){ month = 1; day -= 31; }
 		}
 	} /* end loop over the year */
 
@@ -361,7 +384,7 @@ void genLightExposureAndDaylightAutonomy(int BlindBehavior)
 		UDI_100_2000[k][BlindBehavior]=0;
 	}		
 		
-	for (Time_Index=0 ; Time_Index<8760*(int)(60/time_step) ; Time_Index++)
+	for (Time_Index = 1; Time_Index < time_steps_in_year; Time_Index++)
 	{
 		for (k=0 ; k< number_of_sensors ; k++)
 		{

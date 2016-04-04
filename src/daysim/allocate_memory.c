@@ -23,7 +23,6 @@
 void allocate_memory()
 {
 	int i,j,k,m,n;
-	int time_steps_in_year = 8760 * (int)(60 / time_step);
 /*==================*/
 /* allocate memory */
 /*==================*/
@@ -242,50 +241,27 @@ void allocate_memory()
 
 	//4-dim array for the illuminances for the *.ill files
 	//raw_illuminances[Blindgroup][BlindSetting][TimeStepInYear][number_of_sensors]
-	raw_illuminances = (float****) malloc (sizeof(float***) * (NumberOfBlindGroups+1));
-	if (raw_illuminances == NULL) goto memerr;
-	//	for (i=0 ; i<(NumberOfBlindGroups+1) ; i++)
-//	{
-//		raw_illuminances[i] =(float***) malloc (sizeof(float**)* (MaxNumberOfSettingsInBlindgroup+1));
-//	}
-
-//	for (i=0 ; i<(NumberOfBlindGroups+1) ; i++)
-//	{
-//		for (k=0 ; k<(MaxNumberOfSettingsInBlindgroup+1) ; k++)
-//		{
-//			raw_illuminances[i][k] =(float**) malloc (sizeof(float*)* 8760*(int)(60/time_step));
-//		}
-//	}
-
-//	for (i=0 ; i<(NumberOfBlindGroups+1) ; i++)
-//	{
-//		for (k=0 ; k<(MaxNumberOfSettingsInBlindgroup+1) ; k++)
-//		{
-//			for (j=0 ; j<8760*(int)(60/time_step) ; j++)
-//			{
-//				raw_illuminances[i][k][j]=(float*) malloc (sizeof(float)* number_of_sensors);
-//				if (raw_illuminances[i][k][j] == NULL) 
-//				{
-//					printf(" ds_electric Lighting: merror calling maloc for \'raw_illuminances\'\n");
-//					exit(1);					
-//				} 
-//			}
-//		}
-//	}
-
-//	for (i=0 ; i<(NumberOfBlindGroups+1) ; i++)
-//	{
-//		for (k=0 ; k<(MaxNumberOfSettingsInBlindgroup+1) ; k++)
-//		{
-//			for (j=0 ; j<8760*(int)(60/time_step) ; j++)
-//			{
-//				for (m=0 ; m< number_of_sensors ; m++)
-//				{
-//					raw_illuminances[i][k][j][m]=0;
-//				}
-//			}
-//		}
-//	}
+	//raw_illuminances = (float****) malloc (sizeof(float***) * (NumberOfBlindGroups+1));
+	//if (raw_illuminances == NULL) goto memerr;
+	//for (i=0 ; i<(NumberOfBlindGroups+1) ; i++)
+	//{
+	//	raw_illuminances[i] =(float***) malloc (sizeof(float**)* (MaxNumberOfSettingsInBlindgroup+1));
+	//	if (raw_illuminances[i] == NULL) goto memerr;
+	//	for (k=0 ; k<(MaxNumberOfSettingsInBlindgroup+1) ; k++)
+	//	{
+	//		raw_illuminances[i][k] = (float**)malloc(sizeof(float*)* time_steps_in_year);
+	//		if (raw_illuminances[i][k] == NULL) goto memerr;
+	//		for (j = 0; j < time_steps_in_year; j++)
+	//		{
+	//			raw_illuminances[i][k][j]=(float*) malloc (sizeof(float)* number_of_sensors);
+	//			if (raw_illuminances[i][k][j] == NULL) goto memerr;
+	//			for (m=0 ; m< number_of_sensors ; m++)
+	//			{
+	//				raw_illuminances[i][k][j][m]=0;
+	//			}
+	//		}
+	//	}
+	//}
 	
 
 	da = (float*) malloc (sizeof(float) * (number_of_sensors+1));
@@ -312,9 +288,9 @@ void allocate_memory()
 					if (direct_sun[i][j][k] == NULL) goto memerr;
 					for (m=0 ; m< (NumberOfSettingsInBlindgroup[4]+1) ; m++)
 					{
-						direct_sun[i][j][k][m]=(int*) malloc (sizeof(int)* 8760*(int)(60/time_step));
+						direct_sun[i][j][k][m] = (int*)malloc(sizeof(int)* time_steps_in_year);
 						if (direct_sun[i][j][k][m] == NULL) goto memerr;
-						for (n=0 ; n< 8760*(int)(60/time_step) ; n++)
+						for (n = 0; n < time_steps_in_year; n++)
 						{
 							direct_sun[i][j][k][m][n]=0;
 						}	
@@ -348,17 +324,17 @@ void allocate_memory()
 	if (dir == NULL) goto memerr;
 	for (i = 0; i < time_steps_in_year; i++) dir[i] = 0;
 
-	month_1 = (int*)malloc(sizeof(int)*time_steps_in_year);
-	if (month_1 == NULL) goto memerr;
-	for (i = 0; i < time_steps_in_year; i++) month_1[i] = 0;
+	//month_1 = (int*)malloc(sizeof(int)*time_steps_in_year);
+	//if (month_1 == NULL) goto memerr;
+	//for (i = 0; i < time_steps_in_year; i++) month_1[i] = 0;
 
-	day_1 = (int*)malloc(sizeof(int)*time_steps_in_year);
-	if (day_1 == NULL) goto memerr;
-	for (i = 0; i < time_steps_in_year; i++) day_1[i] = 0;
+	//day_1 = (int*)malloc(sizeof(int)*time_steps_in_year);
+	//if (day_1 == NULL) goto memerr;
+	//for (i = 0; i < time_steps_in_year; i++) day_1[i] = 0;
 
-	hour_1 = (float*)malloc(sizeof(float)*time_steps_in_year);
-	if (hour_1 == NULL) goto memerr;
-	for (i = 0; i < time_steps_in_year; i++) hour_1[i] = 0;
+	//hour_1 = (float*)malloc(sizeof(float)*time_steps_in_year);
+	//if (hour_1 == NULL) goto memerr;
+	//for (i = 0; i < time_steps_in_year; i++) hour_1[i] = 0;
 
 	int_sensor_ill = (float*)malloc(sizeof(float)*time_steps_in_year);
 	if (int_sensor_ill == NULL) goto memerr;

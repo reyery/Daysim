@@ -49,18 +49,16 @@ int BlindGroupIndex=0;
 int BlindGroup2Index=0;
 int BlindGroup3Index=0;
 int BlindGroup4Index=0;
-int *month_1, *day_1;
 int overview=1; 	/*switch to */
 int da_overview=0;  /*switch for comparative analysis of daylight autonomies */
 int *****direct_sun;
 int ActiveOccupant=0;
 int PassiveOccupant=0;
-float *hour_1;
 float *da;
 float *dir;
 float **daylight_illuminances;
 float ***work_plane_ill;
-float ****raw_illuminances;
+//float ****raw_illuminances;
 float ***DaylightGlareProbability;
 float ***MaximumIlluminanancePerBlindGroup;
 float *ext_sensor_ill;
@@ -139,36 +137,6 @@ int main(int argc, char** argv )
 /* and assign values for month_1, day_1, and hour_1 */
 /*==================================================*/
 	allocate_memory();
-
-
-/*=======================================*/
-/* assign dates for month, day, and hour */
-/*=======================================*/
-	month=1;
-	day=1;
-	hour=time_step*1.0/120;
-	for (i=0 ; i<8760*(int)(60/time_step) ; i++){
-		month_1[i]=month;
-		day_1[i]=day;
-		hour_1[i]=hour;
-		hour+=time_step*1.0/60;
-		if(hour>=24.0 ){
-			hour= time_step*1.0/120;
-			day++;
-			if(month==1 && day>31){month++;day-=31;}
-			if(month==2 && day>28){month++;day-=28;}
-			if(month==3 && day>31){month++;day-=31;}
-			if(month==4 && day>30){month++;day-=30;}
-			if(month==5 && day>31){month++;day-=31;}
-			if(month==6 && day>30){month++;day-=30;}
-			if(month==7 && day>31){month++;day-=31;}
-			if(month==8 && day>31){month++;day-=31;}
-			if(month==9 && day>30){month++;day-=30;}
-			if(month==10 && day>31){month++;day-=31;}
-			if(month==11 && day>30){month++;day-=30;}
-			if(month==12 && day>31){month=1;day-=31;}
-               }
-	}
 
 	
 /*==========================================*/

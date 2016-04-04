@@ -14,10 +14,8 @@
 #include "fropen.h"
 #include "read_in_header.h"
 #include "BlindModel.h"
+#include "ds_el_lighting.h"
 
-extern float ***MaximumBlindGroupIlluminance_Internal;
-extern float ***MaximumBlindGroupIlluminance_External;
-extern float ****raw_illuminances;
 
 //====================================================================
 // Function: getBlindSettings(int UserBehaviorBlinds)
@@ -57,7 +55,7 @@ int getBlindSettings(int UserBehaviorBlinds)
 	}
 
 	/* annual loop */
-	for (i=0 ; i<8760*(int)(60/time_step) ; i+=24*(int)(60/time_step))
+	for (i = 0; i < time_steps_in_year; i += 24 * (int)(60 / time_step))
 	
 	{ 
 		JulianDay++;
