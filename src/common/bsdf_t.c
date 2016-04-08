@@ -1336,7 +1336,6 @@ subtract_min_RGB(C_COLOR *cs, SDNode *stc[])
 static void
 extract_diffuse(SDValue *dv, SDSpectralDF *df)
 {
-	int	n;
 	SDTre	*sdt;
 
 	if (df == NULL || df->ncomp <= 0) {

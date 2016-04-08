@@ -9,11 +9,11 @@
 #include <math.h>
 #include <string.h>
 
-#include "fropen.h"
-#include "read_in_header.h"
-#include "sun.h"
+#include "common/fropen.h"
+#include "common/read_in_header.h"
+#include "common/sun.h"
 
-#include "ds_illum.h"
+#include "common/ds_illum.h"
 
 
 void calculate_sky_patches (int *dc_direct_resolution, int *dir_rad,int *dif_pts,int *dir_pts,int *number_direct_coefficients)

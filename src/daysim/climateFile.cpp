@@ -3,6 +3,7 @@
 #include "climateFile.h"
 #include <stdio.h>
 #include <iostream>
+#include <math.h>
 
 
 #include "paths.h"
