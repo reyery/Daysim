@@ -9,6 +9,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "rterror.h"
 #include "fropen.h"
 #include "read_in_header.h"
 #include "sun.h"
@@ -23,7 +24,7 @@ void calculate_sky_patches (int *dc_direct_resolution, int *dir_rad,int *dif_pts
 	float alt,azi;
 	FILE *DIFFUSE_POINTS_FILE;
 	FILE *DIRECT_POINTS_FILE;
-	get_dc(&dc_direct_resolution,number_direct_coefficients);	/* calculate daylight coefficients depending on site */
+	get_dc(dc_direct_resolution,number_direct_coefficients);	/* calculate daylight coefficients depending on site */
 
 	if (*dir_pts) {/* print direct daylight coefficients */
 		DIRECT_POINTS_FILE=open_output(direct_points_file);
@@ -40,7 +41,7 @@ void calculate_sky_patches (int *dc_direct_resolution, int *dir_rad,int *dif_pts
 	/* print radiance file for direct suns */
 	if(dc_coupling_mode ==2){
 		if(!strcmp(direct_radiance_file,"")){
-			fprintf(stderr,"WARNING: ds_illum: shadow testing turned on but no direct radiance file specified in header!");exit(0);
+			error(USER, "shadow testing turned on but no direct radiance file specified in header!");
 		}else{
 			DIFFUSE_POINTS_FILE=open_output(direct_radiance_file);
 			for(j=0; j< *number_direct_coefficients; j++){

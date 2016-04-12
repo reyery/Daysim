@@ -99,7 +99,6 @@ extern int dc_coupling_mode;
 // Reinhart C F, Walkenhorst O, Dynamic RADIANCE-based Daylight Simulations for a
 //full-scale Test Office with outer Venetian Blinds, Energy & Buildings, Vol. 33 pp. 683-697, 2001
 extern long idum; // stochastic realisation parameter
-extern int *shadow_testing_results;
 extern int AdvancedBlindModel;
 extern float ***effective_dgp;				//array that stores the effective DGP for multiple view points in DGP file
 

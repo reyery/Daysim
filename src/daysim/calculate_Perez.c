@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <rtmath.h>
 #include <string.h>
-#include <errno.h>
 
+#include "rterror.h"
 #include "fropen.h"
 #include "read_in_header.h"
 #include "sun.h"
@@ -156,7 +156,7 @@ void calculate_perez(int *shadow_testing_on, int *dir_rad,int *number_direct_coe
 
 	/* normalization factor for the relative sky luminance distribution, diffuse part*/
 	if ( (coeff_perez = malloc(8*20*sizeof(float))) == NULL )
-		{fprintf(stdout,"ds_illum: Out of memory error in function main !");exit(1);}
+		error(SYSTEM, "out of memory in calculate_perez");
 
 
 	/* normalization factor for the relative sky luminance distribution, diffuse part*/
@@ -929,11 +929,11 @@ int write_segments_direct(double dir,double dif, int *number_direct_coefficients
 			for (j=1 ; j<25 ; j++){
 				if ( adapted_time0 > direct_calendar[mon0][j][0] && adapted_time0 < direct_calendar[mon0][j+1][0] ){h00=j;j=25;}
 				/*printf("adapted %f %f\n",adapted_time,direct_calendar[mon0][j+1][0]);*/
-				if ( j == 24 ){ fprintf(stdout,"ds_illum: fatal error - loop in gendaylit_algorithm failed\n");exit(1);}
+				if (j == 24) error(INTERNAL, "loop in gendaylit_algorithm failed");
 			}
 			for (j=1 ; j<25 ; j++){
 				if ( adapted_time1 > direct_calendar[mon1][j][0] && adapted_time1 < direct_calendar[mon1][j+1][0] ){h01=j;j=25;}
-				if ( j == 24 ){ fprintf(stdout,"ds_illum: fatal error - loop in gendaylit_algorithm failed\n");exit (1);}
+				if (j == 24) error(INTERNAL, "loop in gendaylit_algorithm failed");
 			}
 
 			Dx=cos((0.017453292)*azimuth)*cos((0.017453292)*(altitude));
@@ -2270,10 +2270,10 @@ double calc_rel_lum_perez(double dzeta,double gamma,double Z,
 	double c_perez[5];
 
 	if ( (epsilon <  skyclearinf) || (epsilon > skyclearsup) )
-		{
-			fprintf(stdout,"ds_illum: fatal error - Epsilon out of range in function calc_rel_lum_perez ! (%f) \n",epsilon);
-			exit(1);
-		}
+	{
+		sprintf(errmsg, "epsilon out of range in function calc_rel_lum_perez ! (%f)", epsilon);
+		error(USER, errmsg);
+	}
 
 	/* correction de modele de Perez solar energy ...*/
 	if ( (epsilon > 1.065) && (epsilon < 2.8) )
@@ -2327,10 +2327,10 @@ void coeff_lum_perez(double Z, double epsilon, double Delta, float *coeff_perez)
 	int i,j,num_lin=0;
 
 	if ( (epsilon <  skyclearinf) || (epsilon > skyclearsup) )
-		{
-			fprintf(stdout,"ds_illum: fatal error - Epsilon out of range in function calc_rel_lum_perez !\n");
-			exit(1);
-		}
+	{
+		sprintf(errmsg, "epsilon out of range in function coeff_lum_perez ! (%f)", epsilon);
+		error(USER, errmsg);
+	}
 
 	/* correction du modele de Perez solar energy ...*/
 	if ( (epsilon > 1.065) && (epsilon < 2.8) )
@@ -2393,10 +2393,9 @@ void theta_phi_to_dzeta_gamma(double theta,double phi,double *dzeta,double *gamm
 	if ( (cos(Z)*cos(theta)+sin(Z)*sin(theta)*cos(phi)) > 1 && (cos(Z)*cos(theta)+sin(Z)*sin(theta)*cos(phi) < 1.1 ) )
 		*gamma = 0;
 	else if ( (cos(Z)*cos(theta)+sin(Z)*sin(theta)*cos(phi)) > 1.1 )
-		{
-			printf("error in calculation of gamma (angle between point and sun");
-			exit(3);
-		}
+	{
+		error(INTERNAL, "error in calculation of gamma (angle between point and sun");
+	}
 	else
 		*gamma = acos(cos(Z)*cos(theta)+sin(Z)*sin(theta)*cos(phi));
 }
@@ -2407,10 +2406,7 @@ float *theta_ordered()
 	float *ptr;
 
 	if ( (ptr = malloc(145*sizeof(float))) == NULL )
-		{
-			fprintf(stdout,"ds_illum: fatal error - Out of memory in function theta_ordered\n");
-			exit(1);
-		}
+		error(SYSTEM, "out of memory in function theta_ordered");
 
 	*(ptr+0)=84;	*(ptr+1)=84;	*(ptr+2)=84;	*(ptr+3)=84;	*(ptr+4)=84;
 	*(ptr+5)=84;	*(ptr+6)=84;	*(ptr+7)=84;	*(ptr+8)=84;	*(ptr+9)=84;
@@ -2449,10 +2445,9 @@ float *phi_ordered()
 {
 	float *ptr;
 
-	if ( (ptr = malloc(145*sizeof(float))) == NULL ) {
-		fprintf(stdout,"ds_illum: fatal error - Out of memory in function phi_ordered");
-		exit(1);
-	}
+	if ( (ptr = malloc(145*sizeof(float))) == NULL )
+		error(SYSTEM, "out of memory in function phi_ordered");
+
 	*(ptr+0)=0;		*(ptr+1)=12;		*(ptr+2)=24;		*(ptr+3)=36;
 	*(ptr+4)=48;	*(ptr+5)=60;		*(ptr+6)=72;		*(ptr+7)=84;
 	*(ptr+8)=96;	*(ptr+9)=108;		*(ptr+10)=120;		*(ptr+11)=132;

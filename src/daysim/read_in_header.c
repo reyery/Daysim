@@ -109,7 +109,6 @@ int dc_coupling_mode=0;
 // Reinhart C F, Walkenhorst O, Dynamic RADIANCE-based Daylight Simulations for a
 //full-scale Test Office with outer Venetian Blinds, Energy & Buildings, Vol. 33 pp. 683-697, 2001
 long idum = -10; // stochastic realisation parameter
-int *shadow_testing_results;
 
 
 //================

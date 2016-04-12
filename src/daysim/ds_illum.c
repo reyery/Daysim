@@ -52,7 +52,6 @@ char	temp_octree[1024]="";
 char	temp_rad[1024]="";
 int number_dc_points=0;
 float** dc;
-int *shadow_testing_results;
 
 int direct_view[10];
 
@@ -163,8 +162,7 @@ int main( int argc, char **argv )
 				if(dds_file_format)	{
 					dds_file_format=2;
 				} else {
-					fprintf(stderr,"\t-s option can only be invoked in combination with -dds\n ");
-					exit(1);
+					error(USER, "-s option can only be invoked in combination with -dds");
 				}
 			}
 		}
@@ -285,10 +283,10 @@ int main( int argc, char **argv )
 
 	/* consistency checks */
 	if (fabs(s_meridian - s_longitude) > 30 * DTR){
-		fprintf(stdout,
-				"%s: warning -  %.1f hours btwn. standard meridian and longitude\n", progname,
+		sprintf(errmsg,
+				"%.1f hours btwn. standard meridian and longitude",
 				(s_longitude-s_meridian)*12/PI);
-		exit(1);
+		error(USER, errmsg);
 	}
 	i=0;
 
@@ -381,39 +379,24 @@ void process_dc_shading(int number_direct_coefficients)
 	/* malloc coefficients[number_patches][number_points]*/
 //#ifndef PROCESS_ROW
 	dc_shading=(float***) malloc (sizeof(float**)*TotalNumberOfDCFiles);
+	if (dc_shading == NULL) goto memerr;
 	for (i=0 ; i<(TotalNumberOfDCFiles) ; i++){
 		dc_shading[i]=(float**)malloc (sizeof(float*)*number_of_sensors);
-		if( dc_shading == NULL) {
-			fprintf( stderr, "ds_shading: Out of memory in function \'process_dc_shading\'\n");
-			exit(1);
-		}
-
+		if (dc_shading[i] == NULL) goto memerr;
 		for ( k= 0 ; k < number_of_sensors; k++ ) {
 			dc_shading[i][k]=(float*)malloc (sizeof(float)*number_patches);
-			if( dc_shading[i][k] == NULL) {
-				fprintf( stderr, "ds_shading[%d][%d]: Out of memory in function \'process_dc_shading\'\n", i, k);
-				exit(1);
-			}
+			if (dc_shading[i][k] == NULL) goto memerr;
 		}
 	}
 	/* malloc coefficients[number_patches][number_points]*/
 	dc_shading_next=(int***) malloc (sizeof(int**)*TotalNumberOfDCFiles);
-	if( dc_shading_next == NULL) {
-		fprintf( stderr, "ds_shading_next: Out of memory in function \'process_dc_shading\'\n");
-		exit(1);
-	}
+	if (dc_shading_next == NULL) goto memerr;
 	for (i=0 ; i < TotalNumberOfDCFiles; i++){
 		dc_shading_next[i]=(int**)malloc (sizeof(int*)*number_of_sensors);
-		if( dc_shading_next[i] == NULL) {
-			fprintf( stderr, "ds_shading_next[%d]: Out of memory in function \'process_dc_shading\'\n", i );
-			exit(1);
-		}
+		if (dc_shading_next[i] == NULL) goto memerr;
 		for (k=0 ; k<(number_of_sensors) ; k++){
 			dc_shading_next[i][k]=(int*)malloc (sizeof(int)*number_patches);
-			if( dc_shading_next[i][k] == NULL) {
-				fprintf( stderr, "ds_shading_next[%d][%d]: Out of memory in function \'process_dc_shading\'\n", i, k );
-				exit(1);
-			}
+			if (dc_shading_next[i][k] == NULL) goto memerr;
 		}
 	}
 
@@ -429,11 +412,13 @@ void process_dc_shading(int number_direct_coefficients)
 //#endif
 	
 	SkyPatchLuminance=(float*) malloc (sizeof(float*)*number_patches);
-	for (i=0 ; i< number_patches; i++)
+	if (SkyPatchLuminance == NULL) goto memerr;
+	for (i = 0; i< number_patches; i++)
 		SkyPatchLuminance[i]=0;	
 	
 	SkyPatchSolarRadiation=(float*) malloc (sizeof(float*)*number_patches);
-	for (i=0 ; i< number_patches; i++)
+	if (SkyPatchSolarRadiation == NULL) goto memerr;
+	for (i = 0; i< number_patches; i++)
 		SkyPatchSolarRadiation[i]=0;	
 		
 
@@ -441,7 +426,8 @@ void process_dc_shading(int number_direct_coefficients)
 	// calculate_Perez.c to steed up the linear superposition of the sky patches with
 	// the dayliht coefficients.
 	NextNonEmptySkyPatch=(int*) malloc (sizeof(int*)*number_patches);
-	for (i=0 ; i< number_of_diffuse_and_ground_DC; i++)
+	if (NextNonEmptySkyPatch == NULL) goto memerr;
+	for (i = 0; i< number_of_diffuse_and_ground_DC; i++)
 		NextNonEmptySkyPatch[i]=i+1;
 
 	for (i=number_of_diffuse_and_ground_DC ; i< number_patches; i++)
@@ -449,8 +435,6 @@ void process_dc_shading(int number_direct_coefficients)
 
 	/* */
 	dc_shading_coeff= init_dc_shading_coeff( TotalNumberOfDCFiles, number_patches );
-	if( dc_shading_coeff == NULL )
-		exit(1);
 
 	//==============================
 	// read in daylight coefficients
@@ -458,10 +442,10 @@ void process_dc_shading(int number_direct_coefficients)
 	for (k=0 ; k < TotalNumberOfDCFiles; k++) {
 		{
 			sprintf(CurrentDC_FileName,"%s",shading_dc_file[k]);
-			if( ( DC_FILE= open_input(shading_dc_file[k]) ) == 0 )
+			if( ( DC_FILE= open_input(shading_dc_file[k]) ) == NULL )
 			{
-				fprintf(stderr,"%s: fatal error: Cannot open DC file %s.\n", progname, shading_dc_file[k]);
-				exit(1);
+				sprintf(errmsg, "cannot open DC file %s", shading_dc_file[k]);
+				error(SYSTEM, errmsg);
 			}
 
 		}
@@ -482,8 +466,9 @@ void process_dc_shading(int number_direct_coefficients)
 		}
 
 		if(number_of_DC_lines==0) {
-			fprintf(stderr,"%s: fatal error: File %s does not contain any uncommented lines.\n\nIN CASE YOU ARE USING DAYSIM UNDER WINDOWS, THE \"RAPYPATH\" VARIALBE MIGHT NOT HAVE BEEN SET CORRECTLY. TO TEST THIS, OPEN A DOS PROMPT AND TYPE \'set\'. AMONG THE VARIALBLES DISPLAYED SHOULD BE \'Raypath c:\\Daysim\\lib\'.\nPLEASE REFER TO THE DAYSIM TUTORIAL FOR MORE INFORMATION...", progname, CurrentDC_FileName );
-			exit( 1 );
+			fprintf(stderr,"IN CASE YOU ARE USING DAYSIM UNDER WINDOWS, THE \"RAPYPATH\" VARIALBE MIGHT NOT HAVE BEEN SET CORRECTLY. TO TEST THIS, OPEN A DOS PROMPT AND TYPE \'set\'. AMONG THE VARIALBLES DISPLAYED SHOULD BE \'Raypath c:\\Daysim\\lib\'.\nPLEASE REFER TO THE DAYSIM TUTORIAL FOR MORE INFORMATION...");
+			sprintf(errmsg, "file %s does not contain any uncommented lines", CurrentDC_FileName);
+			error(USER, errmsg);
 		}
 		rewind(DC_FILE);
 
@@ -522,8 +507,8 @@ void process_dc_shading(int number_direct_coefficients)
 
 		//Now we test whether the latitude for DC and weather file match.
 		if( number_of_elements_in_DC_file != number_patches ) {
-			fprintf(stderr,"%s: fatal error: The number of daylight coefficients in file %s is %d and should be %d according to the latitude given in the header file.\n", progname, shading_dc_file[k], number_of_elements_in_DC_file , number_patches);
-			exit( 1 );
+			fprintf(errmsg, "the number of daylight coefficients in file %s is %d and should be %d according to the latitude given in the header file", shading_dc_file[k], number_of_elements_in_DC_file, number_patches);
+			error(USER, errmsg);
 		}
 		//		rewind(DC_FILE);
 
@@ -566,11 +551,15 @@ void process_dc_shading(int number_direct_coefficients)
 		number_of_dc_lines= j;
 
 		if(number_of_dc_lines!=number_of_sensors) {
-			fprintf(stderr,"%s: fatal error: The number of daylight coefficient sets in file %s is %d and does not correspond to the number of sensors in the sensor point file (%s) which is %d.\n", progname, shading_dc_file[k], number_of_dc_lines , sensor_file,number_of_sensors);
-			exit( 1 );
+			fprintf(errmsg, "the number of daylight coefficient sets in file %s is %d and does not correspond to the number of sensors in the sensor point file (%s) which is %d", shading_dc_file[k], number_of_dc_lines, sensor_file, number_of_sensors);
+			error(USER, errmsg);
 		}
 	}
 
+	return;
+
+memerr:
+	error(SYSTEM, "out of memory in process_dc_shading");
 }
 
 
@@ -583,8 +572,7 @@ static struct dc_shading_coeff_s* init_dc_shading_coeff( int blinds, int coeffic
 		(struct dc_shading_coeff_s*)malloc( sizeof(struct dc_shading_coeff_s)
 											*TotalNumberOfDCFiles );
 	if( dcsc == NULL ) {
-		perror( "failed to allocate memory for the shading coefficients" );
-		return NULL;
+		error(SYSTEM, "failed to allocate memory for the shading coefficients");
 	}
 
 	for( i= 0; i < blinds; i++ ) {
@@ -592,18 +580,15 @@ static struct dc_shading_coeff_s* init_dc_shading_coeff( int blinds, int coeffic
 
 		{
 			if( (dcsc[i].fp= open_input( shading_dc_file[i] ) ) == NULL ) {
-				printf("failed to open shading dc file [%d]: '%s'",i,shading_dc_file[i]);
-				perror( "failed to open shading dc file ");
-				return NULL;
+				sprintf(errmsg, "failed to open shading dc file [%d]: '%s'", i, shading_dc_file[i]);
+				error(SYSTEM, errmsg);
 			}
 
 			if( (dcsc[i].data.dc= (float*)malloc( sizeof(float)*coefficients )) == NULL ) {
-				perror( "failed to allocate memory for daysim coefficients" );
-				return NULL;
+				error(SYSTEM, "failed to allocate memory for daysim coefficients");
 			}
 			if( (dcsc[i].data.next= (int*)malloc( sizeof(int)*coefficients )) == NULL ) {
-				perror( "failed to allocate memory for daysim coefficients" );
-				return NULL;
+				error(SYSTEM, "failed to allocate memory for daysim coefficients");
 			}
 
 			for( j= 0; j < coefficients; j++ ) {
@@ -763,15 +748,19 @@ void pre_process_dds_shadowtesting()
 	//allocate memory for the direct-direct shading array
 	//dc_ab0[sensor][skycondition][BlindGroup]
 	dc_ab0=(float***) malloc (sizeof(float**)*number_of_sensors);
-	for (i=0 ; i<number_of_sensors ; i++)
-		dc_ab0[i]=(float**) malloc (sizeof(float*)*NumberofLightSourcesInWeaFile);
-	for (i=0 ; i<number_of_sensors ; i++)
-		for (j=0 ; j<NumberofLightSourcesInWeaFile ; j++)
-			dc_ab0[i][j]=(float*) malloc (sizeof(float)*TotalNumberOfDCFiles);
+	if (dc_ab0 == NULL) goto ddsmemerr;
+	for (i = 0; i < number_of_sensors; i++) {
+		dc_ab0[i] = (float**)malloc(sizeof(float*)*NumberofLightSourcesInWeaFile);
+		if (dc_ab0[i] == NULL) goto ddsmemerr;
+		for (j = 0; j < NumberofLightSourcesInWeaFile; j++) {
+			dc_ab0[i][j] = (float*)malloc(sizeof(float)*TotalNumberOfDCFiles);
+			if (dc_ab0[i][j] == NULL) goto ddsmemerr;
+		}
+	}
 
 	//initialize array
 	for (i=0 ; i<number_of_sensors ; i++)
-		for (j=0 ; j<LightSourceCounter ; j++)
+		for (j=0 ; j<LightSourceCounter ; j++) //TODO why not NumberofLightSourcesInWeaFile?
 			for (k=0 ; k<TotalNumberOfDCFiles ; k++)
 				dc_ab0[i][j][k]=0;
 
@@ -969,6 +958,8 @@ void pre_process_dds_shadowtesting()
 
 	close_file(WEA);
 
+	return;
 
-
+ddsmemerr:
+	error(SYSTEM, "out of memory in pre_process_dds_shadowtesting");
 }

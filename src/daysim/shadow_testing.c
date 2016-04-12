@@ -9,6 +9,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "rterror.h"
 #include "fropen.h"
 #include "read_in_header.h"
 #include  "sun.h"
@@ -43,7 +44,7 @@ void  make_annual_point_file_old(float x,float y,float z,char long_sensor_file[1
 	// of the year when direct sunlight is above the threshold specified in the Daysim header file
 	FILE *WEA;
 	FILE *POINTS;
-	FILE *COMMAND;
+	FILE *COMMAND_FILE;
 	int jd=0,i=0,j=0;
 	float sd=0, solar_time=0;
 	float red=0.0,green=0.0,blue=0.0;
@@ -87,13 +88,15 @@ void  make_annual_point_file_old(float x,float y,float z,char long_sensor_file[1
 	close_file(WEA);
 
 	shadow_testing_results=(int*) malloc (sizeof(int)* i);
+	if (shadow_testing_results == NULL)
+		error(SYSTEM, "out of memory in make_annual_point_file_old");
 	for (j=0 ; j<i ; j++)
 		shadow_testing_results[j]=0;
 
 
 	sprintf(befehl,"rtrace_dc -ab 0 -h  %s < %s  \n",temp_octree,long_sensor_file);
 	//printf("%s ",befehl);
-	COMMAND = popen(befehl, "r");
+	COMMAND_FILE = popen(befehl, "r");
 
 	// run one rtrace to determine whether direct DC is hit by sunlight
 	//==================================================================
@@ -101,14 +104,14 @@ void  make_annual_point_file_old(float x,float y,float z,char long_sensor_file[1
 	sprintf(befehl,"rtrace_dc -ab 0 -h  %s < %s  \n",temp_octree,long_sensor_file);
 	//printf("%s ",befehl);
 	j=0;
-	COMMAND = popen(befehl, "r");
-	while(fscanf(COMMAND," %f %f %f ",&red,&green,&blue)!=EOF)
+	COMMAND_FILE = popen(befehl, "r");
+	while (fscanf(COMMAND_FILE, " %f %f %f ", &red, &green, &blue) != EOF)
 		if(red>0.00)
 		{
 			shadow_testing_results[j]=1;
 			j++;
 		}
-	close_file(COMMAND);
+	close_file(COMMAND_FILE);
 
 }
 
@@ -122,7 +125,7 @@ int shadow_testing(int *dir_rad, int *number_direct_coefficients)
 
 	float red=0.0,green=0.0,blue=0.0;
 	FILE *POINTS;
-	FILE *COMMAND;
+	FILE *COMMAND_FILE;
 	char long_sensor_file[1024];
 
 	// pick reference_file
@@ -136,8 +139,7 @@ int shadow_testing(int *dir_rad, int *number_direct_coefficients)
 	}
 	if(i != number_of_sensors+11)
 	{
-		fprintf(stderr,"WARNING ds_illum: shadow testing no \'work plane sensor\' specified in sensor file\n");
-		exit(1);
+		error(USER, "shadow testing no \'work plane sensor\' specified in sensor file");
 	}else{
 		fprintf(stdout,"ds_illum: initial shadow_testing invoked for sensor \n\t");
 	 	fprintf(stdout,"x:%.3f\ty:%.3f\tz:%.3f\n\tdx:%.3f\tdy:%.3f\tdz:%.3f\n",point_coefficients[0],point_coefficients[1],point_coefficients[2],point_coefficients[3],point_coefficients[4],point_coefficients[5]);
@@ -155,8 +157,8 @@ int shadow_testing(int *dir_rad, int *number_direct_coefficients)
 	sprintf(befehl1,"oconv -f %s %s %s %s > %s\n",sun_rad,material_file,geometry_file,shading_rad_file[0],temp_octree);
 	//sprintf(befehl1,"oconv -f %s %s %s %s > %s\n",direct_radiance_file,material_file,geometry_file,shading_rad_file[0],temp_octree);
 	//printf("%s\n",befehl1);
-	COMMAND = popen(befehl1, "r");
-	pclose(COMMAND);
+	COMMAND_FILE = popen(befehl1, "r");
+	pclose(COMMAND_FILE);
 
 	//test whether the sensor point "sees" the position of the direct daylight
 	// coefficients
@@ -171,11 +173,11 @@ int shadow_testing(int *dir_rad, int *number_direct_coefficients)
 	//==================================================================
 	sprintf(befehl,"rtrace_dc -ab 0 -h  %s < %s  \n",temp_octree,long_sensor_file);
 	//printf("%s ",befehl);
-	COMMAND = popen(befehl, "r");
+	COMMAND_FILE = popen(befehl, "r");
 	shadow_testing_new=0;//switch that determines whether any sensor is hit by direct sunlight
 	for(i=0; i<*number_direct_coefficients;i++  )
 	{
-		fscanf(COMMAND," %f %f %f ",&red,&green,&blue);
+		fscanf(COMMAND_FILE, " %f %f %f ", &red, &green, &blue);
 		if(red>0.00)
 		{
 			direct_pts[i][3]=1;
@@ -191,7 +193,7 @@ int shadow_testing(int *dir_rad, int *number_direct_coefficients)
 		}else
 			direct_pts[i][3]=0;
 	}
-	close_file(COMMAND);
+	close_file(COMMAND_FILE);
 
 	printf("Results from initial shadow testing:\n");
 		for(k=1; k< 13; k++)
@@ -240,9 +242,9 @@ int shadow_testing(int *dir_rad, int *number_direct_coefficients)
 		// header file
 		make_annual_point_file_old(point_coefficients[0],point_coefficients[1],point_coefficients[2],long_sensor_file);
 	}else{
-		fprintf(stdout,"ds_illum: warning - shadow testing is turned off !\n");
+		error(WARNING, "shadow testing is turned off !");
 		dc_coupling_mode=0;
-}
+	}
 
 	return 0;
 }
