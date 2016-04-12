@@ -13,9 +13,9 @@
 #include <string.h>
 #include <rtmath.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <ctype.h>
 
+#include  "rterror.h"
 #include  "paths.h"
 
 #include  "ds_illum.h"
@@ -113,6 +113,8 @@ int number_of_blindGroup_combinations=0;
 static struct dc_shading_coeff_s* dc_shading_coeff;
 static struct dc_shading_coeff_s* init_dc_shading_coeff( int, int );
 
+/* versioning */
+extern char  VersionID[];	/* Radiance version ID string */
 
 /*
  *
@@ -127,45 +129,50 @@ int main( int argc, char **argv )
 	char sensor_file_old[1024]="";
 	char horizon_data_file[200];
 	FILE *INPUT_FILE;
-	FILE *COMMAND;
+	FILE *COMMAND_FILE;
 	FILE *HORIZON_DATA_FILE;
 
 	for (i=0;i<36;i++){horizon[i]=0;}
 	for (i=0;i<145;i++){horizon_factor[i]=1;}
-	progname = argv[0];
+	progname = fixargv0(argv[0]);
 
 	if (argc == 1) {
-		fprintf(stdout,"ds_illum: fatal error -  header file missing\n");
-		fprintf(stdout,"start program with:  ds_illum  <header file>\n ");
+		fprintf(stdout, "%s: fatal error -  header file missing\n", progname);
+		fprintf(stdout, "start program with:  %s  <header file>\n ", progname);
 		fprintf(stderr,"\t-dds use generalized daylight coefficient file format (dds)\n ");
 		fprintf(stderr,"\t-s do a shadow test at eahc time step (only in combination with -dds option)\n ");
 		exit(1);
-	} else {
-		//set header file
-		strcpy(input_file, argv[1]);
-		if( argc > 2 ) {
-			//test if dds methd is invoked
-			for( i= 2; i < argc; i++ ) {
-				if( !strcmp(argv[i],"-dds") )
-					dds_file_format = 1; // use dds file format for DCs
-			}
-			// test whether direct testing is invoked as well (works only together with '-dds' option
-			for( i= 2; i < argc; i++ ) {
-				if( !strcmp(argv[i],"-s") )	{
-					if(dds_file_format)	{
-						dds_file_format=2;
-					} else {
-						fprintf(stderr,"\t-s option can only be invoked in combination with -dds\n ");
-						exit(1);
-					}
+	}
+
+	if (!strcmp(argv[1], "-version")) {
+		puts(VersionID);
+		exit(0);
+	}
+
+	//set header file
+	strcpy(input_file, argv[1]);
+	if( argc > 2 ) {
+		//test if dds methd is invoked
+		for( i= 2; i < argc; i++ ) {
+			if( !strcmp(argv[i],"-dds") )
+				dds_file_format = 1; // use dds file format for DCs
+		}
+		// test whether direct testing is invoked as well (works only together with '-dds' option
+		for( i= 2; i < argc; i++ ) {
+			if( !strcmp(argv[i],"-s") )	{
+				if(dds_file_format)	{
+					dds_file_format=2;
+				} else {
+					fprintf(stderr,"\t-s option can only be invoked in combination with -dds\n ");
+					exit(1);
 				}
 			}
-			//test WHETEHR '-EXT' OPTION IS USED
-			for( i= 2; i < argc; i++ ) {
-				if( !strcmp(argv[i],"-ext") )
-					// add extension to file names for *.pts, *dc, *.ill
-					strcpy(file_name_extension,argv[++i]);
-			}
+		}
+		//test WHETEHR '-EXT' OPTION IS USED
+		for( i= 2; i < argc; i++ ) {
+			if( !strcmp(argv[i],"-ext") )
+				// add extension to file names for *.pts, *dc, *.ill
+				strcpy(file_name_extension,argv[++i]);
 		}
 	}
 
@@ -207,19 +214,16 @@ int main( int argc, char **argv )
 
 	if(dds_file_format) {
 		if(!strcmp(DDS_sensor_file,"")){
-			printf("FATAL ERROR - ds_illum: variable DDS_sensor_file not provided in header file.\n");
-			exit(0);
+			error(USER, "variable DDS_sensor_file not provided in header file");
 		}
 		if(!strcmp(DDS_file,"")){
-			printf("FATAL ERROR - ds_illum: variable DDS_file not provided in header file.\n");
-			exit(0);
+			error(USER, "variable DDS_file not provided in header file");
 		}
 	}
 
 
 	if(ShadingSpecified!=1){
-		fprintf(stderr,"Fatal Error ds_illum: shading varialbe not in header file/n");
-		exit(0);
+		error(USER, "shading varialbe not in header file");
 	}
 
 
@@ -242,11 +246,11 @@ int main( int argc, char **argv )
 			for (i=0;i<36;i++){
 				fscanf(HORIZON_DATA_FILE,"%f ",&horizon[i]);
 				if(horizon[i]>24){
-					printf("WARNING ds_illum: horizon > 24 Deg. Horizon is set to 24 Deg!/n");
+					error(WARNING, "horizon > 24 Deg. Horizon is set to 24 Deg!");
 					horizon[i]=24;
 				}
 				if(horizon[i]<0){
-					printf("WARNING ds_illum: negative horizon. Horizon is set to 0 Deg!/n");
+					error(WARNING, "negative horizon. Horizon is set to 0 Deg!");
 					horizon[i]=0;
 				}
 			}
@@ -282,7 +286,7 @@ int main( int argc, char **argv )
 	/* consistency checks */
 	if (fabs(s_meridian - s_longitude) > 30 * DTR){
 		fprintf(stdout,
-				"ds_illum: warning -  %.1f hours btwn. standard meridian and longitude\n",
+				"%s: warning -  %.1f hours btwn. standard meridian and longitude\n", progname,
 				(s_longitude-s_meridian)*12/PI);
 		exit(1);
 	}
@@ -334,16 +338,18 @@ int main( int argc, char **argv )
 
 	if(dc_coupling_mode==2  ) //delete temporary oct and rad files
 		{
-			COMMAND = fopen(temp_octree, "r");
-			if ( COMMAND != NULL){
-				close_file(COMMAND);
+			COMMAND_FILE = fopen(temp_octree, "r");
+			if (COMMAND_FILE != NULL){
+				close_file(COMMAND_FILE);
 				remove(temp_octree);
-			}else{close_file(COMMAND);}
-			COMMAND = fopen(temp_rad, "r");
-			if ( COMMAND != NULL){
-				close_file(COMMAND);
+			}
+			else{ close_file(COMMAND_FILE); }
+			COMMAND_FILE = fopen(temp_rad, "r");
+			if (COMMAND_FILE != NULL){
+				close_file(COMMAND_FILE);
 				remove(temp_rad);
-			}else{close_file(COMMAND);}
+			}
+			else{ close_file(COMMAND_FILE); }
 		}
 	return 0;
 }
@@ -454,7 +460,7 @@ void process_dc_shading(int number_direct_coefficients)
 			sprintf(CurrentDC_FileName,"%s",shading_dc_file[k]);
 			if( ( DC_FILE= open_input(shading_dc_file[k]) ) == 0 )
 			{
-				fprintf(stderr,"ds_illum: fatal error: Cannot open DC file %s.\n",shading_dc_file[k]);
+				fprintf(stderr,"%s: fatal error: Cannot open DC file %s.\n", progname, shading_dc_file[k]);
 				exit(1);
 			}
 
@@ -476,7 +482,7 @@ void process_dc_shading(int number_direct_coefficients)
 		}
 
 		if(number_of_DC_lines==0) {
-			fprintf(stderr,"ds_illum: fatal error: File %s does not contain any uncommented lines.\n\nIN CASE YOU ARE USING DAYSIM UNDER WINDOWS, THE \"RAPYPATH\" VARIALBE MIGHT NOT HAVE BEEN SET CORRECTLY. TO TEST THIS, OPEN A DOS PROMPT AND TYPE \'set\'. AMONG THE VARIALBLES DISPLAYED SHOULD BE \'Raypath c:\\Daysim\\lib\'.\nPLEASE REFER TO THE DAYSIM TUTORIAL FOR MORE INFORMATION...", CurrentDC_FileName );
+			fprintf(stderr,"%s: fatal error: File %s does not contain any uncommented lines.\n\nIN CASE YOU ARE USING DAYSIM UNDER WINDOWS, THE \"RAPYPATH\" VARIALBE MIGHT NOT HAVE BEEN SET CORRECTLY. TO TEST THIS, OPEN A DOS PROMPT AND TYPE \'set\'. AMONG THE VARIALBLES DISPLAYED SHOULD BE \'Raypath c:\\Daysim\\lib\'.\nPLEASE REFER TO THE DAYSIM TUTORIAL FOR MORE INFORMATION...", progname, CurrentDC_FileName );
 			exit( 1 );
 		}
 		rewind(DC_FILE);
@@ -516,7 +522,7 @@ void process_dc_shading(int number_direct_coefficients)
 
 		//Now we test whether the latitude for DC and weather file match.
 		if( number_of_elements_in_DC_file != number_patches ) {
-			fprintf(stderr,"ds_illum: fatal error: The number of daylight coefficients in file %s is %d and should be %d according to the latitude given in the header file.\n",shading_dc_file[k], number_of_elements_in_DC_file , number_patches);
+			fprintf(stderr,"%s: fatal error: The number of daylight coefficients in file %s is %d and should be %d according to the latitude given in the header file.\n", progname, shading_dc_file[k], number_of_elements_in_DC_file , number_patches);
 			exit( 1 );
 		}
 		//		rewind(DC_FILE);
@@ -560,7 +566,7 @@ void process_dc_shading(int number_direct_coefficients)
 		number_of_dc_lines= j;
 
 		if(number_of_dc_lines!=number_of_sensors) {
-			fprintf(stderr,"ds_illum: fatal error: The number of daylight coefficient sets in file %s is %d and does not correspond to the number of sensors in the sensor point file (%s) which is %d.\n",shading_dc_file[k], number_of_dc_lines , sensor_file,number_of_sensors);
+			fprintf(stderr,"%s: fatal error: The number of daylight coefficient sets in file %s is %d and does not correspond to the number of sensors in the sensor point file (%s) which is %d.\n", progname, shading_dc_file[k], number_of_dc_lines , sensor_file,number_of_sensors);
 			exit( 1 );
 		}
 	}
@@ -922,7 +928,7 @@ void pre_process_dds_shadowtesting()
 					if ( POINTS != NULL){
 						close_file(POINTS);
 						if(remove(octree))
-						printf("ds_illum: Remove %s failed.\n",octree);
+						printf("%s: Remove %s failed.\n", progname, octree);
 					}else{
 						close_file(POINTS);
 					}
@@ -931,7 +937,7 @@ void pre_process_dds_shadowtesting()
 
 			//delete outside radiance file
 			if(remove(RadFile_Outside))
-				printf("ds_illum: Remove %s failed.\n",RadFile_Outside);
+				printf("%s: Remove %s failed.\n", progname, RadFile_Outside);
 
 			//read direct-direct DC into a table
 			//**********************************
