@@ -9,25 +9,24 @@
  * distribution of arbitrary skies based on time, location, direct and diffuse irradiances.
  */
 
+#include <stdio.h>
+#include <string.h>
+#include <rtmath.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <ctype.h>
+
+#include  "paths.h"
+
 #include  "ds_illum.h"
 #include  "calculate_sky_patches.h"	/* calculates direct daylight coefficients for investigated site */
 #include  "calculate_Perez.h"		/* calculates illumiances for daylight coefficients */
 #include  "shadow_testing.h"		/* carries out a shadow testing for each direct daylight coefficient */
-
-#include "win_popen.h"
+#include  "check_direct_sunlight.h"
 
 #include  "sun.h"
 #include  "fropen.h"
 #include  "read_in_header.h"
-#include  "check_direct_sunlight.c"
-
-
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <ctype.h>
 
 #define BUF_SIZE	1024
 
@@ -104,9 +103,6 @@ double  sundir[3];
 float point_coefficients[6];
 
 /* diverse functions */
-void assign_values();void get_dc();double  normsc(double altitude, int S_INTER);
-int shadow_testing();
-void get_horizon_factors();
 int shadow_testing_new=0;
 void process_dc_shading(int number_direct_coefficients);
 void pre_process_dds_shadowtesting();
@@ -284,10 +280,10 @@ int main( int argc, char **argv )
 	
 
 	/* consistency checks */
-	if (fabs(s_meridian-s_longitude) > 30*M_PI/180){
+	if (fabs(s_meridian - s_longitude) > 30 * DTR){
 		fprintf(stdout,
 				"ds_illum: warning -  %.1f hours btwn. standard meridian and longitude\n",
-				(s_longitude-s_meridian)*12/M_PI);
+				(s_longitude-s_meridian)*12/PI);
 		exit(1);
 	}
 	i=0;

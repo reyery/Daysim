@@ -6,6 +6,12 @@
 
 #include <stdio.h>
 
+#include  "paths.h"
+#include  "fropen.h"
+#include  "check_direct_sunlight.h"
+#include  "read_in_header.h"
+
+
 int number_of_active_sensors=0;
 double alt,azi;
 float** points;
@@ -227,7 +233,7 @@ void calculate_visible_sky_angle(  char octree[200])
 	}
 
 
-	popen(COMMAND, "r");
+	//popen(COMMAND, "r");
 	close_file(RESULTS_FILE);
 }
 

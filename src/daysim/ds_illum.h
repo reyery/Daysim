@@ -68,9 +68,6 @@ extern double  sundir[3];
 extern float point_coefficients[6];
 
 /* diverse functions */
-void assign_values();void get_dc();double  normsc(double altitude, int S_INTER);
-int  shadow_testing();
-void get_horizon_factors();
 int  shadow_testing_new;
 void process_dc_shading(int number_direct_coefficients);
 

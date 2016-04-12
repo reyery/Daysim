@@ -13,7 +13,7 @@
 #include "read_in_header.h"
 #include  "sun.h"
 
-#include "win_popen.h"
+#include "paths.h"
 
 #include "ds_illum.h"
 #include "shadow_testing.h"

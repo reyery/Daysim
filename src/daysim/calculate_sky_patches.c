@@ -14,6 +14,7 @@
 #include "sun.h"
 
 #include "ds_illum.h"
+#include "calculate_sky_patches.h"
 
 
 void calculate_sky_patches (int *dc_direct_resolution, int *dir_rad,int *dif_pts,int *dir_pts,int *number_direct_coefficients)
@@ -125,26 +126,26 @@ void assign_values(int month, int day, int *number_direct_coefficients)
  float sd;
  double alt2_rise,alt2_set;
  sd=sdec(jdate(month, day));
- alt2_rise=f_salt(  sd, 2.0*(M_PI/180.0));
- alt2_set=24-f_salt(  sd, 2.0*(M_PI/180.0));
+ alt2_rise=f_salt(  sd, 2.0*DTR);
+ alt2_set = 24 - f_salt(sd, 2.0*DTR);
  for(hour1=0; hour1< 24; hour1++){
 	 st=hour1;
 	 if( ( (hour1-0.5)<alt2_rise ) && (( hour1+0.5) > alt2_rise )){st=alt2_rise;}
 	 if( ( (hour1-0.5)<alt2_set ) && (( hour1+0.5) > alt2_set )){st=alt2_set;}
 
-	 if ( salt(sd,st)*(180/M_PI) >1.999   ){
-		 direct_pts[*number_direct_coefficients][0]=st;
-		 direct_pts[*number_direct_coefficients][1]=salt(sd,st)*(180/M_PI);
+	 if ( salt(sd,st)*RTD >1.999   ){
+		 direct_pts[*number_direct_coefficients][0] = st;
+		 direct_pts[*number_direct_coefficients][1] = salt(sd, st) * RTD;
 		 if(direct_pts[*number_direct_coefficients][1] <2.001){direct_pts[*number_direct_coefficients][1]=2;}
-		 direct_pts[*number_direct_coefficients][2]=(180/M_PI)*sazi(sd, st);
+		 direct_pts[*number_direct_coefficients][2] = sazi(sd, st) * RTD;
 		 direct_calendar[month][hour1][0]=direct_pts[*number_direct_coefficients][0];
 		 direct_calendar[month][hour1][1]=direct_pts[*number_direct_coefficients][1];
 		 direct_calendar[month][hour1][2]=direct_pts[*number_direct_coefficients][2];
 		 *number_direct_coefficients= *number_direct_coefficients +1;
 	 }else{
-		 direct_calendar[month][hour1][0]=st;
-		 direct_calendar[month][hour1][1]=salt(sd,st)*(180/M_PI);
-		 direct_calendar[month][hour1][2]=(180/M_PI)*sazi(sd, st);
+		 direct_calendar[month][hour1][0] = st;
+		 direct_calendar[month][hour1][1] = salt(sd, st) * RTD;
+		 direct_calendar[month][hour1][2] = sazi(sd, st) * RTD;
 	 }
  }
 }
