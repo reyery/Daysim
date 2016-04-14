@@ -24,9 +24,6 @@ double sazi( double sd,  double st);	 /* solar azimuth from solar declination an
 double salt( double sd, double st);	   /* solar altitude from solar declination and solar time */
 double f_salt( double sd, double alt); /* solar altitude from solar declination and solar time */
 
-void solar_elev_azi_ecc ( float latitude, float longitude, float time_zone, int jday, float time, int solar_time, \
-                          float *solar_elevation, float *solar_azimuth, float *eccentricity_correction);
-
 void sunrise_sunset_localtime ( float latitude, float longitude, float time_zone, int jday,\
                                 float *sunrise_localtime, float *sunset_localtime );	
 

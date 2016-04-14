@@ -8,8 +8,6 @@
 
 
 /* Defined in gen_reindl.c */
-extern const size_t F;
-extern const size_t I;
 extern int new;
 extern long random_seed;
 
@@ -19,9 +17,9 @@ void skartveit(float *indices_glo, float index_beam, int sph, float previous_lig
   int *glo_ranking;
   float sigma_glo, sigma_beam, act_ligoh;
 
-  if ( (glo_ranking = malloc ((sph+1)*I)) == NULL  )   { error(SYSTEM, "out of memory in skartveit"); }
+  if ( (glo_ranking = malloc ((sph+1)*sizeof(int))) == NULL  )   { error(SYSTEM, "out of memory in skartveit"); }
 
-  estimate_sigmas ( &indices_glo[0], index_beam, sph, &sigma_glo, &sigma_beam );
+  estimate_sigmas ( indices_glo, index_beam, sph, &sigma_glo, &sigma_beam );
 
   if ( sigma_glo < 0.0001 || indices_glo[1] <= 0 || indices_glo[1] >= 1.5 )
   {
@@ -29,20 +27,20 @@ void skartveit(float *indices_glo, float index_beam, int sph, float previous_lig
     est_glo = 0;
   }
   if ( est_glo )  estimate_indices_glo_st ( indices_glo[1], index_beam, sph, sigma_glo, previous_ligoh,\
-                                            &glo_ranking[0], &indices_glo_st[0], &act_ligoh );
+                                            glo_ranking, indices_glo_st, &act_ligoh );
 
   *actual_ligoh = act_ligoh;
 
   free(glo_ranking);
 }
 
-void estimate_sigmas ( float *indices_glo, float index_beam, int sph, float *sigma_glo, float *sigma_beam )
+void estimate_sigmas ( float *indices_glo, float index_beam, int sph, double *sigma_glo, float *sigma_beam )
 {
-  float sig3, sigstar, fKb=1.0;
-  float sigg5, delg;
-  float sigbx, sigb5, delb, sigbdif;
+  double sig3, sigstar, fKb=1.0;
+  double sigg5, delg;
+  double sigbx, sigb5, delb, sigbdif;
 
-  float gam, alpha, ran, s, time_step;
+  double gam, alpha, ran, s, time_step;
 
   sigbx = index_beam * ( 1 - index_beam );           /*  steht nicht im paper  */
   if ( index_beam < 1 )   sigbx = sqrt ( sigbx );
@@ -53,9 +51,9 @@ void estimate_sigmas ( float *indices_glo, float index_beam, int sph, float *sig
   if ( new )
   {
     if ( indices_glo[1] <= 0.3 )  fKb = 1.3;
-    if ( indices_glo[1] > 0.3 && indices_glo[1] <= 0.6 )  fKb = 1.3;
-    if ( indices_glo[1] > 0.6 && indices_glo[1] <= 0.9 )  fKb = 1.0;
-    if ( indices_glo[1] > 0.9 )  fKb = 0.7;
+    else if ( indices_glo[1] <= 0.6 )  fKb = 1.3;
+	else if (indices_glo[1] <= 0.9)  fKb = 1.0;
+	else  fKb = 0.7;
   }
 
   sigstar = ( 0.87 * pow ( indices_glo[1] , 2 ) * ( 1 - indices_glo[1] ) + 0.39 * pow ( indices_glo[1] , 0.5 ) * sig3 ) * fKb;
@@ -99,14 +97,14 @@ void estimate_indices_glo_st ( float index_glo, float index_beam, int sph, float
   float *t, *cdf;
   float *t_st;
 
-  if ((indices_glo_st_order = malloc(sph*F)) == NULL) goto memerr;
-  if ((ar1_series1 = malloc((sph + 1)*F)) == NULL) goto memerr;
-  if ((ar1_series2 = malloc((sph + 1)*F)) == NULL) goto memerr;
-  if ((indx = malloc((sph + 1)*F)) == NULL) goto memerr;
-  if ((irank = malloc((sph + 1)*F)) == NULL) goto memerr;
-  if ((t_st = malloc((sph + 1)*F)) == NULL) goto memerr;
-  if ((t = malloc((steps_cdf + 1)*F)) == NULL) goto memerr;
-  if ((cdf = malloc((steps_cdf + 1)*F)) == NULL) goto memerr;
+  if ((indices_glo_st_order = malloc(sph*sizeof(float))) == NULL) goto memerr;
+  if ((ar1_series1 = malloc((sph + 1)*sizeof(float))) == NULL) goto memerr;
+  if ((ar1_series2 = malloc((sph + 1)*sizeof(float))) == NULL) goto memerr;
+  if ((indx = malloc((sph + 1)*sizeof(int))) == NULL) goto memerr;
+  if ((irank = malloc((sph + 1)*sizeof(int))) == NULL) goto memerr;
+  if ((t_st = malloc((sph + 1)*sizeof(float))) == NULL) goto memerr;
+  if ((t = malloc((steps_cdf + 1)*sizeof(float))) == NULL) goto memerr;
+  if ((cdf = malloc((steps_cdf + 1)*sizeof(float))) == NULL) goto memerr;
 
   if ( new )
   {
