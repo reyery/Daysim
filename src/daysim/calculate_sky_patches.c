@@ -18,7 +18,7 @@
 #include "calculate_sky_patches.h"
 
 
-void calculate_sky_patches (int *dc_direct_resolution, int *dir_rad,int *dif_pts,int *dir_pts,int *number_direct_coefficients)
+void calculate_sky_patches (int dc_direct_resolution, int dif_pts, int dir_pts, int *number_direct_coefficients)
 {
 	int 	i,j;
 	float alt,azi;
@@ -26,12 +26,12 @@ void calculate_sky_patches (int *dc_direct_resolution, int *dir_rad,int *dif_pts
 	FILE *DIRECT_POINTS_FILE;
 	get_dc(dc_direct_resolution,number_direct_coefficients);	/* calculate daylight coefficients depending on site */
 
-	if (*dir_pts) {/* print direct daylight coefficients */
+	if (dir_pts) {/* print direct daylight coefficients */
 		DIRECT_POINTS_FILE=open_output(direct_points_file);
 		for(i=0; i< *number_direct_coefficients ; i++){fprintf(DIRECT_POINTS_FILE," %f %f %f \n",direct_pts[i][0],direct_pts[i][1],direct_pts[i][2]);}
 		i=close_file(DIRECT_POINTS_FILE);
 	}
-	if (*dif_pts) {/* print diffuse daylight coefficients */
+	if (dif_pts) {/* print diffuse daylight coefficients */
 		DIFFUSE_POINTS_FILE=open_output(diffuse_points_file);
 		for(i=0; i<= 144; i++){fprintf(DIFFUSE_POINTS_FILE," %f %f 0.0 \n",diffuse_pts[i][0],diffuse_pts[i][1]);}
 		i=close_file(DIFFUSE_POINTS_FILE);
@@ -59,7 +59,7 @@ void calculate_sky_patches (int *dc_direct_resolution, int *dir_rad,int *dif_pts
 }
 
 
-void get_dc(int *dc_direct_resolution, int *number_direct_coefficients) /* calculates a set of daylight coefficients depending on site */
+void get_dc(int dc_direct_resolution, int *number_direct_coefficients) /* calculates a set of daylight coefficients depending on site */
 {
 	float  patches_per_row[8][2];
 	int i=0, j=0,k=0;
@@ -97,7 +97,7 @@ void get_dc(int *dc_direct_resolution, int *number_direct_coefficients) /* calcu
 	diffuse_pts[144][1]=0;
 
 	/* get limits for the altitude angles of the sun */
-	if (*dc_direct_resolution==1){
+	if (dc_direct_resolution==1){
 		assign_values(12,21, number_direct_coefficients);
 	}else{
 		for(j=0; j< 24; j++){

@@ -2,7 +2,7 @@
 #define CALCULATE_PEREZ_H
 
 
-void calculate_perez(int *shadow_testing_on, int *dir_rad,int *number_direct_coefficients);
+void calculate_perez(int *shadow_testing_on, int number_direct_coefficients);
 
 
 

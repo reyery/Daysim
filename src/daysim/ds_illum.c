@@ -199,7 +199,6 @@ int main( int argc, char **argv )
 	}
 
 
-{
 	for (i=0 ; i<TotalNumberOfDCFiles ; i++)
 	{
 		sprintf(shading_dc_file[i],"%s",shading_dc_file[i+1]);
@@ -207,7 +206,6 @@ int main( int argc, char **argv )
 		sprintf(shading_variant_name[1],"%s",shading_variant_name[i+1]);
 
 	}
-}
 
 
 	if(dds_file_format) {
@@ -291,7 +289,7 @@ int main( int argc, char **argv )
 	i=0;
 
 	/* calculate sky patches*/
-	calculate_sky_patches(&dc_direct_resolution, &dir_rad,&dif_pts,&dir_pts,&number_direct_coefficients);
+	calculate_sky_patches(dc_direct_resolution, dif_pts, dir_pts, &number_direct_coefficients);
 
 	if(dds_file_format) // new dds file format chosen
 		number_direct_coefficients= 145+1+145+2305-146;
@@ -332,7 +330,7 @@ int main( int argc, char **argv )
 	}
 
 	/* calculate Perez if chosen */
-	calculate_perez(&shadow_testing, &dir_rad,&number_direct_coefficients);
+	calculate_perez(&shadow_testing, number_direct_coefficients);
 
 	if(dc_coupling_mode==2  ) //delete temporary oct and rad files
 		{
@@ -507,7 +505,7 @@ void process_dc_shading(int number_direct_coefficients)
 
 		//Now we test whether the latitude for DC and weather file match.
 		if( number_of_elements_in_DC_file != number_patches ) {
-			fprintf(errmsg, "the number of daylight coefficients in file %s is %d and should be %d according to the latitude given in the header file", shading_dc_file[k], number_of_elements_in_DC_file, number_patches);
+			sprintf(errmsg, "the number of daylight coefficients in file %s is %d and should be %d according to the latitude given in the header file", shading_dc_file[k], number_of_elements_in_DC_file, number_patches);
 			error(USER, errmsg);
 		}
 		//		rewind(DC_FILE);
@@ -551,7 +549,7 @@ void process_dc_shading(int number_direct_coefficients)
 		number_of_dc_lines= j;
 
 		if(number_of_dc_lines!=number_of_sensors) {
-			fprintf(errmsg, "the number of daylight coefficient sets in file %s is %d and does not correspond to the number of sensors in the sensor point file (%s) which is %d", shading_dc_file[k], number_of_dc_lines, sensor_file, number_of_sensors);
+			sprintf(errmsg, "the number of daylight coefficient sets in file %s is %d and does not correspond to the number of sensors in the sensor point file (%s) which is %d", shading_dc_file[k], number_of_dc_lines, sensor_file, number_of_sensors);
 			error(USER, errmsg);
 		}
 	}

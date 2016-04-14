@@ -116,7 +116,7 @@ void  make_annual_point_file_old(float x,float y,float z,char long_sensor_file[1
 }
 
 
-int shadow_testing(int *dir_rad, int *number_direct_coefficients)
+int shadow_testing(int number_direct_coefficients)
 {
 	int i=0,j=0,k=0;
 	char befehl[1024];
@@ -167,7 +167,7 @@ int shadow_testing(int *dir_rad, int *number_direct_coefficients)
 
 	// write directions from reference point to position of the sun
 	// for the direct daylight coefficient
-	make_Direct_DC_point_file(long_sensor_file,*number_direct_coefficients,point_coefficients[0],point_coefficients[1],point_coefficients[2]);
+	make_Direct_DC_point_file(long_sensor_file,number_direct_coefficients,point_coefficients[0],point_coefficients[1],point_coefficients[2]);
 
 	// run one rtrace to determine whether direct DC is hit by sunlight
 	//==================================================================
@@ -175,7 +175,7 @@ int shadow_testing(int *dir_rad, int *number_direct_coefficients)
 	//printf("%s ",befehl);
 	COMMAND_FILE = popen(befehl, "r");
 	shadow_testing_new=0;//switch that determines whether any sensor is hit by direct sunlight
-	for(i=0; i<*number_direct_coefficients;i++  )
+	for(i=0; i<number_direct_coefficients;i++  )
 	{
 		fscanf(COMMAND_FILE, " %f %f %f ", &red, &green, &blue);
 		if(red>0.00)

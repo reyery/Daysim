@@ -20,7 +20,7 @@
 
 
 int write_segments_diffuse(double dir,double dif);
-int write_segments_direct(double dir,double dif, int *number_direct_coefficients,
+int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 						  int *shadow_testing_on, int count_var, int current_shadow_testing_value);
 double  normsc(double altitude, int S_INTER);
 
@@ -44,9 +44,6 @@ double	diffus_irradiance_from_sky_brightness();
 double 	direct_irradiance_from_sky_clearness();
 /* misc */
 double 	c_perez[5];
-void calculate_perez();
-float 	lv_mod[145];  /* 145 luminance values*/
-float 	*theta_o, *phi_o, *coeff_perez;
 /* Perez global horizontal, diffuse horizontal and direct normal luminous efficacy models : input w(cm)=2cm, solar zenith angle(degrees); output efficacy(lm/W) */
 double 	glob_h_effi_PEREZ();
 double 	glob_h_diffuse_effi_PEREZ();
@@ -57,7 +54,6 @@ void 	check_irradiances();
 void 	check_illuminances();
 void 	illu_to_irra_index();
 /* Perez sky luminance model */
-int 	lect_coeff_perez(float **coeff_perez);
 double  calc_rel_lum_perez(double dzeta,double gamma,double Z,
 						   double epsilon,double Delta,float *coeff_perez);
 /* coefficients for the sky luminance perez model */
@@ -66,8 +62,6 @@ double	radians(double degres);
 double	degres(double radians);
 void	theta_phi_to_dzeta_gamma(double theta,double phi,double *dzeta,double *gamma, double Z);
 double 	integ_lv(float *lv,float *theta);
-float 	*theta_ordered();
-float 	*phi_ordered();
 /* astronomy and geometry*/
 double 	get_eccentricity();
 double 	air_mass();
@@ -132,7 +126,7 @@ void add_time_step(float time_step)
 	if(month==12 && day>31){month=1;day-=31;}
 }
 
-void calculate_perez(int *shadow_testing_on, int *dir_rad,int *number_direct_coefficients)
+void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 {
     
 
@@ -154,23 +148,8 @@ void calculate_perez(int *shadow_testing_on, int *dir_rad,int *number_direct_coe
 	day=start_day;
 	hour=start_hour;
 
-	/* normalization factor for the relative sky luminance distribution, diffuse part*/
-	if ( (coeff_perez = malloc(8*20*sizeof(float))) == NULL )
-		error(SYSTEM, "out of memory in calculate_perez");
-
-
-	/* normalization factor for the relative sky luminance distribution, diffuse part*/
-
-
-	/* read the coefficients for the Perez sky luminance model */
-	lect_coeff_perez( &coeff_perez) ;
-
-	/* read the angles */
-	theta_o = theta_ordered();
-	phi_o = phi_ordered();
-
 	if( *shadow_testing_on){
-		shadow_testing(dir_rad,number_direct_coefficients);
+		shadow_testing(number_direct_coefficients);
 		fprintf(stdout,"ds_illum: initial shadow_testing done \n");
 		*shadow_testing_on=shadow_testing_new;
 	}
@@ -373,6 +352,53 @@ int write_segments_diffuse(double dir,double dif)
 	double reduction=1.0;
 	double  sd, st;
 
+	float 	lv_mod[145];  /* 145 luminance values*/
+
+	static float theta_o[145] = {
+		84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84,
+		72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72,
+		60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
+		48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
+		36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
+		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+		12, 12, 12, 12, 12, 12,
+		0
+	};
+
+	static float phi_o[145] = {
+		0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348,
+		0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348,
+		0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345,
+		0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345,
+		0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340,
+		0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330,
+		0, 60, 120, 180, 240, 300,
+		0
+	};
+
+	static float coeff_perez[160] = {
+		1.352500, -0.257600, -0.269000, -1.436600, -0.767000, 0.000700, 1.273400, -0.123300,
+		2.800000, 0.600400, 1.237500, 1.000000, 1.873400, 0.629700, 0.973800, 0.280900,
+		0.035600, -0.124600, -0.571800, 0.993800, -1.221900, -0.773000, 1.414800, 1.101600,
+		-0.205400, 0.036700, -3.912800, 0.915600, 6.975000, 0.177400, 6.447700, -0.123900,
+		-1.579800, -0.508100, -1.781200, 0.108000, 0.262400, 0.067200, -0.219000, -0.428500,
+		-1.100000, -0.251500, 0.895200, 0.015600, 0.278200, -0.181200, -4.500000, 1.176600,
+		24.721901, -13.081200, -37.700001, 34.843800, -5.000000, 1.521800, 3.922900, -2.620400,
+		-0.015600, 0.159700, 0.419900, -0.556200, -0.548400, -0.665400, -0.267200, 0.711700,
+		0.723400, -0.621900, -5.681200, 2.629700, 33.338902, -18.299999, -62.250000, 52.078098,
+		-3.500000, 0.001600, 1.147700, 0.106200, 0.465900, -0.329600, -0.087600, -0.032900,
+		-0.600000, -0.356600, -2.500000, 2.325000, 0.293700, 0.049600, -5.681200, 1.841500,
+		21.000000, -4.765600, -21.590599, 7.249200, -3.500000, -0.155400, 1.406200, 0.398800,
+		0.003200, 0.076600, -0.065600, -0.129400, -1.015600, -0.367000, 1.007800, 1.405100,
+		0.287500, -0.532800, -3.850000, 3.375000, 14.000000, -0.999900, -7.140600, 7.546900,
+		-3.400000, -0.107800, -1.075000, 1.570200, -0.067200, 0.401600, 0.301700, -0.484400,
+		-1.000000, 0.021100, 0.502500, -0.511900, -0.300000, 0.192200, 0.702300, -1.631700,
+		19.000000, -5.000000, 1.243800, -1.909400, -4.000000, 0.025000, 0.384400, 0.265600,
+		1.046800, -0.378800, -2.451700, 1.465600, -1.050000, 0.028900, 0.426000, 0.359000,
+		-0.325000, 0.115600, 0.778100, 0.002500, 31.062500, -14.500000, -46.114799, 55.375000,
+		-7.231200, 0.405000, 13.350000, 0.623400, 1.500000, -0.642600, 1.856400, 0.563600
+	};
+
 	jd = jdate(month, day);		/* Julian date */
 	sd = sdec(jd);			/* solar declination */
 	st = hour + stadj(jd);
@@ -434,7 +460,7 @@ int write_segments_diffuse(double dir,double dif)
 
 	/*calculation of the modelled luminance */
 	for (j=0;j<145;j++)	{
-		theta_phi_to_dzeta_gamma(radians(*(theta_o+j)),radians(*(phi_o+j)),&dzeta,&gamma,radians(sunzenith));
+		theta_phi_to_dzeta_gamma(radians(theta_o[j]),radians(phi_o[j]),&dzeta,&gamma,radians(sunzenith));
 		lv_mod[j] = calc_rel_lum_perez(dzeta,gamma,radians(sunzenith),skyclearness,skybrightness,coeff_perez);
 	}
 
@@ -632,7 +658,7 @@ normsc(double altitude,int       S_INTER)			/* compute normalization factor (E0*
 /*=== direct contribution =====*/
 /*=============================*/
 
-int write_segments_direct(double dir,double dif, int *number_direct_coefficients, int *shadow_testing_on, int count_var,int current_shadow_testing_value)
+int write_segments_direct(double dir,double dif, int number_direct_coefficients, int *shadow_testing_on, int count_var,int current_shadow_testing_value)
 {
 	static int number145[8]= { 0, 30, 60, 84, 108, 126, 138, 144 };
 	static double ring_division145[8]= { 30.0, 30.0, 24.0, 24.0, 18.0, 12.0, 6.0, 0.0 };
@@ -1129,7 +1155,7 @@ int write_segments_direct(double dir,double dif, int *number_direct_coefficients
 			Dx=cos((0.017453292)*azimuth)*cos((0.017453292)*(altitude));
 			Dy=sin((0.017453292)*azimuth)*cos((0.017453292)*(altitude));
 			Dz=sin((0.017453292)*(altitude));
-			for (j=0 ; j< *number_direct_coefficients; j++){
+			for (j=0 ; j< number_direct_coefficients; j++){
 				Nx=cos((0.017453292)*direct_pts[j][2])*cos((0.017453292)*(direct_pts[j][1]));
 				Ny=sin((0.017453292)*direct_pts[j][2])*cos((0.017453292)*(direct_pts[j][1]));
 				Nz=sin((0.017453292)*(direct_pts[j][1]));
@@ -1650,11 +1676,11 @@ int write_segments_direct(double dir,double dif, int *number_direct_coefficients
 
 		/* write out files */
 		i_last=number_of_diffuse_and_ground_dc;
-			NextNonEmptySkyPatch[number_of_diffuse_and_ground_dc]=(number_of_diffuse_and_ground_dc+ *number_direct_coefficients);
-			for (i=number_of_diffuse_and_ground_dc ; i<(number_of_diffuse_and_ground_dc+ *number_direct_coefficients) ; i++) {
+			NextNonEmptySkyPatch[number_of_diffuse_and_ground_dc]=(number_of_diffuse_and_ground_dc+ number_direct_coefficients);
+			for (i=number_of_diffuse_and_ground_dc ; i<(number_of_diffuse_and_ground_dc+ number_direct_coefficients) ; i++) {
 				if(i>number_of_diffuse_and_ground_dc && (SkyPatchLuminance[i]>0.0 )){  //|| SkyPatchSolarRadiation[i]>0.0
 					NextNonEmptySkyPatch[i_last]=i;
-					NextNonEmptySkyPatch[i]=(number_of_diffuse_and_ground_dc+ *number_direct_coefficients);
+					NextNonEmptySkyPatch[i]=(number_of_diffuse_and_ground_dc+ number_direct_coefficients);
 					i_last=i;
 				}
 			}
@@ -1730,9 +1756,9 @@ int write_segments_direct(double dir,double dif, int *number_direct_coefficients
 							pointer_sky+=NextNonEmptySkyPatch[i]-i;
 							i=NextNonEmptySkyPatch[i];
 //#ifndef PROCESS_ROW
-							while( i < (number_of_diffuse_and_ground_dc+ *number_direct_coefficients) && dc_shading[k][j][i]==0.0 ) {
+							while( i < (number_of_diffuse_and_ground_dc+ number_direct_coefficients) && dc_shading[k][j][i]==0.0 ) {
 //#else
-//							while( i < (number_of_diffuse_and_ground_dc+ *number_direct_coefficients) && dcd->dc[i]==0.0 ) {
+//							while( i < (number_of_diffuse_and_ground_dc+ number_direct_coefficients) && dcd->dc[i]==0.0 ) {
 //#endif
 								pointer_dc+=NextNonEmptySkyPatch[i]-i;
 								pointer_sky+=NextNonEmptySkyPatch[i]-i;
@@ -1743,7 +1769,7 @@ int write_segments_direct(double dir,double dif, int *number_direct_coefficients
 					//now read in the direct direct contribution from the pre-simulation run
 					summe1+=1.0*DirectDirectContribution*dc_ab0[j][SkyConditionCounter][k];
 				} else { // regular blind model or no blinds
-					while(i< (number_of_diffuse_and_ground_dc+ *number_direct_coefficients)){
+					while(i< (number_of_diffuse_and_ground_dc+ number_direct_coefficients)){
 						summe1+= (*pointer_dc) * (*pointer_sky);
 						if(i<number_of_diffuse_and_ground_dc){
 //#ifndef PROCESS_ROW
@@ -1765,9 +1791,9 @@ int write_segments_direct(double dir,double dif, int *number_direct_coefficients
 							pointer_sky+=NextNonEmptySkyPatch[i]-i;
 							i=NextNonEmptySkyPatch[i];
 //#ifndef PROCESS_ROW
-							while( i<(number_of_diffuse_and_ground_dc+ *number_direct_coefficients) && dc_shading[k][j][i]==0.0){
+							while( i<(number_of_diffuse_and_ground_dc+ number_direct_coefficients) && dc_shading[k][j][i]==0.0){
 //#else
-//							while( i<(number_of_diffuse_and_ground_dc+ *number_direct_coefficients) && dcd->dc[i]==0.0) {
+//							while( i<(number_of_diffuse_and_ground_dc+ number_direct_coefficients) && dcd->dc[i]==0.0) {
 //#endif
 
 								pointer_dc+=NextNonEmptySkyPatch[i]-i;
@@ -1787,7 +1813,7 @@ int write_segments_direct(double dir,double dif, int *number_direct_coefficients
 		SkyConditionCounter++;
 
 		//reset SkyPatchLuminance and SkyPatchSolarRadiation
-		for (i=0 ; i< number_of_diffuse_and_ground_dc+ *number_direct_coefficients; i++) 
+		for (i=0 ; i< number_of_diffuse_and_ground_dc+ number_direct_coefficients; i++) 
 		{
 			SkyPatchLuminance[i]=0;
 			SkyPatchSolarRadiation[i]=0;
@@ -2061,7 +2087,6 @@ void check_parametrization()
 			}
 
 		}
-	else return;
 }
 
 
@@ -2075,7 +2100,6 @@ void 	check_illuminances()
 			}else{directilluminance=0;diffusilluminance=0;}
 			/*fprintf(stdout,"direct or diffuse illuminances out of range at %d %d %f\n", month,day,hour);*/
 		}
-	return;
 }
 
 
@@ -2087,7 +2111,6 @@ void 	check_irradiances()
 				fprintf(stdout,"ds_illum: warning - direct or diffuse irradiances out of range\n");
 				fprintf(stdout,"date %d %d %f\n dir %f dif %f\n",month,day,hour,directirradiance,diffusirradiance);}
 		}
-	return;
 }
 
 
@@ -2169,96 +2192,7 @@ void illu_to_irra_index(void)
 			if (skyclearness>12) skyclearness=12;
 			if (skybrightness<0.05) skybrightness=0.01;
 		}
-	return;
 }
-
-
-int lect_coeff_perez(float **coeff_perez)
-{
-	*(*coeff_perez+0 )=1.352500;	*(*coeff_perez+1 )=-0.257600;
-	*(*coeff_perez+2 )=-0.269000;	*(*coeff_perez+3 )=-1.436600;
-	*(*coeff_perez+4 )=-0.767000;	*(*coeff_perez+5 )=0.000700;
-	*(*coeff_perez+6 )=1.273400;	*(*coeff_perez+7 )=-0.123300;
-	*(*coeff_perez+8 )=2.800000;	*(*coeff_perez+9 )=0.600400;
-	*(*coeff_perez+10 )=1.237500;	*(*coeff_perez+11 )=1.000000;
-	*(*coeff_perez+12 )=1.873400;	*(*coeff_perez+13 )=0.629700;
-	*(*coeff_perez+14 )=0.973800;	*(*coeff_perez+15 )=0.280900;
-	*(*coeff_perez+16 )=0.035600;	*(*coeff_perez+17 )=-0.124600;
-	*(*coeff_perez+18 )=-0.571800;	*(*coeff_perez+19 )=0.993800;
-	*(*coeff_perez+20 )=-1.221900;	*(*coeff_perez+21 )=-0.773000;
-	*(*coeff_perez+22 )=1.414800;	*(*coeff_perez+23 )=1.101600;
-	*(*coeff_perez+24 )=-0.205400;	*(*coeff_perez+25 )=0.036700;
-	*(*coeff_perez+26 )=-3.912800;	*(*coeff_perez+27 )=0.915600;
-	*(*coeff_perez+28 )=6.975000;	*(*coeff_perez+29 )=0.177400;
-	*(*coeff_perez+30 )=6.447700;	*(*coeff_perez+31 )=-0.123900;
-	*(*coeff_perez+32 )=-1.579800;	*(*coeff_perez+33 )=-0.508100;
-	*(*coeff_perez+34 )=-1.781200;	*(*coeff_perez+35 )=0.108000;
-	*(*coeff_perez+36 )=0.262400;	*(*coeff_perez+37 )=0.067200;
-	*(*coeff_perez+38 )=-0.219000;	*(*coeff_perez+39 )=-0.428500;
-	*(*coeff_perez+40 )=-1.100000;	*(*coeff_perez+41 )=-0.251500;
-	*(*coeff_perez+42 )=0.895200;	*(*coeff_perez+43 )=0.015600;
-	*(*coeff_perez+44 )=0.278200;	*(*coeff_perez+45 )=-0.181200;
-	*(*coeff_perez+46 )=-4.500000;	*(*coeff_perez+47 )=1.176600;
-	*(*coeff_perez+48 )=24.721901;	*(*coeff_perez+49 )=-13.081200;
-	*(*coeff_perez+50 )=-37.700001;	*(*coeff_perez+51 )=34.843800;
-	*(*coeff_perez+52 )=-5.000000;	*(*coeff_perez+53 )=1.521800;
-	*(*coeff_perez+54 )=3.922900;	*(*coeff_perez+55 )=-2.620400;
-	*(*coeff_perez+56 )=-0.015600;	*(*coeff_perez+57 )=0.159700;
-	*(*coeff_perez+58 )=0.419900;	*(*coeff_perez+59 )=-0.556200;
-	*(*coeff_perez+60 )=-0.548400;	*(*coeff_perez+61 )=-0.665400;
-	*(*coeff_perez+62 )=-0.267200;	*(*coeff_perez+63 )=0.711700;
-	*(*coeff_perez+64 )=0.723400;	*(*coeff_perez+65 )=-0.621900;
-	*(*coeff_perez+66 )=-5.681200;	*(*coeff_perez+67 )=2.629700;
-	*(*coeff_perez+68 )=33.338902;	*(*coeff_perez+69 )=-18.299999;
-	*(*coeff_perez+70 )=-62.250000;	*(*coeff_perez+71 )=52.078098;
-	*(*coeff_perez+72 )=-3.500000;	*(*coeff_perez+73 )=0.001600;
-	*(*coeff_perez+74 )=1.147700;	*(*coeff_perez+75 )=0.106200;
-	*(*coeff_perez+76 )=0.465900;	*(*coeff_perez+77 )=-0.329600;
-	*(*coeff_perez+78 )=-0.087600;	*(*coeff_perez+79 )=-0.032900;
-	*(*coeff_perez+80 )=-0.600000;	*(*coeff_perez+81 )=-0.356600;
-	*(*coeff_perez+82 )=-2.500000;	*(*coeff_perez+83 )=2.325000;
-	*(*coeff_perez+84 )=0.293700;	*(*coeff_perez+85 )=0.049600;
-	*(*coeff_perez+86 )=-5.681200;	*(*coeff_perez+87 )=1.841500;
-	*(*coeff_perez+88 )=21.000000;	*(*coeff_perez+89 )=-4.765600;
-	*(*coeff_perez+90 )=-21.590599;	*(*coeff_perez+91 )=7.249200;
-	*(*coeff_perez+92 )=-3.500000;	*(*coeff_perez+93 )=-0.155400;
-	*(*coeff_perez+94 )=1.406200;	*(*coeff_perez+95 )=0.398800;
-	*(*coeff_perez+96 )=0.003200;	*(*coeff_perez+97 )=0.076600;
-	*(*coeff_perez+98 )=-0.065600;	*(*coeff_perez+99 )=-0.129400;
-	*(*coeff_perez+100 )=-1.015600;	*(*coeff_perez+101 )=-0.367000;
-	*(*coeff_perez+102 )=1.007800;	*(*coeff_perez+103 )=1.405100;
-	*(*coeff_perez+104 )=0.287500;	*(*coeff_perez+105 )=-0.532800;
-	*(*coeff_perez+106 )=-3.850000;	*(*coeff_perez+107 )=3.375000;
-	*(*coeff_perez+108 )=14.000000;	*(*coeff_perez+109 )=-0.999900;
-	*(*coeff_perez+110 )=-7.140600;	*(*coeff_perez+111 )=7.546900;
-	*(*coeff_perez+112 )=-3.400000;	*(*coeff_perez+113 )=-0.107800;
-	*(*coeff_perez+114 )=-1.075000;	*(*coeff_perez+115 )=1.570200;
-	*(*coeff_perez+116 )=-0.067200;	*(*coeff_perez+117 )=0.401600;
-	*(*coeff_perez+118 )=0.301700;	*(*coeff_perez+119 )=-0.484400;
-	*(*coeff_perez+120 )=-1.000000;	*(*coeff_perez+121 )=0.021100;
-	*(*coeff_perez+122 )=0.502500;	*(*coeff_perez+123 )=-0.511900;
-	*(*coeff_perez+124 )=-0.300000;	*(*coeff_perez+125 )=0.192200;
-	*(*coeff_perez+126 )=0.702300;	*(*coeff_perez+127 )=-1.631700;
-	*(*coeff_perez+128 )=19.000000;	*(*coeff_perez+129 )=-5.000000;
-	*(*coeff_perez+130 )=1.243800;	*(*coeff_perez+131 )=-1.909400;
-	*(*coeff_perez+132 )=-4.000000;	*(*coeff_perez+133 )=0.025000;
-	*(*coeff_perez+134 )=0.384400;	*(*coeff_perez+135 )=0.265600;
-	*(*coeff_perez+136 )=1.046800;	*(*coeff_perez+137 )=-0.378800;
-	*(*coeff_perez+138 )=-2.451700;	*(*coeff_perez+139 )=1.465600;
-	*(*coeff_perez+140 )=-1.050000;	*(*coeff_perez+141 )=0.028900;
-	*(*coeff_perez+142 )=0.426000;	*(*coeff_perez+143 )=0.359000;
-	*(*coeff_perez+144 )=-0.325000;	*(*coeff_perez+145 )=0.115600;
-	*(*coeff_perez+146 )=0.778100;	*(*coeff_perez+147 )=0.002500;
-	*(*coeff_perez+148 )=31.062500;	*(*coeff_perez+149 )=-14.500000;
-	*(*coeff_perez+150 )=-46.114799;*(*coeff_perez+151 )=55.375000;
-	*(*coeff_perez+152 )=-7.231200;	*(*coeff_perez+153 )=0.405000;
-	*(*coeff_perez+154 )=13.350000;	*(*coeff_perez+155 )=0.623400;
-	*(*coeff_perez+156 )=1.500000;	*(*coeff_perez+157 )=-0.642600;
-	*(*coeff_perez+158 )=1.856400;	*(*coeff_perez+159 )=0.563600;
-	return 0;
-
-}
-
 
 
 /* sky luminance perez model */
@@ -2293,7 +2227,7 @@ double calc_rel_lum_perez(double dzeta,double gamma,double Z,
 	for (i=0;i<5;i++)
 		for (j=0;j<4;j++)
 			{
-				x[i][j] = *(coeff_perez + 20*num_lin + 4*i +j);
+				x[i][j] = coeff_perez[20*num_lin + 4*i +j];
 				/* printf("x %d %d vaut %f\n",i,j,x[i][j]); */
 			}
 
@@ -2350,7 +2284,7 @@ void coeff_lum_perez(double Z, double epsilon, double Delta, float *coeff_perez)
 	for (i=0;i<5;i++)
 		for (j=0;j<4;j++)
 			{
-				x[i][j] = *(coeff_perez + 20*num_lin + 4*i +j);
+				x[i][j] = coeff_perez[20*num_lin + 4*i +j];
 				/* printf("x %d %d vaut %f\n",i,j,x[i][j]); */
 			}
 
@@ -2401,95 +2335,6 @@ void theta_phi_to_dzeta_gamma(double theta,double phi,double *dzeta,double *gamm
 }
 
 
-float *theta_ordered()
-{
-	float *ptr;
-
-	if ( (ptr = malloc(145*sizeof(float))) == NULL )
-		error(SYSTEM, "out of memory in function theta_ordered");
-
-	*(ptr+0)=84;	*(ptr+1)=84;	*(ptr+2)=84;	*(ptr+3)=84;	*(ptr+4)=84;
-	*(ptr+5)=84;	*(ptr+6)=84;	*(ptr+7)=84;	*(ptr+8)=84;	*(ptr+9)=84;
-	*(ptr+10)=84;	*(ptr+11)=84;	*(ptr+12)=84;	*(ptr+13)=84;	*(ptr+14)=84;
-	*(ptr+15)=84;	*(ptr+16)=84;	*(ptr+17)=84;	*(ptr+18)=84;	*(ptr+19)=84;
-	*(ptr+20)=84;	*(ptr+21)=84;	*(ptr+22)=84;	*(ptr+23)=84;	*(ptr+24)=84;
-	*(ptr+25)=84;	*(ptr+26)=84;	*(ptr+27)=84;	*(ptr+28)=84;	*(ptr+29)=84;
-	*(ptr+30)=72;	*(ptr+31)=72;	*(ptr+32)=72;	*(ptr+33)=72;	*(ptr+34)=72;
-	*(ptr+35)=72;	*(ptr+36)=72;	*(ptr+37)=72;	*(ptr+38)=72;	*(ptr+39)=72;
-	*(ptr+40)=72;	*(ptr+41)=72;	*(ptr+42)=72;	*(ptr+43)=72;	*(ptr+44)=72;
-	*(ptr+45)=72;	*(ptr+46)=72;	*(ptr+47)=72;	*(ptr+48)=72;	*(ptr+49)=72;
-	*(ptr+50)=72;	*(ptr+51)=72;	*(ptr+52)=72;	*(ptr+53)=72;	*(ptr+54)=72;
-	*(ptr+55)=72;	*(ptr+56)=72;	*(ptr+57)=72;	*(ptr+58)=72;	*(ptr+59)=72;
-	*(ptr+60)=60;	*(ptr+61)=60;	*(ptr+62)=60;	*(ptr+63)=60;	*(ptr+64)=60;
-	*(ptr+65)=60;	*(ptr+66)=60;	*(ptr+67)=60;	*(ptr+68)=60;	*(ptr+69)=60;
-	*(ptr+70)=60;	*(ptr+71)=60;	*(ptr+72)=60;	*(ptr+73)=60;	*(ptr+74)=60;
-	*(ptr+75)=60;	*(ptr+76)=60;	*(ptr+77)=60;	*(ptr+78)=60;	*(ptr+79)=60;
-	*(ptr+80)=60;	*(ptr+81)=60;	*(ptr+82)=60;	*(ptr+83)=60;	*(ptr+84)=48;
-	*(ptr+85)=48;	*(ptr+86)=48;	*(ptr+87)=48;	*(ptr+88)=48;	*(ptr+89)=48;
-	*(ptr+90)=48;	*(ptr+91)=48;	*(ptr+92)=48;	*(ptr+93)=48;	*(ptr+94)=48;
-	*(ptr+95)=48;	*(ptr+96)=48;	*(ptr+97)=48;	*(ptr+98)=48;	*(ptr+99)=48;
-	*(ptr+100)=48;	*(ptr+101)=48;	*(ptr+102)=48;	*(ptr+103)=48;	*(ptr+104)=48;
-	*(ptr+105)=48;	*(ptr+106)=48;	*(ptr+107)=48;	*(ptr+108)=36;	*(ptr+109)=36;
-	*(ptr+110)=36;	*(ptr+111)=36;	*(ptr+112)=36;	*(ptr+113)=36;	*(ptr+114)=36;
-	*(ptr+115)=36;	*(ptr+116)=36;	*(ptr+117)=36;	*(ptr+118)=36;	*(ptr+119)=36;
-	*(ptr+120)=36;	*(ptr+121)=36;	*(ptr+122)=36;	*(ptr+123)=36;	*(ptr+124)=36;
-	*(ptr+125)=36;	*(ptr+126)=24;	*(ptr+127)=24;	*(ptr+128)=24;	*(ptr+129)=24;
-	*(ptr+130)=24;	*(ptr+131)=24;	*(ptr+132)=24;	*(ptr+133)=24;	*(ptr+134)=24;
-	*(ptr+135)=24;	*(ptr+136)=24;	*(ptr+137)=24;	*(ptr+138)=12;	*(ptr+139)=12;
-	*(ptr+140)=12;	*(ptr+141)=12;	*(ptr+142)=12;	*(ptr+143)=12;	*(ptr+144)=0;
-	return ptr;
-}
-
-
-float *phi_ordered()
-{
-	float *ptr;
-
-	if ( (ptr = malloc(145*sizeof(float))) == NULL )
-		error(SYSTEM, "out of memory in function phi_ordered");
-
-	*(ptr+0)=0;		*(ptr+1)=12;		*(ptr+2)=24;		*(ptr+3)=36;
-	*(ptr+4)=48;	*(ptr+5)=60;		*(ptr+6)=72;		*(ptr+7)=84;
-	*(ptr+8)=96;	*(ptr+9)=108;		*(ptr+10)=120;		*(ptr+11)=132;
-	*(ptr+12)=144;	*(ptr+13)=156;		*(ptr+14)=168;		*(ptr+15)=180;
-	*(ptr+16)=192;	*(ptr+17)=204;		*(ptr+18)=216;		*(ptr+19)=228;
-	*(ptr+20)=240;	*(ptr+21)=252;		*(ptr+22)=264;		*(ptr+23)=276;
-	*(ptr+24)=288;	*(ptr+25)=300;		*(ptr+26)=312;		*(ptr+27)=324;
-	*(ptr+28)=336;	*(ptr+29)=348;		*(ptr+30)=0;		*(ptr+31)=12;
-	*(ptr+32)=24;	*(ptr+33)=36;		*(ptr+34)=48;		*(ptr+35)=60;
-	*(ptr+36)=72;	*(ptr+37)=84;		*(ptr+38)=96;		*(ptr+39)=108;
-	*(ptr+40)=120;	*(ptr+41)=132;		*(ptr+42)=144;		*(ptr+43)=156;
-	*(ptr+44)=168;	*(ptr+45)=180;		*(ptr+46)=192;		*(ptr+47)=204;
-	*(ptr+48)=216;	*(ptr+49)=228;		*(ptr+50)=240;		*(ptr+51)=252;
-	*(ptr+52)=264;	*(ptr+53)=276;		*(ptr+54)=288;		*(ptr+55)=300;
-	*(ptr+56)=312;	*(ptr+57)=324;		*(ptr+58)=336;		*(ptr+59)=348;
-	*(ptr+60)=0;	*(ptr+61)=15;		*(ptr+62)=30;		*(ptr+63)=45;
-	*(ptr+64)=60;	*(ptr+65)=75;		*(ptr+66)=90;		*(ptr+67)=105;
-	*(ptr+68)=120;	*(ptr+69)=135;		*(ptr+70)=150;		*(ptr+71)=165;
-	*(ptr+72)=180;	*(ptr+73)=195;		*(ptr+74)=210;		*(ptr+75)=225;
-	*(ptr+76)=240;	*(ptr+77)=255;		*(ptr+78)=270;		*(ptr+79)=285;
-	*(ptr+80)=300;	*(ptr+81)=315;		*(ptr+82)=330;		*(ptr+83)=345;
-	*(ptr+84)=0;	*(ptr+85)=15;		*(ptr+86)=30;		*(ptr+87)=45;
-	*(ptr+88)=60;	*(ptr+89)=75;		*(ptr+90)=90;		*(ptr+91)=105;
-	*(ptr+92)=120;	*(ptr+93)=135;		*(ptr+94)=150;		*(ptr+95)=165;
-	*(ptr+96)=180;	*(ptr+97)=195;		*(ptr+98)=210;		*(ptr+99)=225;
-	*(ptr+100)=240;	*(ptr+101)=255;		*(ptr+102)=270;		*(ptr+103)=285;
-	*(ptr+104)=300;	*(ptr+105)=315;		*(ptr+106)=330;		*(ptr+107)=345;
-	*(ptr+108)=0;	*(ptr+109)=20;		*(ptr+110)=40;		*(ptr+111)=60;
-	*(ptr+112)=80;	*(ptr+113)=100;		*(ptr+114)=120;		*(ptr+115)=140;
-	*(ptr+116)=160;	*(ptr+117)=180;		*(ptr+118)=200;		*(ptr+119)=220;
-	*(ptr+120)=240;	*(ptr+121)=260;		*(ptr+122)=280;		*(ptr+123)=300;
-	*(ptr+124)=320;	*(ptr+125)=340;		*(ptr+126)=0;		*(ptr+127)=30;
-	*(ptr+128)=60;	*(ptr+129)=90;		*(ptr+130)=120;		*(ptr+131)=150;
-	*(ptr+132)=180;	*(ptr+133)=210;		*(ptr+134)=240;		*(ptr+135)=270;
-	*(ptr+136)=300;	*(ptr+137)=330;		*(ptr+138)=0;		*(ptr+139)=60;
-	*(ptr+140)=120;	*(ptr+141)=180;		*(ptr+142)=240;		*(ptr+143)=300;
-	*(ptr+144)=0;
-
-	return ptr;
-}
-
-
 /********************************************************************************/
 /*	Fonction: integ_lv							*/
 /*										*/
@@ -2509,7 +2354,7 @@ double integ_lv(float *lv,float *theta)
 	double buffer=0.0;
 
 	for (i=0;i<145;i++)
-		buffer += (*(lv+i))*cos(radians(*(theta+i)));
+		buffer += lv[i] * cos(radians(theta[i]));
 
 	return buffer*2*PI/144;
 }
@@ -2541,7 +2386,7 @@ double get_angle_sun_direction(double sun_zenith, double sun_azimut, double dire
 {
 	double angle;
 	if (sun_zenith == 0)
-        puts("WARNING: zenith_angle = 0 in function get_angle_sun_vert_plan");
+        error(WARNING, "zenith_angle = 0 in function get_angle_sun_direction");
 
 	angle = acos(cos(sun_zenith*DTR)*cos(direction_zenith*DTR) + sin(sun_zenith*DTR)*sin(direction_zenith*DTR)*cos((sun_azimut - direction_azimut)*DTR));
 	angle = angle*RTD;

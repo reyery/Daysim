@@ -123,19 +123,19 @@ void calculate_visible_sky_angle(  char octree[200])
 			RingAltitude=1.0*(j+0.5)*(90.0/28.5);
 		else
 			RingAltitude=90.0;
-			if(RingAltitude<2.0)
+		if(RingAltitude<2.0)
 			RingAltitude=2.0;
 		if(j<8)
 			NumOfRingDivisions=30*4;
-		if(j>=8 && j<16)
+		else if(j<16)
 			NumOfRingDivisions=24*4;
-		if(j>=16 && j<20)
+		else if (j<20)
 			NumOfRingDivisions=18*4;
-		if(j>=20 && j<24)
+		else if (j<24)
 			NumOfRingDivisions=12*4;
-		if(j>=24 && j<28)
+		else if (j<28)
 			NumOfRingDivisions=6*4;
-		if(j==28)
+		else
 			NumOfRingDivisions=1;
 
 		//assign azimuth
