@@ -3,6 +3,8 @@
  *  Fraunhofer Institute for Solar Energy Systems
  *  Massachusetts Institute of Technology
  *  written by Christoph Reinhart
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
  */
 
 /* ds_illum is a DAYSIM subprogram that calculates the luminance/irradiance

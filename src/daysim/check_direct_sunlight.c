@@ -2,7 +2,9 @@
  *  written by Christoph Reinhart
  *  National Research Council Canada
  *  Institute for Research in Construction
-*/
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
+ */
 
 #include <stdio.h>
 

@@ -1,9 +1,12 @@
-/* This file contains large pieces of the src file for the 		*/
-/* RADIANCE program gendaylit, which has been written by J.J. Delaunay 	*/
-/* at the Fraunhofer Institute for Solar Energy Systems  		*/
-/* changes have been introduced by written by Christoph Reinhart to 	*/
-/* implement the Perez sky model into the DAYSIM simulation environment.*/
-/* last changed in February 2001					*/
+/* This file contains large pieces of the src file for the
+ * RADIANCE program gendaylit, which has been written by J.J. Delaunay
+ * at the Fraunhofer Institute for Solar Energy Systems
+ * changes have been introduced by written by Christoph Reinhart to
+ * implement the Perez sky model into the DAYSIM simulation environment.
+ * last changed in February 2001
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
+ */
 
 #include <stdio.h>
 #include <stdlib.h>

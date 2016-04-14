@@ -2,6 +2,8 @@
  *  National Research Council Canada
  *  Fraunhofer Institute for Solar Eneregy Systems
  *  written by Christoph Reinhart
+ *
+ *	Update by Nathaniel Jones at MIT, March 2016
  */
 
 #include <stdio.h>
