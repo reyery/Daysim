@@ -17,122 +17,120 @@
 //======================================
 // Hunt's Switch On Probability function
 //======================================
-	double	a_hunt=-0.0175;
-	double	b_hunt=-4.0835;
-	double	c_hunt=1.0361;
-	double	m_hunt=1.8223;
-	double switch_prob(float ill, double a, double b, double c, double m)
+#define	a_hunt	-0.0175
+#define	b_hunt	-4.0835
+#define	c_hunt	1.0361
+#define	m_hunt	1.8223
+
+double switch_prob(float ill, double a, double b, double c, double m)
+{
+	double prob = a;
+	/* Hunt's function for arbitrary user profiles */
+	if (c != 0)
 	{
-		double prob=0;
-		/* Hunt's function for arbitrary user profiles */
-		if (c!=0)
-		{
-			prob=a+c/(1+exp(-b*(log10(ill)-m)));
-		}else{
-			prob=a;
-		}
-		if(prob<0){prob=0;}
-		if(prob>1){prob=1;}
-		return(prob);
+		prob = a + c / (1 + exp(-b*(log10(ill) - m)));
 	}
+	if (prob<0){ prob = 0; }
+	else if (prob>1){ prob = 1; }
+	return(prob);
+}
 
 //============================================
 // Intermediate Switch On Probability function
 //============================================
-	double switch_on_prob_intermediate_prob(float ill)
-	{
-		double prob=0;
-		double a,b,c,m;
-		/* Hunt's function with Lamparter Data *
-		 * Reinhart C.F., Voss K.,Monitoring Manual Control of Electric
-	       Lighting and Blinds, Lighting Research & Technology, 35:3 pp. 243-260, 2003.
-	       .
-		*/
-		a=0.0027;
-		b=-64.19;
-		c=0.017;
-		m=2.41;
-		prob=a+c/(1+exp(-b*(log10(ill)-m)));
-		if(prob<0){prob=0;}
-		if(prob>1){prob=1;}
-		if(ill==0){prob=1;}
-		return(prob);
-	}
+double switch_on_prob_intermediate_prob(float ill)
+{
+	/* Hunt's function with Lamparter Data *
+		* Reinhart C.F., Voss K.,Monitoring Manual Control of Electric
+	    Lighting and Blinds, Lighting Research & Technology, 35:3 pp. 243-260, 2003.
+	    .
+	*/
+	double a = 0.0027;
+	double b = -64.19;
+	double c = 0.017;
+	double m = 2.41;
+	double prob = a + c / (1 + exp(-b*(log10(ill) - m)));
+	if (prob<0){ prob = 0; }
+	else if (prob>1){ prob = 1; }
+	if (ill == 0){ prob = 1; }
+	return(prob);
+}
 
 //================================
 // Switch Off Probability function
 //================================
-	double switch_off(float time_of_absence, int EffLightSystem)
+double switch_off(double time_of_absence, int EffLightSystem)
+{
+	float switch_off_prob[6][8];
+	int i;
+	/* data from:
+	(1) Pigg S, Eilers M, and Reed J.  Behavioral Aspects of
+	    Lighting and Occupancy Sensors in Privates Offices:
+	    A case study of a University Office Building: Proceedings
+	    of the 1996 ACEEE Summer Study on Energy Efficiency in
+	    Buildings 1996;8: 8.161-8.171.
+	(2) Reinhart C.F., Voss K.,Monitoring Manual Control of Electric
+	    Lighting and Blinds, Lighting Research & Technology, 35:3 pp. 243-260, 2003.
+	*/
+
+	/* time intervals */
+	switch_off_prob[0][0] = 0.0;
+	switch_off_prob[0][1] = 0.5f;
+	switch_off_prob[0][2] = 1.0;
+	switch_off_prob[0][3] = 2.0;
+	switch_off_prob[0][4] = 4.0;
+	switch_off_prob[0][5] = 12.0;
+	switch_off_prob[0][6] = 24.0;
+	switch_off_prob[0][7] = 8760.0;
+
+	/*  Manual on/off switch near the door (no lighting control) */
+	switch_off_prob[1][0] = 0.0;
+	switch_off_prob[1][1] = 0.086f;
+	switch_off_prob[1][2] = 0.314f;
+	switch_off_prob[1][3] = 0.386f;
+	switch_off_prob[1][4] = 0.6f;
+	switch_off_prob[1][5] = 0.96f;
+	switch_off_prob[1][6] = 0.999f;
+	switch_off_prob[1][7] = 0.999f;
+
+	/*  Switch off occupancy sensor */
+	switch_off_prob[2][0] = 0.0;
+	switch_off_prob[2][1] = 0.092f;
+	switch_off_prob[2][2] = 0.128f;
+	switch_off_prob[2][3] = 0.1857f;
+	switch_off_prob[2][4] = 0.3f;
+	switch_off_prob[2][5] = 0.5142f;
+	switch_off_prob[2][6] = 0.572f;
+	switch_off_prob[2][7] = 0.593f;
+
+	/*  Photosensor controlled indirect dimming system (presently not in use) */
+	switch_off_prob[4][0] = 0.0;
+	switch_off_prob[4][1] = 0.065f;
+	switch_off_prob[4][2] = 0.099f;
+	switch_off_prob[4][3] = 0.165f;
+	switch_off_prob[4][4] = 0.497f;
+	switch_off_prob[4][5] = 0.676f;
+	switch_off_prob[4][6] = 0.724f;
+	switch_off_prob[4][7] = 0.724f;
+
+	for(i=1 ; i<=7 ; i++ ) // assign value
 	{
-		float switch_off_prob[6][8];
-		int i;
-		/* data from:
-	   (1) Pigg S, Eilers M, and Reed J.  Behavioral Aspects of
-	       Lighting and Occupancy Sensors in Privates Offices:
-	       A case study of a University Office Building: Proceedings
-	       of the 1996 ACEEE Summer Study on Energy Efficiency in
-	       Buildings 1996;8: 8.161-8.171.
-	   (2) Reinhart C.F., Voss K.,Monitoring Manual Control of Electric
-	       Lighting and Blinds, Lighting Research & Technology, 35:3 pp. 243-260, 2003.
-		*/
-
-		/* time intervals */
-		switch_off_prob[0][0]=0.0;
-		switch_off_prob[0][1]=0.5;
-		switch_off_prob[0][2]=1.0;
-		switch_off_prob[0][3]=2.0;
-		switch_off_prob[0][4]=4.0;
-		switch_off_prob[0][5]=12.0;
-		switch_off_prob[0][6]=24.0;
-		switch_off_prob[0][7]=8760.0;
-
-		/*  Manual on/off switch near the door (no lighting control) */
-		switch_off_prob[1][0]=0.0;
-		switch_off_prob[1][1]=0.086;
-		switch_off_prob[1][2]=0.314;
-		switch_off_prob[1][3]=0.386;
-		switch_off_prob[1][4]=0.6;
-		switch_off_prob[1][5]=0.96;
-		switch_off_prob[1][6]=0.999;
-		switch_off_prob[1][7]=0.999;
-
-		/*  Switch off occupancy sensor */
-		switch_off_prob[2][0]=0.0;
-		switch_off_prob[2][1]=0.092;
-		switch_off_prob[2][2]=0.128;
-		switch_off_prob[2][3]=0.1857;
-		switch_off_prob[2][4]=0.3;
-		switch_off_prob[2][5]=0.5142;
-		switch_off_prob[2][6]=0.572;
-		switch_off_prob[2][7]=0.593;
-
-		/*  Photosensor controlled indirect dimming system (presently not in use) */
-		switch_off_prob[4][0]=0.0;
-		switch_off_prob[4][1]=0.065;
-		switch_off_prob[4][2]=0.099;
-		switch_off_prob[4][3]=0.165;
-		switch_off_prob[4][4]=0.497;
-		switch_off_prob[4][5]=0.676;
-		switch_off_prob[4][6]=0.724;
-		switch_off_prob[4][7]=0.724;
-
-	    for(i=1 ; i<=7 ; i++ ) // assign value
-		{
-			if(time_of_absence>=switch_off_prob[0][i-1] && time_of_absence < switch_off_prob[0][i])
-		    return(switch_off_prob[EffLightSystem][i]);
-		}
-		return 0;
+		if(time_of_absence>=switch_off_prob[0][i-1] && time_of_absence < switch_off_prob[0][i])
+			return(switch_off_prob[EffLightSystem][i]);
+	}
+	return 0;
 }
 
-	int Pigg_switch_off(int current_time, int LightSystem, int UserLight,int dep)
-	{ 	int k=0;
-		int EffLightSystem=0;
-		double random;
-		// function determines whether the lighting is manually switched off
-		// during departure depeding on:
-		//      - user type,
-		//      - length of absence, and
-		//      - type of lighting system.
+int Pigg_switch_off(int current_time, int LightSystem, int UserLight,int dep)
+{
+	int k=0;
+	int EffLightSystem=0;
+	double random;
+	// function determines whether the lighting is manually switched off
+	// during departure depeding on:
+	//      - user type,
+	//      - length of absence, and
+	//      - type of lighting system.
 
 	// get length of absence
 	while (occ_profile[current_time + k] == 0 && (current_time + k) < time_steps_in_year)
@@ -159,24 +157,19 @@
 	random=ran1(&idum);
 	if(UserLight ==1) // active lighting control (in dependance of ambient daylight)
 	{
-		if( random <= switch_off(k*(time_step/60.0), EffLightSystem ) ){
+		if( random <= switch_off(k*(time_step/60.0), EffLightSystem ) )
 			return(0);
-		}else{
-			return(1);
-		}
+		return(1);
 	}
 	if(UserLight ==2) //passive lighting control (always on during working day)
 	{
 		if((current_time-1) == dep )
 		{
-			if( random <= switch_off(k*(time_step/60.0), EffLightSystem ) ){
+			if( random <= switch_off(k*(time_step/60.0), EffLightSystem ) )
 				return(0);
-			}else{
-				return(1);
-			}
-		}else{
 			return(1);
 		}
+		return(1);
 	}
 	return 0;
 }

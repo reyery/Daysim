@@ -12,9 +12,7 @@
 #include  "fropen.h"
 #include  "check_direct_sunlight.h"
 #include  "read_in_header.h"
-
-#include  "rtmath.h"
-#define DTR (PI/180.0)
+#include  "ds_constants.h"
 
 int number_of_active_sensors=0;
 double alt,azi;
@@ -23,7 +21,7 @@ float dir,dif;
 
 /* function that test for each time step in the wea_data_short_file whether any of the sensors is in direct view of the sun */
 
-int  check_direct_sunlight(  char octree[200])
+int  check_direct_sunlight(char *octree)
 {
 	int i=0;
 	char befehl[5024]="";
@@ -57,7 +55,7 @@ return shading;
 
 
 
-void  calculate_shading_status(  char octree[200],char long_sensor_file[1024], char direct_sunlight_file_tmp[1024])
+void  calculate_shading_status(char *octree, char *long_sensor_file, char *direct_sunlight_file_tmp)
 {
 	// function starts an rtrace run that determines for the "annual point file" whether
 	// direct glare appears or not.
@@ -78,7 +76,7 @@ void  calculate_shading_status(  char octree[200],char long_sensor_file[1024], c
 
 
 
-void  calculate_shading_status_ab0(  char octree[200], char direct_sunlight_file_tmp[1024], int LightSourceCounter)
+void  calculate_shading_status_ab0(char *octree, char *direct_sunlight_file_tmp, int LightSourceCounter)
 {
 	// function starts an rtrace_dc run that determines the direct-direct dayligth ceoffcient fro each applicalbe
 	// sky condition in the input wheather file.
@@ -96,7 +94,7 @@ void  calculate_shading_status_ab0(  char octree[200], char direct_sunlight_file
 
 /* function that test for each time step in the wea_data_short_file whether any of the sensors is in direct view of the sun */
 
-void calculate_visible_sky_angle(  char octree[200])
+void calculate_visible_sky_angle(char *octree)
 {
 	int j=0, i=0,k=0,NumOfRingDivisions=0;
 	float RingAltitude=0,RingAzimuth=0,r=0;
