@@ -57,10 +57,10 @@ void 	check_irradiances();
 void 	check_illuminances();
 void 	illu_to_irra_index();
 /* Perez sky luminance model */
-double  calc_rel_lum_perez(double dzeta,double gamma,double Z,
-						   double epsilon,double Delta,float *coeff_perez);
+double  calc_rel_lum_perez(double dzeta, double gamma, double Z,
+	double epsilon, double Delta, double *coeff_perez);
 /* coefficients for the sky luminance perez model */
-void 	coeff_lum_perez(double Z, double epsilon, double Delta, float *coeff_perez);
+void 	coeff_lum_perez(double Z, double epsilon, double Delta, double *coeff_perez);
 double	radians(double degres);
 double	degres(double radians);
 void	theta_phi_to_dzeta_gamma(double theta,double phi,double *dzeta,double *gamma, double Z);
@@ -100,7 +100,7 @@ double 	groundbr_luminance;
 double  F2;
 
 /* defines current time */
-float hour;
+double hour;
 int day, month;
 
 
@@ -111,7 +111,7 @@ void add_time_step(float time_step)
 {
 	div_t e;
 	hour+=(time_step/60.0);
-	e=div(hour,24);		/* hours*/
+	e=div((int)hour,24);		/* hours*/
 	day+=e.quot;		/* days */
 	hour =hour-(e.quot)*(24.0);
 
@@ -134,26 +134,20 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
     
 
 	int  reset=0;
-	float dir1=0.0,dif1=0.0,hour_bak=0.0;
-	double dir=0.0 ,dif=0.0;
-	float header_latitude;
-	float header_longitude;
-	float header_time_zone;
-	float header_site_elevation;
+	double dir1 = 0.0, dif1 = 0.0, hour_bak = 0.0;
+	double dir = 0.0, dif = 0.0;
 	int header_implemented_in_wea=0;
 	int shadow_testing_counter=0;
 	int current_shadow_testing_value=0;
 	int header_weather_data_short_file_units;
-	float sunrise,sunset;
+	double sunrise, sunset;
 	int i=0,j=0,k=0,m=0,number_data_values=0;
 	char keyword[200]="";
-    month=start_month;
-	day=start_day;
-	hour=start_hour;
+	double centrum_hour;
 
 	if( *shadow_testing_on){
 		shadow_testing(number_direct_coefficients);
-		fprintf(stdout,"ds_illum: initial shadow_testing done \n");
+		fprintf(stdout, "%s: initial shadow_testing done \n", progname);
 		*shadow_testing_on=shadow_testing_new;
 	}
 
@@ -173,32 +167,37 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 	/* get number of data values and test whether the climate input file has a header */
 	fscanf(INPUT_DATAFILE,"%s", keyword);
 	if( !strcmp(keyword,"place") ){
-		header_implemented_in_wea=1;
+		double header_latitude;
+		double header_longitude;
+		double header_time_zone;
+		double header_site_elevation;
+
+		header_implemented_in_wea = 1;
 		fscanf(INPUT_DATAFILE,"%*[^\n]");fscanf(INPUT_DATAFILE,"%*[\n\r]");
 		//latitude
 		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_latitude);
 		header_latitude *= DTR;
 		if ((header_latitude - s_latitude)>5 * DTR || (header_latitude - s_latitude)<-5 * DTR){
-			fprintf(stderr,"ds_illum WARNING: latitude in climate file header (wea) and latitude on project file (hea) differ by more than 5 DEG.\n");
+			error(WARNING, "latitude in climate file header (wea) and latitude on project file (hea) differ by more than 5 DEG");
 		}
 		//longitude
 		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_longitude);
 		header_longitude *= DTR;
 		if ((header_longitude - s_longitude)>5 * DTR || (header_longitude - s_longitude)<-5 * DTR){
-			fprintf(stderr,"ds_illum WARNING: longitude in climate file header (wea) and longitude on project file (hea) differ by more than 5 DEG.\n");
+			error(WARNING, "longitude in climate file header (wea) and longitude on project file (hea) differ by more than 5 DEG");
 		}
 		//time_zone
 		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_time_zone);
 		header_time_zone *= DTR;
 		if ((header_time_zone - s_meridian)>5 * DTR || (header_time_zone - s_meridian)<-5 * DTR){
-			fprintf(stderr,"ds_illum WARNING: time zone in climate file header (wea) and time zone on project file (hea) differ by more than 5 DEG.\n");
+			error(WARNING, "time zone in climate file header (wea) and time zone on project file (hea) differ by more than 5 DEG");
 		}
 		//site_elevation
 		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_site_elevation);
 		//weather_data_file_units
 		fscanf(INPUT_DATAFILE,"%s %d", keyword, &header_weather_data_short_file_units);
 		if(header_weather_data_short_file_units !=wea_data_short_file_units){
-			fprintf(stderr,"ds_illum WARNING: climate file units differ in climate and project header files.\n");
+			error(WARNING, "climate file units differ in climate and project header files");
 		}
 		number_data_values--;
 	}
@@ -218,54 +217,56 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 		fscanf(INPUT_DATAFILE,"%*[^\n]");fscanf(INPUT_DATAFILE,"%*[\n\r]");
 	}
 
-	for (m=0 ; m<number_data_values ; m++){
+	for (m = 0; m<number_data_values; m++){
 
-			fscanf(INPUT_DATAFILE,"%d %d %f %f %f",&month,&day,&hour,&dir1,&dif1);
-			dir=dir1;
-			dif=dif1;
-			centrum_hour=hour;
-			sunrise=12+12-stadj(jdate(month, day))-solar_sunset(month,day);
-			sunset=solar_sunset(month,day)-stadj(jdate(month, day));
-			if( ( hour-(0.5*time_step/60.0)<=sunrise ) && ( hour +(0.5*time_step/60.0)> sunrise )){
-				hour=0.5*(hour +(0.5*time_step/60.0) )+0.5*sunrise;
-			}else{
-				if( ( hour-(0.5*time_step/60.0)<=sunset ) && ( hour +(0.5*time_step/60.0)> sunset )){
-					hour=0.5*(hour -(0.5*time_step/60.0) )+0.5*sunset;
-				}
-			}
+		fscanf(INPUT_DATAFILE, "%d %d %f %f %f", &month, &day, &hour, &dir1, &dif1);
+		dir = dir1;
+		dif = dif1;
+		centrum_hour = hour;
+		sunrise = 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day);
+		sunset = solar_sunset(month, day) - stadj(jdate(month, day));
+		if ((hour - (0.5*time_step / 60.0) <= sunrise) && (hour + (0.5*time_step / 60.0)> sunrise)){
+			hour = 0.5*(hour + (0.5*time_step / 60.0)) + 0.5*sunrise;
+		}
+		else if ((hour - (0.5*time_step / 60.0) <= sunset) && (hour + (0.5*time_step / 60.0)> sunset)){
+			hour = 0.5*(hour - (0.5*time_step / 60.0)) + 0.5*sunset;
+		}
 
-		for (k=0 ; k<TotalNumberOfDCFiles ; k++)
-			fprintf(SHADING_ILLUMINANCE_FILE[k],"%d %d %.3f ",month,day,centrum_hour );
+		for (k = 0; k<TotalNumberOfDCFiles; k++)
+			fprintf(SHADING_ILLUMINANCE_FILE[k], "%d %d %.3f ", month, day, centrum_hour);
 
 		//assign value of current shadow test: "Is the sensor in the sun?"
-		if( *shadow_testing_on &&dir >= dir_threshold && dif >= dif_threshold)
-			current_shadow_testing_value=shadow_testing_results[shadow_testing_counter++];
+		if (*shadow_testing_on &&dir >= dir_threshold && dif >= dif_threshold)
+			current_shadow_testing_value = shadow_testing_results[shadow_testing_counter++];
 
 
-		if( (dif<dif_threshold)
-			|| ( salt( sdec(jdate(month, day)),hour+stadj(jdate(month, day))) <0) ) {
-			for (k=0 ; k < TotalNumberOfDCFiles; k++){
-				for (j=0 ; j<number_of_sensors ; j++)
-					fprintf(SHADING_ILLUMINANCE_FILE[k]," %.0f",0.0);
+		if ((dif<dif_threshold)
+			|| (salt(sdec(jdate(month, day)), hour + stadj(jdate(month, day))) <0)) {
+			for (k = 0; k < TotalNumberOfDCFiles; k++){
+				for (j = 0; j<number_of_sensors; j++)
+					fprintf(SHADING_ILLUMINANCE_FILE[k], " %.0f", 0.0);
 			}
 			if ((dif>dif_threshold)
-				&&( salt( sdec(jdate(month, day)),hour+stadj(jdate(month, day))) <0 )
-				&&all_warnings ) {
-				fprintf(stdout,"ds_illum: warning - sun below horizon at %d %d %.3f (solar altitude: %.3f)\n",month,day,hour, 57.38*salt( sdec(jdate(month, day)),hour+stadj(jdate(month, day))) );}
-		}else{
-			write_segments_diffuse(dir,dif);
-			write_segments_direct(dir,dif,number_direct_coefficients, shadow_testing_on,0,current_shadow_testing_value);
+				&& (salt(sdec(jdate(month, day)), hour + stadj(jdate(month, day))) <0)
+				&& all_warnings) {
+				sprintf(errmsg, "sun below horizon at %d %d %.3f (solar altitude: %.3f)", month, day, hour, 57.38*salt(sdec(jdate(month, day)), hour + stadj(jdate(month, day))));
+				error(WARNING, errmsg);
+			}
+		}
+		else{
+			write_segments_diffuse(dir, dif);
+			write_segments_direct(dir, dif, number_direct_coefficients, shadow_testing_on, 0, current_shadow_testing_value);
 		}
 
 		/* End of Line */
-		for (k=0 ; k<TotalNumberOfDCFiles ; k++)
-			fprintf(SHADING_ILLUMINANCE_FILE[k],"\n");
+		for (k = 0; k<TotalNumberOfDCFiles; k++)
+			fprintf(SHADING_ILLUMINANCE_FILE[k], "\n");
 
-		if(reset){hour=hour_bak;reset=0;}
+		if (reset){ hour = hour_bak; reset = 0; }
 	}
-	i=close_file(INPUT_DATAFILE);
-		for (k=0 ; k<TotalNumberOfDCFiles ; k++)
-			close_file(SHADING_ILLUMINANCE_FILE[k]);
+	i = close_file(INPUT_DATAFILE);
+	for (k = 0; k<TotalNumberOfDCFiles; k++)
+		close_file(SHADING_ILLUMINANCE_FILE[k]);
 }
 
 
@@ -273,17 +274,9 @@ int get_sky_patch_number( float Dx,float  Dy,float Dz)
 {
 	int i=0,j=0,k=0,l=0;
 	double a=0;
-	int  patches[8];
-	patches[0]=30;
-	patches[1]=30;
-	patches[2]=24;
-	patches[3]=24;
-	patches[4]=18;
-	patches[5]=12;
-	patches[6]=6;
-	patches[7]=1;
+	int  patches[8] = { 30, 30, 24, 24, 18, 12, 6, 1 };
 
-	a=(180/PI)*asin(Dz);
+	a = RTD * asin(Dz);
 	if( (a>=0.0)&&(a<12.0)){j=0;k=0;}
 	if( (a>=12.0)&&(a<24.0)){j=1;k=30;}
 	if( (a>=24.0)&&(a<36.0)){j=2;k=60;}
@@ -302,9 +295,8 @@ int get_sky_patch_number( float Dx,float  Dy,float Dz)
 }
 
 
-double skybright(double Dx,double Dy,double Dz,float A1,float A2, float A3,float A4,
-				 float A5,float A6,float A7,float A8,float A9, float A10,double dir,
-				 int number)
+double skybright(double Dx, double Dy, double Dz, double A1, double A2, double A3, double A4,
+	double A5, double A6, double A7, double A8, double A9, double A10, double dir, int number)
 {
 	/* Perez Model */
 	double illuminance, intersky,  gamma;
@@ -379,7 +371,7 @@ int write_segments_diffuse(double dir,double dif)
 		0
 	};
 
-	static float coeff_perez[160] = {
+	static double coeff_perez[160] = {
 		1.352500, -0.257600, -0.269000, -1.436600, -0.767000, 0.000700, 1.273400, -0.123300,
 		2.800000, 0.600400, 1.237500, 1.000000, 1.873400, 0.629700, 0.973800, 0.280900,
 		0.035600, -0.124600, -0.571800, 0.993800, -1.221900, -0.773000, 1.414800, 1.101600,
@@ -464,7 +456,7 @@ int write_segments_diffuse(double dir,double dif)
 	/*calculation of the modelled luminance */
 	for (j=0;j<145;j++)	{
 		theta_phi_to_dzeta_gamma(radians(theta_o[j]),radians(phi_o[j]),&dzeta,&gamma,radians(sunzenith));
-		lv_mod[j] = calc_rel_lum_perez(dzeta,gamma,radians(sunzenith),skyclearness,skybrightness,coeff_perez);
+		lv_mod[j] = (float)calc_rel_lum_perez(dzeta, gamma, radians(sunzenith), skyclearness, skybrightness, coeff_perez);
 	}
 
 	/* integration of luminance for the normalization factor, diffuse part of the sky*/
@@ -567,22 +559,22 @@ int write_segments_diffuse(double dir,double dif)
 
 
 			for (j=0 ; j<145 ; j++){
-				SkyPatchLuminance[j]=horizon_factor[j]*skybright(Dx_dif_patch[j],Dy_dif_patch[j],Dz_dif_patch[j],A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,j);
+				SkyPatchLuminance[j] = (float)(horizon_factor[j] * skybright(Dx_dif_patch[j], Dy_dif_patch[j], Dz_dif_patch[j], A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, j));
 				if( horizon_factor[j]<1)
-					SkyPatchLuminance[j]+=(1-horizon_factor[j])*skybright(0.9961946,0,-0.087156,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
+					SkyPatchLuminance[j] += (float)((1 - horizon_factor[j]) * skybright(0.9961946, 0, -0.087156, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0));
 				if(reduction<1.0)
-					SkyPatchLuminance[j]*=reduction;
+					SkyPatchLuminance[j] *= (float)reduction;
 			}
 
 			// assign ground brightness
 			if(dds_file_format) // new dds file format chosen
 				{
-					/* 0 to 10 */  SkyPatchLuminance[145]=skybright(0.9397,0,-0.342,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
+					/* 0 to 10 */  SkyPatchLuminance[145] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
 					//		/* 0 to 10 */  SkyPatchLuminance[145]=skybright(0.9961946,0,-0.087156,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
 				}else{
-				/* 0 to 10 */  SkyPatchLuminance[145]=skybright(0.9961946,0,-0.087156,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
-				/* 10 to 30*/  SkyPatchLuminance[146]=skybright(0.9397,0,-0.342,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
-				/* 30 to 90 */ SkyPatchLuminance[147]=skybright(0,0,-1.0,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
+				/* 0 to 10 */  SkyPatchLuminance[145] = (float)skybright(0.9961946, 0, -0.087156, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 10 to 30*/  SkyPatchLuminance[146] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 30 to 90 */ SkyPatchLuminance[147] = (float)skybright(0, 0, -1.0, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
 			}
 
 			for (j=0 ; j<148 ; j++) {
@@ -601,11 +593,11 @@ int write_segments_diffuse(double dir,double dif)
 			A7= c_perez[4];
 			
 			for (j=0 ; j<145 ; j++){
-				SkyPatchSolarRadiation[j]=horizon_factor[j]*skybright(Dx_dif_patch[j],Dy_dif_patch[j],Dz_dif_patch[j],A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,j);
+				SkyPatchSolarRadiation[j] = (float)(horizon_factor[j] * skybright(Dx_dif_patch[j], Dy_dif_patch[j], Dz_dif_patch[j], A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, j));
 				if( horizon_factor[j]<1)
-					SkyPatchSolarRadiation[j]+=(1-horizon_factor[j])*skybright(0.9961946,0,-0.087156,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
+					SkyPatchSolarRadiation[j] += (float)((1 - horizon_factor[j])*skybright(0.9961946, 0, -0.087156, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0));
 				if(reduction<1.0)
-					SkyPatchSolarRadiation[j]*=reduction;
+					SkyPatchSolarRadiation[j] *= (float)reduction;
 			}
 			// assign ground brightness
 			if(dds_file_format) // new dds file format chosen
@@ -668,18 +660,37 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 	static int number2305[29]= { 0,120,240,360,480,600,720,840,960,1056,1152,1248,1344,1440,1536,1632,1728,1800,1872,1944,2016,2064,2112,2160,2208,2232,2256,2280,2304 };
 	static double ring_division2305[29]= { 120.0,120.0,120.0,120.0,120.0,120.0,120.0,120.0,96.0,96.0,96.0,96.0,96.0,96.0,96.0,96.0,72.0,72.0,72.0,72.0,48.0,48.0,48.0,48.0,24.0,24.0,24.0,24.0,0.0 };
 
+	static float DirectDC_theta[145] = {
+		6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+		18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+		30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+		42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42,
+		54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54,
+		66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+		78, 78, 78, 78, 78, 78,
+		90
+	};
 
-
+	static float DirectDC_phi[145] = {
+		-96, -108, -120, -132, -144, -156, -168, 180, 168, 156, 144, 132, 120, 108, 96, 84, 72, 60, 48, 36, 24, 12, 0, -12, -24, -36, -48, -60, -72, -84,
+		-96, -108, -120, -132, -144, -156, -168, 180, 168, 156, 144, 132, 120, 108, 96, 84, 72, 60, 48, 36, 24, 12, 0, -12, -24, -36, -48, -60, -72, -84,
+		-97.5, -112.5, -127.5, -142.5, -157.5, -172.5, 172.5, 157.5, 142.5, 127.5, 112.5, 97.5, 82.5, 67.5, 52.5, 37.5, 22.5, 7.5, -7.5, -22.5, -37.5, -52.5, -67.5, -82.5,
+		-97.5, -112.5, -127.5, -142.5, -157.5, -172.5, 172.5, 157.5, 142.5, 127.5, 112.5, 97.5, 82.5, 67.5, 52.5, 37.5, 22.5, 7.5, -7.5, -22.5, -37.5, -52.5, -67.5, -82.5,
+		-100, -120, -140, -160, 180, 160, 140, 120, 100, 80, 60, 40, 20, 0, -20, -40, -60, -80,
+		-105, -135, -165, 165, 135, 105, 75, 45, 15, -15, -45, -75,
+		-120, 180, 120, 60, 0, -60,
+		0
+	};
 
 	int ringnumber;
 
 	int i=0,j=0,h00=0,h01=0,k=0,i_last=0;
-	float angle1=0.0,max_angle=0.0, Nx=0.0,Ny=0.0,Nz=0.0;
+	double angle1 = 0.0, max_angle = 0.0, Nx = 0.0, Ny = 0.0, Nz = 0.0;
 	int mon1=0, mon0=0,jd0=0,jd1=0, jd=0;
 	double solar_time=0.0, sd=0.0;
 	int chosen_value1=0, chosen_value2=0, chosen_value3=0, chosen_value4=0;
 	float min_diff1=1, min_diff2=1, min_diff3=1, min_diff4=1;
-	float azimuth_tmp=0;
+	double azimuth_tmp = 0;
 	double chosen_time=0.0 ,time_difference=0.0,max_time_difference=0.0, min_alt_difference=0.0;
 	double weight1=0.0,weight2=0.0, weight3=0.0,weight4=0.0,sum_weight=0.0;
 	double altitude=0.0, azimuth=0.0;
@@ -687,174 +698,19 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 	int chosen_value=0, shadow_counter=0;
 	double adapted_time0=0, adapted_time1=0;
 	int number_of_diffuse_and_ground_dc=148;
-	float summe1=0.0;
-	float Dx,Dy,Dz;
+	double summe1 = 0.0;
+	double Dx, Dy, Dz;
 	int j1=0;
 	float *pointer_dc;
 	float *pointer_sky= NULL;
-	float DirectDirectSkyPatchSolarRadiation=0;
-	float DirectDirectSkyPatchLuminance=0;
-	float DirectDirectContribution=0;
-	float DirectDC[2305][3];
+	double DirectDirectSkyPatchSolarRadiation = 0;
+	double DirectDirectSkyPatchLuminance = 0;
+	double DirectDirectContribution = 0;
 	int base_value=0;
 
 	if(dds_file_format) { //DDS
 		number_of_diffuse_and_ground_dc=146;
 		dc_coupling_mode=4;
-		DirectDC[0][0]=-96.0; DirectDC[0][1]=6.0;
-		DirectDC[1][0]=-108.0; DirectDC[1][1]=6.0;
-		DirectDC[2][0]=-120.0; DirectDC[2][1]=6.0;
-		DirectDC[3][0]=-132.0; DirectDC[3][1]=6.0;
-		DirectDC[4][0]=-144.0; DirectDC[4][1]=6.0;
-		DirectDC[5][0]=-156.0; DirectDC[5][1]=6.0;
-		DirectDC[6][0]=-168.0; DirectDC[6][1]=6.0;
-		DirectDC[7][0]=180.0; DirectDC[7][1]=6.0;
-		DirectDC[8][0]=168.0; DirectDC[8][1]=6.0;
-		DirectDC[9][0]=156.0; DirectDC[9][1]=6.0;
-		DirectDC[10][0]=144.0; DirectDC[10][1]=6.0;
-		DirectDC[11][0]=132.0; DirectDC[11][1]=6.0;
-		DirectDC[12][0]=120.0; DirectDC[12][1]=6.0;
-		DirectDC[13][0]=108.0; DirectDC[13][1]=6.0;
-		DirectDC[14][0]=96.0; DirectDC[14][1]=6.0;
-		DirectDC[15][0]=84.0; DirectDC[15][1]=6.0;
-		DirectDC[16][0]=72.0; DirectDC[16][1]=6.0;
-		DirectDC[17][0]=60.0; DirectDC[17][1]=6.0;
-		DirectDC[18][0]=48.0; DirectDC[18][1]=6.0;
-		DirectDC[19][0]=36.0; DirectDC[19][1]=6.0;
-		DirectDC[20][0]=24.0; DirectDC[20][1]=6.0;
-		DirectDC[21][0]=12.0; DirectDC[21][1]=6.0;
-		DirectDC[22][0]=0.0; DirectDC[22][1]=6.0;
-		DirectDC[23][0]=-12.0; DirectDC[23][1]=6.0;
-		DirectDC[24][0]=-24.0; DirectDC[24][1]=6.0;
-		DirectDC[25][0]=-36.0; DirectDC[25][1]=6.0;
-		DirectDC[26][0]=-48.0; DirectDC[26][1]=6.0;
-		DirectDC[27][0]=-60.0; DirectDC[27][1]=6.0;
-		DirectDC[28][0]=-72.0; DirectDC[28][1]=6.0;
-		DirectDC[29][0]=-84.0; DirectDC[29][1]=6.0;
-		DirectDC[30][0]=-96.0; DirectDC[30][1]=18.0;
-		DirectDC[31][0]=-108.0; DirectDC[31][1]=18.0;
-		DirectDC[32][0]=-120.0; DirectDC[32][1]=18.0;
-		DirectDC[33][0]=-132.0; DirectDC[33][1]=18.0;
-		DirectDC[34][0]=-144.0; DirectDC[34][1]=18.0;
-		DirectDC[35][0]=-156.0; DirectDC[35][1]=18.0;
-		DirectDC[36][0]=-168.0; DirectDC[36][1]=18.0;
-		DirectDC[37][0]=180.0; DirectDC[37][1]=18.0;
-		DirectDC[38][0]=168.0; DirectDC[38][1]=18.0;
-		DirectDC[39][0]=156.0; DirectDC[39][1]=18.0;
-		DirectDC[40][0]=144.0; DirectDC[40][1]=18.0;
-		DirectDC[41][0]=132.0; DirectDC[41][1]=18.0;
-		DirectDC[42][0]=120.0; DirectDC[42][1]=18.0;
-		DirectDC[43][0]=108.0; DirectDC[43][1]=18.0;
-		DirectDC[44][0]=96.0; DirectDC[44][1]=18.0;
-		DirectDC[45][0]=84.0; DirectDC[45][1]=18.0;
-		DirectDC[46][0]=72.0; DirectDC[46][1]=18.0;
-		DirectDC[47][0]=60.0; DirectDC[47][1]=18.0;
-		DirectDC[48][0]=48.0; DirectDC[48][1]=18.0;
-		DirectDC[49][0]=36.0; DirectDC[49][1]=18.0;
-		DirectDC[50][0]=24.0; DirectDC[50][1]=18.0;
-		DirectDC[51][0]=12.0; DirectDC[51][1]=18.0;
-		DirectDC[52][0]=0.0; DirectDC[52][1]=18.0;
-		DirectDC[53][0]=-12.0; DirectDC[53][1]=18.0;
-		DirectDC[54][0]=-24.0; DirectDC[54][1]=18.0;
-		DirectDC[55][0]=-36.0; DirectDC[55][1]=18.0;
-		DirectDC[56][0]=-48.0; DirectDC[56][1]=18.0;
-		DirectDC[57][0]=-60.0; DirectDC[57][1]=18.0;
-		DirectDC[58][0]=-72.0; DirectDC[58][1]=18.0;
-		DirectDC[59][0]=-84.0; DirectDC[59][1]=18.0;
-		DirectDC[60][0]=-97.5; DirectDC[60][1]=30.0;
-		DirectDC[61][0]=-112.5; DirectDC[61][1]=30.0;
-		DirectDC[62][0]=-127.5; DirectDC[62][1]=30.0;
-		DirectDC[63][0]=-142.5; DirectDC[63][1]=30.0;
-		DirectDC[64][0]=-157.5; DirectDC[64][1]=30.0;
-		DirectDC[65][0]=-172.5; DirectDC[65][1]=30.0;
-		DirectDC[66][0]=172.5; DirectDC[66][1]=30.0;
-		DirectDC[67][0]=157.5; DirectDC[67][1]=30.0;
-		DirectDC[68][0]=142.5; DirectDC[68][1]=30.0;
-		DirectDC[69][0]=127.5; DirectDC[69][1]=30.0;
-		DirectDC[70][0]=112.5; DirectDC[70][1]=30.0;
-		DirectDC[71][0]=97.5; DirectDC[71][1]=30.0;
-		DirectDC[72][0]=82.5; DirectDC[72][1]=30.0;
-		DirectDC[73][0]=67.5; DirectDC[73][1]=30.0;
-		DirectDC[74][0]=52.5; DirectDC[74][1]=30.0;
-		DirectDC[75][0]=37.5; DirectDC[75][1]=30.0;
-		DirectDC[76][0]=22.5; DirectDC[76][1]=30.0;
-		DirectDC[77][0]=7.5; DirectDC[77][1]=30.0;
-		DirectDC[78][0]=-7.5; DirectDC[78][1]=30.0;
-		DirectDC[79][0]=-22.5; DirectDC[79][1]=30.0;
-		DirectDC[80][0]=-37.5; DirectDC[80][1]=30.0;
-		DirectDC[81][0]=-52.5; DirectDC[81][1]=30.0;
-		DirectDC[82][0]=-67.5; DirectDC[82][1]=30.0;
-		DirectDC[83][0]=-82.5; DirectDC[83][1]=30.0;
-		DirectDC[84][0]=-97.5; DirectDC[84][1]=42.0;
-		DirectDC[85][0]=-112.5; DirectDC[85][1]=42.0;
-		DirectDC[86][0]=-127.5; DirectDC[86][1]=42.0;
-		DirectDC[87][0]=-142.5; DirectDC[87][1]=42.0;
-		DirectDC[88][0]=-157.5; DirectDC[88][1]=42.0;
-		DirectDC[89][0]=-172.5; DirectDC[89][1]=42.0;
-		DirectDC[90][0]=172.5; DirectDC[90][1]=42.0;
-		DirectDC[91][0]=157.5; DirectDC[91][1]=42.0;
-		DirectDC[92][0]=142.5; DirectDC[92][1]=42.0;
-		DirectDC[93][0]=127.5; DirectDC[93][1]=42.0;
-		DirectDC[94][0]=112.5; DirectDC[94][1]=42.0;
-		DirectDC[95][0]=97.5; DirectDC[95][1]=42.0;
-		DirectDC[96][0]=82.5; DirectDC[96][1]=42.0;
-		DirectDC[97][0]=67.5; DirectDC[97][1]=42.0;
-		DirectDC[98][0]=52.5; DirectDC[98][1]=42.0;
-		DirectDC[99][0]=37.5; DirectDC[99][1]=42.0;
-		DirectDC[100][0]=22.5; DirectDC[100][1]=42.0;
-		DirectDC[101][0]=7.5; DirectDC[101][1]=42.0;
-		DirectDC[102][0]=-7.5; DirectDC[102][1]=42.0;
-		DirectDC[103][0]=-22.5; DirectDC[103][1]=42.0;
-		DirectDC[104][0]=-37.5; DirectDC[104][1]=42.0;
-		DirectDC[105][0]=-52.5; DirectDC[105][1]=42.0;
-		DirectDC[106][0]=-67.5; DirectDC[106][1]=42.0;
-		DirectDC[107][0]=-82.5; DirectDC[107][1]=42.0;
-		DirectDC[108][0]=-100.0; DirectDC[108][1]=54.0;
-		DirectDC[109][0]=-120.0; DirectDC[109][1]=54.0;
-		DirectDC[110][0]=-140.0; DirectDC[110][1]=54.0;
-		DirectDC[111][0]=-160.0; DirectDC[111][1]=54.0;
-		DirectDC[112][0]=180.0; DirectDC[112][1]=54.0;
-		DirectDC[113][0]=160.0; DirectDC[113][1]=54.0;
-		DirectDC[114][0]=140.0; DirectDC[114][1]=54.0;
-		DirectDC[115][0]=120.0; DirectDC[115][1]=54.0;
-		DirectDC[116][0]=100.0; DirectDC[116][1]=54.0;
-		DirectDC[117][0]=80.0; DirectDC[117][1]=54.0;
-		DirectDC[118][0]=60.0; DirectDC[118][1]=54.0;
-		DirectDC[119][0]=40.0; DirectDC[119][1]=54.0;
-		DirectDC[120][0]=20.0; DirectDC[120][1]=54.0;
-		DirectDC[121][0]=0.0; DirectDC[121][1]=54.0;
-		DirectDC[122][0]=-20.0; DirectDC[122][1]=54.0;
-		DirectDC[123][0]=-40.0; DirectDC[123][1]=54.0;
-		DirectDC[124][0]=-60.0; DirectDC[124][1]=54.0;
-		DirectDC[125][0]=-80.0; DirectDC[125][1]=54.0;
-		DirectDC[126][0]=-105.0; DirectDC[126][1]=66.0;
-		DirectDC[127][0]=-135.0; DirectDC[127][1]=66.0;
-		DirectDC[128][0]=-165.0; DirectDC[128][1]=66.0;
-		DirectDC[129][0]=165.0; DirectDC[129][1]=66.0;
-		DirectDC[130][0]=135.0; DirectDC[130][1]=66.0;
-		DirectDC[131][0]=105.0; DirectDC[131][1]=66.0;
-		DirectDC[132][0]=75.0; DirectDC[132][1]=66.0;
-		DirectDC[133][0]=45.0; DirectDC[133][1]=66.0;
-		DirectDC[134][0]=15.0; DirectDC[134][1]=66.0;
-		DirectDC[135][0]=-15.0; DirectDC[135][1]=66.0;
-		DirectDC[136][0]=-45.0; DirectDC[136][1]=66.0;
-		DirectDC[137][0]=-75.0; DirectDC[137][1]=66.0;
-		DirectDC[138][0]=-120.0; DirectDC[138][1]=78.0;
-		DirectDC[139][0]=180.0; DirectDC[139][1]=78.0;
-		DirectDC[140][0]=120.0; DirectDC[140][1]=78.0;
-		DirectDC[141][0]=60.0; DirectDC[141][1]=78.0;
-		DirectDC[142][0]=0.0; DirectDC[142][1]=78.0;
-		DirectDC[143][0]=-60.0; DirectDC[143][1]=78.0;
-		DirectDC[144][0]=0.0; DirectDC[144][1]=90.0;
-
-		for (j=0 ; j<145;j++) {
-			DirectDC[j][2]=DirectDC[j][0];
-			if(DirectDC[j][0]<=-90)
-				DirectDC[j][0]=(-1)*(DirectDC[j][0]+90.0);
-			else
-				DirectDC[j][0]=(270.0-DirectDC[j][0]);
-			DirectDC[j][0]*=0.017453292;
-		}
 	}
 
 	if( dir<=dir_threshold ) {	//discard direct contribution
@@ -1032,10 +888,10 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				weight4=weight4/sum_weight;
 			}else{
 				if( *shadow_testing_on)
-					{
-						fprintf(stdout,"ds_illum: warning shadow testing - all 4 nearest patches have a different status than the current sun position (%d date: %d %d %.3f)\n",current_shadow_testing_value, month,day,hour);
-						fprintf(stdout,"          direct sun contribution turned off\n");
-					}
+				{
+					sprintf(errmsg, "shadow testing - all 4 nearest patches have a different status than the current sun position (%d date: %d %d %.3f), direct sun contribution turned off",current_shadow_testing_value, month,day,hour);
+					error(WARNING, errmsg);
+				}
 				weight1=0.0;
 				weight2=0.0;
 				weight3=0.0;
@@ -1056,13 +912,13 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 					}
 					if (direct_calendar[i][h00][1]>0){
 						j1++;
-						SkyPatchLuminance[147+j1]=(solarradiance_luminance/1.0)*(weight1);
-						SkyPatchSolarRadiation[147+j1]=(solarradiance_solar_radiation/1.0)*(weight1);
+						SkyPatchLuminance[147 + j1] = (float)(solarradiance_luminance * weight1);
+						SkyPatchSolarRadiation[147 + j1] = (float)(solarradiance_solar_radiation * weight1);
 					}
 					if (direct_calendar[i][h00+1][1]>0){
 						j1++;
-						SkyPatchLuminance[147+j1]=(solarradiance_luminance/1.0)*(weight2);
-						SkyPatchSolarRadiation[147+j1]=(solarradiance_solar_radiation/1.0)*(weight2);
+						SkyPatchLuminance[147 + j1] = (float)(solarradiance_luminance * weight2);
+						SkyPatchSolarRadiation[147 + j1] = (float)(solarradiance_solar_radiation * weight2);
 					}
 					for (j=h00+2 ; j<25 ; j++){
 						if(direct_calendar[i][j][1]>0)
@@ -1077,13 +933,13 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 					}
 					if (direct_calendar[i][h01][1]>0){
 						j1++;
-						SkyPatchLuminance[147+j1]=(solarradiance_luminance/1.0)*(weight3);
-						SkyPatchSolarRadiation[147+j1]=(solarradiance_solar_radiation/1.0)*(weight3);
+						SkyPatchLuminance[147 + j1] = (float)(solarradiance_luminance * weight3);
+						SkyPatchSolarRadiation[147 + j1] = (float)(solarradiance_solar_radiation * weight3);
 					}
 					if (direct_calendar[i][h01+1][1]>0){
 						j1++;
-						SkyPatchLuminance[147+j1]=(solarradiance_luminance/1.0)*(weight4);
-						SkyPatchSolarRadiation[147+j1]=(solarradiance_solar_radiation/1.0)*(weight4);
+						SkyPatchLuminance[147 + j1] = (float)(solarradiance_luminance * weight4);
+						SkyPatchSolarRadiation[147 + j1] = (float)(solarradiance_solar_radiation * weight4);
 					}
 					for (j=h01+2 ; j<25 ; j++){
 						if(direct_calendar[i][j][1]>0){
@@ -1107,13 +963,13 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 						}
 						if (direct_calendar[i][h00][1]>0){
 							j1++;
-							SkyPatchLuminance[147+j1]=(solarradiance_luminance/1.0)*(weight1);
-							SkyPatchSolarRadiation[147+j1]=(solarradiance_solar_radiation/1.0)*(weight1);
+							SkyPatchLuminance[147 + j1] = (float)(solarradiance_luminance * weight1);
+							SkyPatchSolarRadiation[147 + j1] = (float)(solarradiance_solar_radiation * weight1);
 						}
 						if (direct_calendar[i][h00+1][1]>0){
 							j1++;
-							SkyPatchLuminance[147+j1]=(solarradiance_luminance/1.0)*(weight2);
-							SkyPatchSolarRadiation[147+j1]=(solarradiance_solar_radiation/1.0)*(weight2);
+							SkyPatchLuminance[147 + j1] = (float)(solarradiance_luminance * weight2);
+							SkyPatchSolarRadiation[147 + j1] = (float)(solarradiance_solar_radiation * weight2);
 						}
 						for (j=h00+2 ; j<25 ; j++){
 							if(direct_calendar[i][j][1]>0){
@@ -1129,13 +985,13 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 						}
 						if (direct_calendar[i][h01][1]>0){
 							j1++;
-							SkyPatchLuminance[147+j1]=(solarradiance_luminance/1.0)*(weight3);
-							SkyPatchSolarRadiation[147+j1]=(solarradiance_solar_radiation/1.0)*(weight3);
+							SkyPatchLuminance[147 + j1] = (float)(solarradiance_luminance * weight3);
+							SkyPatchSolarRadiation[147 + j1] = (float)(solarradiance_solar_radiation * weight3);
 						}
 						if (direct_calendar[i][h01+1][1]>0){
 							j1++;
-							SkyPatchLuminance[147+j1]=(solarradiance_luminance/1.0)*(weight4);
-							SkyPatchSolarRadiation[147+j1]=(solarradiance_solar_radiation/1.0)*(weight4);
+							SkyPatchLuminance[147 + j1] = (float)(solarradiance_luminance * weight4);
+							SkyPatchSolarRadiation[147 + j1] = (float)(solarradiance_solar_radiation * weight4);
 						}
 						for (j=h01+2 ; j<25 ; j++){
 							if(direct_calendar[i][j][1]>0)
@@ -1164,16 +1020,18 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				Nz = sin(DTR*direct_pts[j][1]);
 				angle1=acos(Nx*Dx+Ny*Dy+Nz*Dz);
 				if (angle1 < max_angle ){
-					if( *shadow_testing_on){
-						if( (direct_view[count_var] -direct_pts[j][3]) ==0 ){max_angle=angle1;chosen_value=j;}
-					}else{max_angle=angle1;chosen_value=j;}
+					if(!(*shadow_testing_on) || ((direct_view[count_var] - direct_pts[j][3]) == 0)){
+						max_angle = angle1;
+						chosen_value = j;
+					}
 				}
 			}
 			if(max_angle==2*PI) {
-				fprintf(stdout,"ds_illum: warning -  shadow test of point at %d %d %f does not correspond to any direct daylight coefficient\n", month, day, hour );
+				sprintf(errmsg, "shadow test of point at %d %d %f does not correspond to any direct daylight coefficient", month, day, hour);
+				error(WARNING, errmsg);
 			}
-			SkyPatchLuminance[148+chosen_value]=(solarradiance_luminance/1.0);
-			SkyPatchSolarRadiation[148+chosen_value]=(solarradiance_solar_radiation/1.0);
+			SkyPatchLuminance[148 + chosen_value] = (float)solarradiance_luminance;
+			SkyPatchSolarRadiation[148 + chosen_value] = (float)solarradiance_solar_radiation;
 			break;
 		}
 		case 3 : { /* no direct contribution*/
@@ -1209,7 +1067,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 			{
 				for (j=0 ; j<30;j++)
 				{
-					if((fabs(azimuth-DirectDC[j][2])<12.0) &&((fabs(azimuth-DirectDC[j+1][2])<=12.0)||(fabs(azimuth-DirectDC[j][2]-360.0)<=12.0)))
+					if ((fabs(azimuth - DirectDC_phi[j])<12.0) && ((fabs(azimuth - DirectDC_phi[j + 1]) <= 12.0) || (fabs(azimuth - DirectDC_phi[j] - 360.0) <= 12.0)))
 					{
 						chosen_value1=j;
 						chosen_value2=j+1;
@@ -1238,7 +1096,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=0;
 				for (j=0 ; j<30;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<12.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=12.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=12.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<12.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 12.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 12.0)))
 					{
 						chosen_value1=base_value+j;
 						chosen_value2=base_value+j+1;
@@ -1257,7 +1115,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=30;
 				for (j=0 ; j<30;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<12.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=12.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=12.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<12.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 12.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 12.0)))
 					{
 						chosen_value3=base_value+j;
 						chosen_value4=base_value+j+1;
@@ -1286,7 +1144,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=30;
 				for (j=0 ; j<30;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<12.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=12.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=12.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<12.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 12.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 12.0)))
 					{
 						chosen_value1=base_value+j;
 						chosen_value2=base_value+j+1;
@@ -1305,7 +1163,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=60;
 				for (j=0 ; j<24;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<15.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=15.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=15.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<15.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 15.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 15.0)))
 					{
 						chosen_value3=base_value+j;
 						chosen_value4=base_value+j+1;
@@ -1335,7 +1193,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=60;
 				for (j=0 ; j<24;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<15.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=15.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=15.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<15.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 15.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 15.0)))
 					{
 						chosen_value1=base_value+j;
 						chosen_value2=base_value+j+1;
@@ -1355,7 +1213,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=84;
 				for (j=0 ; j<24;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<15.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=15.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=15.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<15.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 15.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 15.0)))
 					{
 						chosen_value3=base_value+j;
 						chosen_value4=base_value+j+1;
@@ -1384,7 +1242,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=84;
 				for (j=0 ; j<24;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<15.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=15.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=15.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<15.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 15.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 15.0)))
 					{
 						chosen_value1=base_value+j;
 						chosen_value2=base_value+j+1;
@@ -1403,7 +1261,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=108;
 				for (j=0 ; j<18;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<20.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=20.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=20.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<20.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 20.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 20.0)))
 					{
 						chosen_value3=base_value+j;
 						chosen_value4=base_value+j+1;
@@ -1433,7 +1291,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=108;
 				for (j=0 ; j<18;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<20.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=20.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=20.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<20.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 20.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 20.0)))
 					{
 						chosen_value1=base_value+j;
 						chosen_value2=base_value+j+1;
@@ -1453,7 +1311,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=126;
 				for (j=0 ; j<12;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<30.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=30.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=30.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<30.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 30.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 30.0)))
 					{
 						chosen_value3=base_value+j;
 						chosen_value4=base_value+j+1;
@@ -1482,7 +1340,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=126;
 				for (j=0 ; j<12;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<30.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=30.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=30.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<30.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 30.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 30.0)))
 					{
 						chosen_value1=base_value+j;
 						chosen_value2=base_value+j+1;
@@ -1501,7 +1359,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=138;
 				for (j=0 ; j<6;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<60.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=60.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=60.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<60.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 60.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 60.0)))
 					{
 						chosen_value3=base_value+j;
 						chosen_value4=base_value+j+1;
@@ -1530,7 +1388,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				base_value=138;
 				for (j=0 ; j<6;j++)
 				{
-					if((fabs(azimuth-DirectDC[j+base_value][2])<60.0) &&((fabs(azimuth-DirectDC[j+1+base_value][2])<=60.0)||(fabs(azimuth-DirectDC[j+base_value][2]-360.0)<=60.0)))
+					if ((fabs(azimuth - DirectDC_phi[j + base_value])<60.0) && ((fabs(azimuth - DirectDC_phi[j + 1 + base_value]) <= 60.0) || (fabs(azimuth - DirectDC_phi[j + base_value] - 360.0) <= 60.0)))
 					{
 						chosen_value1=base_value+j;
 						chosen_value2=base_value+j+1;
@@ -1563,15 +1421,15 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 			//assign and normize weights
 			//++++++++++++++++++++++++++
 
-			weight1*=fabs((azimuth-DirectDC[chosen_value2][2])/(DirectDC[chosen_value1][2]-DirectDC[chosen_value2][2]));
-			weight2*=fabs((azimuth-DirectDC[chosen_value1][2])/(DirectDC[chosen_value1][2]-DirectDC[chosen_value2][2]));
-			weight3*=fabs((azimuth-DirectDC[chosen_value4][2])/(DirectDC[chosen_value3][2]-DirectDC[chosen_value4][2]));
-			weight4*=fabs((azimuth-DirectDC[chosen_value3][2])/(DirectDC[chosen_value3][2]-DirectDC[chosen_value4][2]));
+			weight1 *= fabs((azimuth - DirectDC_phi[chosen_value2]) / (DirectDC_phi[chosen_value1] - DirectDC_phi[chosen_value2]));
+			weight2 *= fabs((azimuth - DirectDC_phi[chosen_value1]) / (DirectDC_phi[chosen_value1] - DirectDC_phi[chosen_value2]));
+			weight3 *= fabs((azimuth - DirectDC_phi[chosen_value4]) / (DirectDC_phi[chosen_value3] - DirectDC_phi[chosen_value4]));
+			weight4 *= fabs((azimuth - DirectDC_phi[chosen_value3]) / (DirectDC_phi[chosen_value3] - DirectDC_phi[chosen_value4]));
 
-			weight1*=(DirectDC[chosen_value3][1]-altitude)/(DirectDC[chosen_value3][1]-DirectDC[chosen_value1][1]);
-			weight2*=(DirectDC[chosen_value3][1]-altitude)/(DirectDC[chosen_value3][1]-DirectDC[chosen_value1][1]);
-			weight3*=(altitude-DirectDC[chosen_value1][1])/(DirectDC[chosen_value3][1]-DirectDC[chosen_value1][1]);
-			weight4*=(altitude-DirectDC[chosen_value1][1])/(DirectDC[chosen_value3][1]-DirectDC[chosen_value1][1]);
+			weight1 *= (DirectDC_theta[chosen_value3] - altitude) / (DirectDC_theta[chosen_value3] - DirectDC_theta[chosen_value1]);
+			weight2 *= (DirectDC_theta[chosen_value3] - altitude) / (DirectDC_theta[chosen_value3] - DirectDC_theta[chosen_value1]);
+			weight3 *= (altitude - DirectDC_theta[chosen_value1]) / (DirectDC_theta[chosen_value3] - DirectDC_theta[chosen_value1]);
+			weight4 *= (altitude - DirectDC_theta[chosen_value1]) / (DirectDC_theta[chosen_value3] - DirectDC_theta[chosen_value1]);
 
 
 			sum_weight=weight1+weight2+weight3+weight4;
@@ -1588,34 +1446,34 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 
 
 
-			SkyPatchLuminance[145+chosen_value1]=(solarradiance_luminance/1.0)*weight1;
-			SkyPatchLuminance[145+chosen_value2]=(solarradiance_luminance/1.0)*weight2;
-			SkyPatchLuminance[145+chosen_value3]=(solarradiance_luminance/1.0)*weight3;
-			SkyPatchLuminance[145+chosen_value4]=(solarradiance_luminance/1.0)*weight4;
+			SkyPatchLuminance[145 + chosen_value1] = (float)(solarradiance_luminance * weight1);
+			SkyPatchLuminance[145 + chosen_value2] = (float)(solarradiance_luminance * weight2);
+			SkyPatchLuminance[145 + chosen_value3] = (float)(solarradiance_luminance * weight3);
+			SkyPatchLuminance[145 + chosen_value4] = (float)(solarradiance_luminance * weight4);
 
-			SkyPatchSolarRadiation[145+chosen_value1]=(solarradiance_solar_radiation/1.0)*weight1;
-			SkyPatchSolarRadiation[145+chosen_value2]=(solarradiance_solar_radiation/1.0)*weight2;
-			SkyPatchSolarRadiation[145+chosen_value3]=(solarradiance_solar_radiation/1.0)*weight3;
-			SkyPatchSolarRadiation[145+chosen_value4]=(solarradiance_solar_radiation/1.0)*weight4;
+			SkyPatchSolarRadiation[145 + chosen_value1] = (float)(solarradiance_solar_radiation * weight1);
+			SkyPatchSolarRadiation[145 + chosen_value2] = (float)(solarradiance_solar_radiation * weight2);
+			SkyPatchSolarRadiation[145 + chosen_value3] = (float)(solarradiance_solar_radiation * weight3);
+			SkyPatchSolarRadiation[145 + chosen_value4] = (float)(solarradiance_solar_radiation * weight4);
 			
 
 			// Step 2: Identify in which patch the sun currently is for the direct-direct DC
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 			ringnumber=(int)(1.0*altitude/3.157895);
-			if((azimuth>-90) && (azimuth < 180))
-				{
-					chosen_value= number2305[ringnumber] + (int)((270.0-azimuth)/(360.0/ring_division2305[ringnumber]));
-				}else{
-				chosen_value= number2305[ringnumber] + (int)((-90.0-azimuth)/(360.0/ring_division2305[ringnumber]));
+			if((azimuth>-90) && (azimuth < 180)){
+				chosen_value = number2305[ringnumber] + (int)((270.0 - azimuth) / (360.0 / ring_division2305[ringnumber]));
+			}
+			else{
+				chosen_value = number2305[ringnumber] + (int)((-90.0 - azimuth) / (360.0 / ring_division2305[ringnumber]));
 			}
 
 			//printf(" ringnumber %d  chosen_value 2305: %d\n",ringnumber, chosen_value+290);
 
-			SkyPatchLuminance[290+chosen_value]=(solarradiance_luminance/1.0);
-			DirectDirectSkyPatchLuminance=solarradiance_luminance/1.0;
+			SkyPatchLuminance[290 + chosen_value] = (float)solarradiance_luminance;
+			DirectDirectSkyPatchLuminance=solarradiance_luminance;
 			
-			SkyPatchSolarRadiation[290+chosen_value]=(solarradiance_solar_radiation/1.0);
-			DirectDirectSkyPatchSolarRadiation=solarradiance_solar_radiation/1.0;
+			SkyPatchSolarRadiation[290 + chosen_value] = (float)solarradiance_solar_radiation;
+			DirectDirectSkyPatchSolarRadiation=solarradiance_solar_radiation;
 			
 			break;
 		}
@@ -1641,15 +1499,15 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 			//				1 unit = asin(z)*(2*7.5)/Pi)
 			//				1 unit = asin(z)*(15)/Pi)
 			// Note that (int) always rounds to the next lowest integer
-			if((azimuth>-90) && (azimuth < 180))
-				{
-					chosen_value= number145[ringnumber] + (int)((270.0-azimuth)/(360.0/ring_division145[ringnumber]));
-				}else{
-				chosen_value= number145[ringnumber] + (int)((-90.0-azimuth)/(360.0/ring_division145[ringnumber]));
+			if((azimuth>-90) && (azimuth < 180)){
+				chosen_value = number145[ringnumber] + (int)((270.0 - azimuth) / (360.0 / ring_division145[ringnumber]));
+			}
+			else{
+				chosen_value = number145[ringnumber] + (int)((-90.0 - azimuth) / (360.0 / ring_division145[ringnumber]));
 			}
 
-			SkyPatchLuminance[145+chosen_value]=(solarradiance_luminance/1.0);
-			SkyPatchSolarRadiation[145+chosen_value]=(solarradiance_solar_radiation/1.0);
+			SkyPatchLuminance[145 + chosen_value] = (float)solarradiance_luminance;
+			SkyPatchSolarRadiation[145 + chosen_value] = (float)solarradiance_solar_radiation;
 
 
 			//printf("dds %d dc.coup %d, date %d %d %.3f altitude %f azimuth %f  chosen_value %d ",dds_file_format,dc_coupling_mode,month, day,hour,altitude, azimuth,chosen_value);
@@ -1657,20 +1515,20 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 			// Step 2: Identify in which patch the sun currently is for the direct-direct DC
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 			ringnumber=(int)(1.0*altitude/3.157895);
-			if((azimuth>-90) && (azimuth < 180))
-				{
-					chosen_value= number2305[ringnumber] + (int)((270.0-azimuth)/(360.0/ring_division2305[ringnumber]));
-				}else{
-				chosen_value= number2305[ringnumber] + (int)((-90.0-azimuth)/(360.0/ring_division2305[ringnumber]));
+			if((azimuth>-90) && (azimuth < 180)){
+				chosen_value = number2305[ringnumber] + (int)((270.0 - azimuth) / (360.0 / ring_division2305[ringnumber]));
+			}
+			else{
+				chosen_value = number2305[ringnumber] + (int)((-90.0 - azimuth) / (360.0 / ring_division2305[ringnumber]));
 			}
 
 			//printf(" ringnumber %d  chosen_value 2305: %d\n",ringnumber, chosen_value+290);
 
-			SkyPatchLuminance[290+chosen_value]=(solarradiance_luminance/1.0);
-			DirectDirectSkyPatchLuminance=solarradiance_luminance/1.0;
+			SkyPatchLuminance[290 + chosen_value] = (float)solarradiance_luminance;
+			DirectDirectSkyPatchLuminance=solarradiance_luminance;
 			
-			SkyPatchSolarRadiation[290+chosen_value]=(solarradiance_solar_radiation/1.0);
-			DirectDirectSkyPatchSolarRadiation=solarradiance_solar_radiation/1.0;
+			SkyPatchSolarRadiation[290 + chosen_value] = (float)solarradiance_solar_radiation;
+			DirectDirectSkyPatchSolarRadiation=solarradiance_solar_radiation;
 
 			break;
 		}
@@ -1839,7 +1697,7 @@ double glob_h_effi_PEREZ()
 	double 	category_bounds[10], a[10], b[10], c[10], d[10];
 	int   	category_total_number, category_number=0, i;
 
-	if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup){;}
+	//if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup){;}
 
 	/* initialize category bounds (clearness index bounds) */
 
@@ -2066,25 +1924,29 @@ void check_parametrization()
 		{
 			if (skyclearness<skyclearinf){
 				if(all_warnings &&((fabs(hour- 12+12-stadj(jdate(month, day))-solar_sunset(month,day))<0.25)||(fabs(hour-solar_sunset(month,day)-stadj(jdate(month, day)) )<0.25) )){
-					fprintf(stdout,"ds_illum: warning - sky clearness (%.1f) below range (%d %d %.3f)\n", skyclearness, month, day, hour);
+					sprintf(errmsg, "sky clearness (%.1f) below range (%d %d %.3f)", skyclearness, month, day, hour);
+					error(WARNING, errmsg);
 				}
 				skyclearness=skyclearinf;
 			}
 			if (skyclearness>skyclearsup){
 				if(all_warnings &&((fabs(hour- 12+12-stadj(jdate(month, day))-solar_sunset(month,day))<0.25)||(fabs(hour-solar_sunset(month,day)-stadj(jdate(month, day)) )<0.25) )){
-					fprintf(stdout,"ds_illum: warning - sky clearness (%.1f) above range (%d %d %.3f)\n", skyclearness, month, day, hour);
+					sprintf(errmsg, "sky clearness (%.1f) above range (%d %d %.3f)", skyclearness, month, day, hour);
+					error(WARNING, errmsg);
 				}
 				skyclearness=skyclearsup;
 			}
 			if (skybrightness<skybriginf){
 				if(all_warnings &&((fabs(hour- 12+12-stadj(jdate(month, day))-solar_sunset(month,day))<0.25)||(fabs(hour-solar_sunset(month,day)-stadj(jdate(month, day)) )<0.25) )){
-					fprintf(stdout,"ds_illum: warning - sky brightness (%.1f) below range (%d %d %.3f)\n", skybrightness, month, day, hour);
+					sprintf(errmsg, "sky brightness (%.1f) below range (%d %d %.3f)", skybrightness, month, day, hour);
+					error(WARNING, errmsg);
 				}
 				skybrightness=skybriginf;
 			}
 			if (skybrightness>skybrigsup){
 				if(all_warnings &&((fabs(hour- 12+12-stadj(jdate(month, day))-solar_sunset(month,day))<0.25)||(fabs(hour-solar_sunset(month,day)-stadj(jdate(month, day)) )<0.25) )){
-					fprintf(stdout,"ds_illum: warning - sky brightness (%.1f) above range (%d %d %.3f)\n", skybrightness, month, day, hour);
+					sprintf(errmsg, "sky brightness (%.1f) above range (%d %d %.3f)", skybrightness, month, day, hour);
+					error(WARNING, errmsg);
 				}
 				skybrightness=skybrigsup;
 			}
@@ -2099,8 +1961,11 @@ void 	check_illuminances()
 	if (!( (directilluminance>=0) && (directilluminance<=solar_constant_l*1000) && (diffusilluminance>0) ))
 		{
 			if(directilluminance > solar_constant_l*1000){
-				directilluminance=solar_constant_l*1000;fprintf(stdout,"ds_illum: warning -  direct illuminance set to max at %d %d %.3f\n", month,day,hour);
-			}else{directilluminance=0;diffusilluminance=0;}
+				directilluminance=solar_constant_l*1000;
+				sprintf(errmsg, "direct illuminance set to max at %d %d %.3f", month, day, hour);
+				error(WARNING, errmsg);
+			}
+			else{ directilluminance = 0; diffusilluminance = 0; }
 			/*fprintf(stdout,"direct or diffuse illuminances out of range at %d %d %f\n", month,day,hour);*/
 		}
 }
@@ -2109,11 +1974,12 @@ void 	check_illuminances()
 void 	check_irradiances()
 {
 	if (!( (directirradiance>=0) && (directirradiance<=solar_constant_e) && (diffusirradiance>0) ))
-		{
-			if(diffusirradiance!=0 && directirradiance!=0){
-				fprintf(stdout,"ds_illum: warning - direct or diffuse irradiances out of range\n");
-				fprintf(stdout,"date %d %d %f\n dir %f dif %f\n",month,day,hour,directirradiance,diffusirradiance);}
+	{
+		if(diffusirradiance!=0 && directirradiance!=0){
+			sprintf(errmsg, "direct or diffuse irradiances out of range (date %d %d %f\n dir %f dif %f)", month, day, hour, directirradiance, diffusirradiance);
+			error(WARNING, errmsg);
 		}
+	}
 }
 
 
@@ -2199,10 +2065,10 @@ void illu_to_irra_index(void)
 
 
 /* sky luminance perez model */
-double calc_rel_lum_perez(double dzeta,double gamma,double Z,
-						  double epsilon,double Delta,float *coeff_perez)
+double calc_rel_lum_perez(double dzeta, double gamma, double Z,
+	double epsilon, double Delta, double *coeff_perez)
 {
-	float x[5][4];
+	double x[5][4];
 	int i,j,num_lin=0;
 	double c_perez[5];
 
@@ -2258,9 +2124,9 @@ double calc_rel_lum_perez(double dzeta,double gamma,double Z,
 
 
 /* coefficients for the sky luminance perez model */
-void coeff_lum_perez(double Z, double epsilon, double Delta, float *coeff_perez)
+void coeff_lum_perez(double Z, double epsilon, double Delta, double *coeff_perez)
 {
-	float x[5][4];
+	double x[5][4];
 	int i,j,num_lin=0;
 
 	if ( (epsilon <  skyclearinf) || (epsilon > skyclearsup) )

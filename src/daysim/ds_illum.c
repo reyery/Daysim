@@ -34,7 +34,6 @@
 
 /* information from input file */
 /*site information */
-int start_month, start_day;
 int all_warnings=0; // optional switch for ds_illum. If activated, warnings for direct and
                     // diffuse input irradiances that lie within 15 minutes after sunrise or
                     // before sunset are written to standard error.
@@ -47,7 +46,6 @@ int all_warnings=0; // optional switch for ds_illum. If activated, warnings for 
 // is: "sensor_unit"
 int 		CalculateLuminance=1;
 int 		CalculateSolarRadiation=1;
-float start_hour, centrum_hour;
 char	direct_file[1024]="";
 char	ill_file[1024]="";
 char	temp_octree[1024]="";

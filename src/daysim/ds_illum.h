@@ -8,9 +8,7 @@
 
 extern int 		CalculateLuminance;
 extern int 		CalculateSolarRadiation;
-extern int      start_month, start_day;
 extern int      all_warnings; /* defines the number or error messages */
-extern float    start_hour, centrum_hour;
 extern char	    direct_file[1024];
 extern char	    ill_file[1024];
 extern char	    temp_octree[1024];

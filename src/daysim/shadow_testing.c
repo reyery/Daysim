@@ -55,7 +55,7 @@ void  make_annual_point_file_old(float x,float y,float z,char long_sensor_file[1
 	float hour, dir, dif;
 	double alt = 0.0, azi = 0.0;
 
-	fprintf(stdout,"ds_illum: final shadow testing \n");
+	fprintf(stdout, "%s: final shadow testing \n", progname);
 
 	WEA=open_input(wea_data_short_file);
 	fscanf(WEA,"%s",befehl);
@@ -143,7 +143,7 @@ int shadow_testing(int number_direct_coefficients)
 	{
 		error(USER, "shadow testing no \'work plane sensor\' specified in sensor file");
 	}else{
-		fprintf(stdout,"ds_illum: initial shadow_testing invoked for sensor \n\t");
+		fprintf(stdout, "%s: initial shadow_testing invoked for sensor \n\t", progname);
 	 	fprintf(stdout,"x:%.3f\ty:%.3f\tz:%.3f\n\tdx:%.3f\tdy:%.3f\tdz:%.3f\n",point_coefficients[0],point_coefficients[1],point_coefficients[2],point_coefficients[3],point_coefficients[4],point_coefficients[5]);
 	 }
 	i=close_file(POINTS);
