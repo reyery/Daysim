@@ -23,7 +23,7 @@
 void calculate_sky_patches (int dc_direct_resolution, int dif_pts, int dir_pts, int *number_direct_coefficients)
 {
 	int 	i,j;
-	float alt,azi;
+	double alt, azi;
 	FILE *DIFFUSE_POINTS_FILE;
 	FILE *DIRECT_POINTS_FILE;
 	get_dc(dc_direct_resolution,number_direct_coefficients);	/* calculate daylight coefficients depending on site */
@@ -49,8 +49,8 @@ void calculate_sky_patches (int dc_direct_resolution, int dif_pts, int dir_pts, 
 			for(j=0; j< *number_direct_coefficients; j++){
 				fprintf(DIFFUSE_POINTS_FILE,"void light solar%d\n0 \n0 \n3 1000 1000 1000\n\n",j+1);
 				fprintf(DIFFUSE_POINTS_FILE,"solar%d source sun\n0\n0\n",j+1);
-				alt=0.017453*(90-direct_pts[j][1]);
-				azi=0.017453*(-1)*(direct_pts[j][2]+90);
+				alt = DTR*(90 - direct_pts[j][1]);
+				azi = -DTR*(direct_pts[j][2] + 90);
 				fprintf(DIFFUSE_POINTS_FILE,"4 %f %f %f 0.533\n\n",sin(alt)*cos(azi),sin(alt)*sin(azi),cos(alt));
 			}
 			i=close_file(DIFFUSE_POINTS_FILE);
@@ -65,7 +65,7 @@ void get_dc(int dc_direct_resolution, int *number_direct_coefficients) /* calcul
 {
 	float  patches_per_row[8][2];
 	int i=0, j=0,k=0;
-	float angle_unit;
+	double angle_unit;
 
 	/* Tregenza distribution */
 	patches_per_row[0][0]=90;
@@ -91,7 +91,7 @@ void get_dc(int dc_direct_resolution, int *number_direct_coefficients) /* calcul
 		angle_unit=360.0/patches_per_row[i][1];
 		for( j=0; j<patches_per_row[i][1]; j++){
 			diffuse_pts[k][0]=patches_per_row[i][0];
-			diffuse_pts[k][1]=(0.5*angle_unit)+(angle_unit*j);
+			diffuse_pts[k][1]=(float)(angle_unit*(j + 0.5));
 			k++;
 		}
 	}
@@ -104,7 +104,7 @@ void get_dc(int dc_direct_resolution, int *number_direct_coefficients) /* calcul
 	}else{
 		for(j=0; j< 24; j++){
 			for(i=1; i< 13; i++){
-				direct_calendar[i][j][0]=j;
+				direct_calendar[i][j][0] = (float)j;
 				direct_calendar[i][j][1]=0;
 				direct_calendar[i][j][2]=0;
 				direct_calendar[i][j][3]=0;
@@ -124,33 +124,35 @@ void get_dc(int dc_direct_resolution, int *number_direct_coefficients) /* calcul
 }
 
 void assign_values(int month, int day, int *number_direct_coefficients)
-{	int hour1;
- float st; /* solar time */
- float sd;
- double alt2_rise,alt2_set;
- sd=sdec(jdate(month, day));
- alt2_rise=f_salt(  sd, 2.0*DTR);
- alt2_set = 24 - f_salt(sd, 2.0*DTR);
- for(hour1=0; hour1< 24; hour1++){
-	 st=hour1;
-	 if( ( (hour1-0.5)<alt2_rise ) && (( hour1+0.5) > alt2_rise )){st=alt2_rise;}
-	 if( ( (hour1-0.5)<alt2_set ) && (( hour1+0.5) > alt2_set )){st=alt2_set;}
+{
+	int hour1;
+	double st; /* solar time */
+	double sd;
+	double alt2_rise, alt2_set;
+	sd = sdec(jdate(month, day));
+	alt2_rise = f_salt(sd, 2.0*DTR);
+	alt2_set = 24 - f_salt(sd, 2.0*DTR);
+	for (hour1 = 0; hour1< 24; hour1++){
+		st = hour1;
+		if (((hour1 - 0.5)<alt2_rise) && ((hour1 + 0.5) > alt2_rise)){ st = alt2_rise; }
+		if (((hour1 - 0.5)<alt2_set) && ((hour1 + 0.5) > alt2_set)){ st = alt2_set; }
 
-	 if ( salt(sd,st)*RTD >1.999   ){
-		 direct_pts[*number_direct_coefficients][0] = st;
-		 direct_pts[*number_direct_coefficients][1] = salt(sd, st) * RTD;
-		 if(direct_pts[*number_direct_coefficients][1] <2.001){direct_pts[*number_direct_coefficients][1]=2;}
-		 direct_pts[*number_direct_coefficients][2] = sazi(sd, st) * RTD;
-		 direct_calendar[month][hour1][0]=direct_pts[*number_direct_coefficients][0];
-		 direct_calendar[month][hour1][1]=direct_pts[*number_direct_coefficients][1];
-		 direct_calendar[month][hour1][2]=direct_pts[*number_direct_coefficients][2];
-		 *number_direct_coefficients= *number_direct_coefficients +1;
-	 }else{
-		 direct_calendar[month][hour1][0] = st;
-		 direct_calendar[month][hour1][1] = salt(sd, st) * RTD;
-		 direct_calendar[month][hour1][2] = sazi(sd, st) * RTD;
-	 }
- }
+		if (salt(sd, st)*RTD >1.999){
+			direct_pts[*number_direct_coefficients][0] = (float)st;
+			direct_pts[*number_direct_coefficients][1] = (float)(salt(sd, st) * RTD);
+			if (direct_pts[*number_direct_coefficients][1] <2.001){ direct_pts[*number_direct_coefficients][1] = 2; }
+			direct_pts[*number_direct_coefficients][2] = (float)(sazi(sd, st) * RTD);
+			direct_calendar[month][hour1][0] = direct_pts[*number_direct_coefficients][0];
+			direct_calendar[month][hour1][1] = direct_pts[*number_direct_coefficients][1];
+			direct_calendar[month][hour1][2] = direct_pts[*number_direct_coefficients][2];
+			*number_direct_coefficients = *number_direct_coefficients + 1;
+		}
+		else{
+			direct_calendar[month][hour1][0] = (float)st;
+			direct_calendar[month][hour1][1] = (float)(salt(sd, st) * RTD);
+			direct_calendar[month][hour1][2] = (float)(sazi(sd, st) * RTD);
+		}
+	}
 }
 
 void get_horizon_factors()
@@ -166,18 +168,18 @@ void get_horizon_factors()
 		for (j=0;j<36;j++){
 			if((j+1)*step_hor>=i*step_genweather && j*step_hor<=(i+1)*step_genweather ){
 				if(horizon[j]>=12){
-					altitude_u1=(horizon[j]-12.0)/12.0;
+					altitude_u1=(horizon[j]-12.0f)/12.0f;
 					altitude_d1=1;
 				}else{
 					altitude_u1=0;
-					altitude_d1=(horizon[j])/12.0;
+					altitude_d1=(horizon[j])/12.0f;
 				}
 				if(horizon[j+1]>=12){
-					altitude_u2=(horizon[j+1]-12.0)/12.0;
+					altitude_u2=(horizon[j+1]-12.0f)/12.0f;
 					altitude_d2=1;
 				}else{
 					altitude_u2=0;
-					altitude_d2=(horizon[j+1])/12.0;
+					altitude_d2=(horizon[j+1])/12.0f;
 				}
 				ratio=((j+1)*step_hor-i*step_genweather)/step_genweather;
 				/* get horizon factors */

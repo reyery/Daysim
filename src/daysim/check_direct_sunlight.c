@@ -13,6 +13,8 @@
 #include  "check_direct_sunlight.h"
 #include  "read_in_header.h"
 
+#include  "rtmath.h"
+#define DTR (PI/180.0)
 
 int number_of_active_sensors=0;
 double alt,azi;
@@ -122,7 +124,7 @@ void calculate_visible_sky_angle(  char octree[200])
 	{ //ring index
 		//assign ring latitude
 		if(j<28)
-			RingAltitude=1.0*(j+0.5)*(90.0/28.5);
+			RingAltitude=(j+0.5f)*(90.0f/28.5f);
 		else
 			RingAltitude=90.0;
 		if(RingAltitude<2.0)
@@ -142,7 +144,7 @@ void calculate_visible_sky_angle(  char octree[200])
 
 		//assign azimuth
 		for(i=0; i< NumOfRingDivisions; i++){ //azimuth
-			RingAzimuth=1.0*(i+0.5)*(360.0/NumOfRingDivisions);
+			RingAzimuth=(i+0.5f)*(360.0f/NumOfRingDivisions);
 			if(RingAzimuth<=90)
 				RingAzimuth=-90-RingAzimuth;
 			if(RingAzimuth>90 && RingAzimuth<=360)
@@ -161,8 +163,8 @@ void calculate_visible_sky_angle(  char octree[200])
 	{
 		for (j=0 ; j<2305 ; j++)
 		{
-			alt=0.017453292*(90.0-DirectDC[j][1]);
-			azi=0.017453292*(-1)*(DirectDC[j][0]+90.0);
+			alt = DTR*(90.0 - DirectDC[j][1]);
+			azi = -DTR*(DirectDC[j][0] + 90.0);
 			fprintf(DIRECT_POINTS_FILE,"%f %f %f\t%f %f %f\n", points[0][i],points[1][i],points[2][i],sin(alt)*cos(azi),sin(alt)*sin(azi),cos(alt));
 		}
 	}

@@ -609,12 +609,12 @@ int write_segments_diffuse(double dir,double dif)
 			}
 			// assign ground brightness
 			if(dds_file_format) // new dds file format chosen
-				{
-					/* 0 to 10 */  SkyPatchSolarRadiation[145]=skybright(0.9397,0,-0.342,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
-				}else{
-				/* 0 to 10 */  SkyPatchSolarRadiation[145]=skybright(0.9961946,0,-0.087156,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
-				/* 10 to 30*/  SkyPatchSolarRadiation[146]=skybright(0.9397,0,-0.342,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
-				/* 30 to 90 */ SkyPatchSolarRadiation[147]=skybright(0,0,-1.0,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
+			{
+				/* 0 to 10 */  SkyPatchSolarRadiation[145] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+			}else{
+				/* 0 to 10 */  SkyPatchSolarRadiation[145] = (float)skybright(0.9961946, 0, -0.087156, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 10 to 30*/  SkyPatchSolarRadiation[146] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 30 to 90 */ SkyPatchSolarRadiation[147] = (float)skybright(0, 0, -1.0, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
 			}
 
 			for (j=0 ; j<148 ; j++) {
@@ -965,9 +965,9 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				if (j == 24) error(INTERNAL, "loop in gendaylit_algorithm failed");
 			}
 
-			Dx=cos((0.017453292)*azimuth)*cos((0.017453292)*(altitude));
-			Dy=sin((0.017453292)*azimuth)*cos((0.017453292)*(altitude));
-			Dz=sin((0.017453292)*(altitude));
+			Dx = cos(DTR*azimuth)*cos(DTR*altitude);
+			Dy = sin(DTR*azimuth)*cos(DTR*altitude);
+			Dz = sin(DTR*altitude);
 
 			// Step 2: assign weights
 			//======================================
@@ -1155,13 +1155,13 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 			chosen_time=0; time_difference=0;
 			max_time_difference=12; min_alt_difference=90;
 			max_angle=2*PI;
-			Dx=cos((0.017453292)*azimuth)*cos((0.017453292)*(altitude));
-			Dy=sin((0.017453292)*azimuth)*cos((0.017453292)*(altitude));
-			Dz=sin((0.017453292)*(altitude));
+			Dx = cos(DTR*azimuth)*cos(DTR*altitude);
+			Dy = sin(DTR*azimuth)*cos(DTR*altitude);
+			Dz = sin(DTR*altitude);
 			for (j=0 ; j< number_direct_coefficients; j++){
-				Nx=cos((0.017453292)*direct_pts[j][2])*cos((0.017453292)*(direct_pts[j][1]));
-				Ny=sin((0.017453292)*direct_pts[j][2])*cos((0.017453292)*(direct_pts[j][1]));
-				Nz=sin((0.017453292)*(direct_pts[j][1]));
+				Nx = cos(DTR*direct_pts[j][2])*cos(DTR*direct_pts[j][1]);
+				Ny = sin(DTR*direct_pts[j][2])*cos(DTR*direct_pts[j][1]);
+				Nz = sin(DTR*direct_pts[j][1]);
 				angle1=acos(Nx*Dx+Ny*Dy+Nz*Dz);
 				if (angle1 < max_angle ){
 					if( *shadow_testing_on){
@@ -1197,11 +1197,11 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 			else
 				azimuth_tmp=(270.0-azimuth);
 
-			azimuth_tmp*=0.017453292;
+			azimuth_tmp *= DTR;
 
-			Dx=cos(azimuth_tmp)*cos((0.017453292)*(altitude));
-			Dy=sin(azimuth_tmp)*cos((0.017453292)*(altitude));
-			Dz=sin((0.017453292)*(altitude));
+			Dx = cos(azimuth_tmp)*cos(DTR*altitude);
+			Dy = sin(azimuth_tmp)*cos(DTR*altitude);
+			Dz = sin(DTR*altitude);
 
 			//determine four surrounding direct-indirect DC coordinates:
 

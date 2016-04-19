@@ -74,7 +74,7 @@ FILE *SHADING_ILLUMINANCE_FILE[100]; // file pointer for the different blind set
 int solar_pen=0; /*switch: if =1,
 				   then the input direct and diffuse irradiances are changed into
 				   dir=0 and dif -> reduction_dif*dif */
-float lower_lat=0,upper_lat=0,lower_azi=0,upper_azi, reduction_diffuse=0;
+double lower_lat = 0, upper_lat = 0, lower_azi = 0, upper_azi, reduction_diffuse = 0;
 
 /* i/o format */
 //visible watt=0, solar watt=1, lumen=2
@@ -279,6 +279,7 @@ int main( int argc, char **argv )
 		}
 	}
 
+
 	
 
 	/* consistency checks */
@@ -310,22 +311,22 @@ int main( int argc, char **argv )
 
 	/* calculate diffuse sky patch directions Dx_dif_patch... */
 	for (j=0 ; j<145 ; j++){
-		Dx_dif_patch[j]=cos((0.017453292)*diffuse_pts[j][1])*cos((0.017453292)*(90-diffuse_pts[j][0]));
-		Dy_dif_patch[j]=sin((0.017453292)*diffuse_pts[j][1])*cos((0.017453292)*(90-diffuse_pts[j][0]));
-		Dz_dif_patch[j]=sin((0.017453292)*(90-diffuse_pts[j][0]));
+		Dx_dif_patch[j] = (float)(cos(DTR*diffuse_pts[j][1])*cos(DTR*(90 - diffuse_pts[j][0])));
+		Dy_dif_patch[j] = (float)(sin(DTR*diffuse_pts[j][1])*cos(DTR*(90 - diffuse_pts[j][0])));
+		Dz_dif_patch[j] = (float)(sin(DTR*(90 - diffuse_pts[j][0])));
 	}
 	if(dds_file_format) // new dds file format chosen
-		{
-			Dx_dif_patch[145]=0.9397;
-			Dy_dif_patch[145]=0.0;
-			Dz_dif_patch[145]=-0.342;
-		}else{
-		Dx_dif_patch[145]=0.9961946;
+	{
+		Dx_dif_patch[145]=0.9397f;
 		Dy_dif_patch[145]=0.0;
-		Dz_dif_patch[145]=-0.087156;
-		Dx_dif_patch[146]=0.9397;
+		Dz_dif_patch[145]=-0.342f;
+	}else{
+		Dx_dif_patch[145]=0.9961946f;
+		Dy_dif_patch[145]=0.0;
+		Dz_dif_patch[145]=-0.087156f;
+		Dx_dif_patch[146]=0.9397f;
 		Dy_dif_patch[146]=0.0;
-		Dz_dif_patch[146]=-0.342;
+		Dz_dif_patch[146]=-0.342f;
 		Dx_dif_patch[147]=0.0;
 		Dy_dif_patch[147]=0.0;
 		Dz_dif_patch[147]=-1.0;
@@ -693,9 +694,9 @@ void pre_process_dds_shadowtesting()
 	int WeatherFileCounter=0;
 	int StartNewRadianceSunPositionFile=1;
 	int LastLightSourceCounter=0;
-	float hour;
-	float solar_time=0,sd;
-	float sunrise,sunset;
+	double hour;
+	double solar_time = 0, sd;
+	double sunrise, sunset;
 
 
 	//======

@@ -28,12 +28,12 @@ void make_Direct_DC_point_file(char long_sensor_file[1024],int num_direct_coeffi
 {
 	FILE *POINT_FILE;
 	int i;
-	float alt=0.0,azi=0.0;
+	double alt = 0.0, azi = 0.0;
 
 	POINT_FILE=open_output(long_sensor_file);
 	for (i=0 ; i< num_direct_coefficients; i++){
-		alt=0.017453*(90-direct_pts[i][1]);
-		azi=0.017453*(-1)*(direct_pts[i][2]+90);
+		alt = DTR*(90 - direct_pts[i][1]);
+		azi = -DTR*(direct_pts[i][2] + 90);
 		fprintf(POINT_FILE,"%f %f %f %f %f %f\n",x,y,z,sin(alt)*cos(azi),sin(alt)*sin(azi),cos(alt));
 	}
 	close_file(POINT_FILE);
@@ -48,12 +48,12 @@ void  make_annual_point_file_old(float x,float y,float z,char long_sensor_file[1
 	FILE *POINTS;
 	FILE *COMMAND_FILE;
 	int jd=0,i=0,j=0;
-	float sd=0, solar_time=0;
+	double sd = 0, solar_time = 0;
 	float red=0.0,green=0.0,blue=0.0;
 	char befehl[1024]="";
 	int month, day;
 	float hour, dir, dif;
-	float alt=0.0,azi=0.0;
+	double alt = 0.0, azi = 0.0;
 
 	fprintf(stdout,"ds_illum: final shadow testing \n");
 

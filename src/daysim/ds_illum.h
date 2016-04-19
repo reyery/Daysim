@@ -37,7 +37,7 @@ extern FILE     *SHADING_ILLUMINANCE_FILE[100]; // file pointer for the differen
 extern int solar_pen; /*switch: if =1,
 				   then the input direct and diffuse irradiances are changed into
 				   dir=0 and dif -> reduction_dif*dif */
-extern float lower_lat,upper_lat,lower_azi,upper_azi, reduction_diffuse;
+extern double lower_lat, upper_lat, lower_azi, upper_azi, reduction_diffuse;
 
 /* i/o format */
 extern int	OutputUnits;	/*define the unit of the output (sky luminance or radiance): visible watt=0, solar watt=1, lumen=2*/
