@@ -28,22 +28,22 @@ void simulation_assumptions()
 	FILE* PTS_FILE;
 	FILE* TEMPLATE_FILE=NULL;
 	float **sensor_points;
-	float DF_ratio=0.0;
+	double DF_ratio = 0.0;
 	int i,j,k;
 	int sensors_need_to_be_specified = 0;
 	char WarningString[100000]="";
 	char TipsString[100000]="";
-	float DA_mean_active=0.0;
-	float DA_mean_passive=0.0;
-	float DF_mean=0.0;
-	float DA_50_active=0.0;
-	float DA_50_passive=0.0;
-	float DA_con_mean_active=0.0;
-	float DA_con_mean_passive=0.0;
-	float DA_MAX_active=0.0;
-	float DA_MAX_passive=0.0;
-	float UDI_100_2000_larger50_active=0.0;
-	float UDI_100_2000_larger50_passive=0.0;
+	double DA_mean_active = 0.0;
+	double DA_mean_passive = 0.0;
+	double DF_mean = 0.0;
+	double DA_50_active = 0.0;
+	double DA_50_passive = 0.0;
+	double DA_con_mean_active = 0.0;
+	double DA_con_mean_passive = 0.0;
+	double DA_MAX_active = 0.0;
+	double DA_MAX_passive = 0.0;
+	double UDI_100_2000_larger50_active = 0.0;
+	double UDI_100_2000_larger50_passive = 0.0;
 	char DynamicShadingSystem[3000]="";
 
 	char keyword[3000]="";
@@ -125,19 +125,19 @@ void simulation_assumptions()
 
 	if((number_of_illuminance_sensors)>0)
 	{
-		DF_ratio=((1.0)*sensor_passed_LEED_criteria/number_of_illuminance_sensors);
-		DF_mean=1.0*DF_mean/number_of_illuminance_sensors	;
-		DA_MAX_active=100.0*sensor_failed_DA_max_criteria_active/number_of_illuminance_sensors;
-		DA_MAX_passive=100.0*sensor_failed_DA_max_criteria_passive/number_of_illuminance_sensors;
-		DA_mean_active=1.0*DA_mean_active/number_of_illuminance_sensors	;
-		DA_mean_passive=1.0*DA_mean_passive/number_of_illuminance_sensors;
-		DA_50_active=100.0*DA_50_active/number_of_illuminance_sensors	;
-		DA_50_passive=100.0*DA_50_passive/number_of_illuminance_sensors	;
-		DA_con_mean_active=1.0*DA_con_mean_active/number_of_illuminance_sensors;	
-		DA_con_mean_passive=1.0*DA_con_mean_passive/number_of_illuminance_sensors;	
-		UDI_100_2000_larger50_active=100.0*UDI_100_2000_larger50_active/number_of_illuminance_sensors;	
-		UDI_100_2000_larger50_passive=100.0*UDI_100_2000_larger50_passive/number_of_illuminance_sensors;	
-	}		
+		DF_ratio = 1.0*sensor_passed_LEED_criteria / number_of_illuminance_sensors;
+		DF_mean = DF_mean / number_of_illuminance_sensors;
+		DA_MAX_active = 100.0*sensor_failed_DA_max_criteria_active / number_of_illuminance_sensors;
+		DA_MAX_passive = 100.0*sensor_failed_DA_max_criteria_passive / number_of_illuminance_sensors;
+		DA_mean_active = DA_mean_active / number_of_illuminance_sensors;
+		DA_mean_passive = DA_mean_passive / number_of_illuminance_sensors;
+		DA_50_active = 100.0*DA_50_active / number_of_illuminance_sensors;
+		DA_50_passive = 100.0*DA_50_passive / number_of_illuminance_sensors;
+		DA_con_mean_active = DA_con_mean_active / number_of_illuminance_sensors;
+		DA_con_mean_passive = DA_con_mean_passive / number_of_illuminance_sensors;
+		UDI_100_2000_larger50_active = 100.0*UDI_100_2000_larger50_active / number_of_illuminance_sensors;
+		UDI_100_2000_larger50_passive = 100.0*UDI_100_2000_larger50_passive / number_of_illuminance_sensors;
+	}
 
 //++++++++++++++++++++++
 //+++++ HTML File ++++++

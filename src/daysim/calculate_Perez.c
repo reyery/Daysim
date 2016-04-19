@@ -565,15 +565,15 @@ int write_segments_diffuse(double dir,double dif)
 			// assign ground brightness
 			if(dds_file_format) // new dds file format chosen
 				{
-					/* 0 to 10 */  SkyPatchLuminance[145] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
-					//		/* 0 to 10 */  SkyPatchLuminance[145]=skybright(0.9961946,0,-0.087156,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
+					/* 0 to 10 */  SkyPatchLuminance[SKY_PATCHES] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+					//		/* 0 to 10 */  SkyPatchLuminance[SKY_PATCHES]=skybright(0.9961946,0,-0.087156,A1,A2,A3,A4,A5,A6,A7,sundir[0],sundir[1],sundir[2],dir,0);
 				}else{
-				/* 0 to 10 */  SkyPatchLuminance[145] = (float)skybright(0.9961946, 0, -0.087156, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
-				/* 10 to 30*/  SkyPatchLuminance[146] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
-				/* 30 to 90 */ SkyPatchLuminance[147] = (float)skybright(0, 0, -1.0, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 0 to 10 */  SkyPatchLuminance[SKY_PATCHES] = (float)skybright(0.9961946, 0, -0.087156, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 10 to 30*/  SkyPatchLuminance[SKY_PATCHES + 1] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 30 to 90 */ SkyPatchLuminance[SKY_PATCHES + 2] = (float)skybright(0, 0, -1.0, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
 			}
 
-			for (j=0 ; j<148 ; j++) {
+			for (j = 0; j<DAYLIGHT_COEFFICIENTS; j++) {
 				if(SkyPatchLuminance[j]>180000)
 					SkyPatchLuminance[j]=0;
 			}
@@ -588,7 +588,7 @@ int write_segments_diffuse(double dir,double dif)
 			A6= c_perez[3];
 			A7= c_perez[4];
 			
-			for (j=0 ; j<145 ; j++){
+			for (j = 0; j<SKY_PATCHES; j++){
 				SkyPatchSolarRadiation[j] = (float)(horizon_factor[j] * skybright(Dx_dif_patch[j], Dy_dif_patch[j], Dz_dif_patch[j], A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, j));
 				if( horizon_factor[j]<1)
 					SkyPatchSolarRadiation[j] += (float)((1 - horizon_factor[j])*skybright(0.9961946, 0, -0.087156, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0));
@@ -598,14 +598,14 @@ int write_segments_diffuse(double dir,double dif)
 			// assign ground brightness
 			if(dds_file_format) // new dds file format chosen
 			{
-				/* 0 to 10 */  SkyPatchSolarRadiation[145] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 0 to 10 */  SkyPatchSolarRadiation[SKY_PATCHES] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
 			}else{
-				/* 0 to 10 */  SkyPatchSolarRadiation[145] = (float)skybright(0.9961946, 0, -0.087156, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
-				/* 10 to 30*/  SkyPatchSolarRadiation[146] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
-				/* 30 to 90 */ SkyPatchSolarRadiation[147] = (float)skybright(0, 0, -1.0, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 0 to 10 */  SkyPatchSolarRadiation[SKY_PATCHES] = (float)skybright(0.9961946, 0, -0.087156, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 10 to 30*/  SkyPatchSolarRadiation[SKY_PATCHES + 1] = (float)skybright(0.9397, 0, -0.342, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
+				/* 30 to 90 */ SkyPatchSolarRadiation[SKY_PATCHES + 2] = (float)skybright(0, 0, -1.0, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0);
 			}
 
-			for (j=0 ; j<148 ; j++) {
+			for (j = 0; j<DAYLIGHT_COEFFICIENTS; j++) {
 				if(SkyPatchSolarRadiation[j]>1700)
 					SkyPatchSolarRadiation[j]=0;
 			}
@@ -693,7 +693,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 	double altitude1=0.0, azimuth1=0.0,altitude0=0.0, azimuth0=0.0;
 	int chosen_value=0, shadow_counter=0;
 	double adapted_time0=0, adapted_time1=0;
-	int number_of_diffuse_and_ground_dc=148;
+	int number_of_diffuse_and_ground_dc = DAYLIGHT_COEFFICIENTS;
 	double summe1 = 0.0;
 	double Dx, Dy, Dz;
 	int j1=0;
@@ -1026,8 +1026,8 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				sprintf(errmsg, "shadow test of point at %d %d %f does not correspond to any direct daylight coefficient", month, day, hour);
 				error(WARNING, errmsg);
 			}
-			SkyPatchLuminance[148 + chosen_value] = (float)solarradiance_luminance;
-			SkyPatchSolarRadiation[148 + chosen_value] = (float)solarradiance_solar_radiation;
+			SkyPatchLuminance[DAYLIGHT_COEFFICIENTS + chosen_value] = (float)solarradiance_luminance;
+			SkyPatchSolarRadiation[DAYLIGHT_COEFFICIENTS + chosen_value] = (float)solarradiance_solar_radiation;
 			break;
 		}
 		case 3 : { /* no direct contribution*/

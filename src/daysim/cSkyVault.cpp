@@ -289,7 +289,7 @@ double temp=0;
 			{
 				if ((EIllum > 0) && DoDiffuse)
 				{
-					m_ptRadiance[index][i]=ptLv[i]*NormFac/EIllum;
+					m_ptRadiance[index][i] = (float)(ptLv[i] * NormFac / EIllum);
 				}
 				else
 					m_ptRadiance[index][i]=0;
@@ -305,8 +305,8 @@ double temp=0;
             if (Suns==CUMULATIVE_SUN)
 			{
 				// add on direct radiation to patch with sun in
-				if (SunAlt > 0 && Ibn >0)
-					m_ptRadiance[index][SunPatch]+= NormFac/(m_ptPatchSolidAngle[SunPatch]);
+				if (SunAlt > 0 && Ibn > 0)
+					m_ptRadiance[index][SunPatch] += (float)(NormFac / (m_ptPatchSolidAngle[SunPatch]));
 			}
 			else if (Suns==MANY_SUNS && Ibn>0 && m_SkyModel.GetSkyClearness() > 1 )
 			{

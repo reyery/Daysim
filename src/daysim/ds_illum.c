@@ -63,7 +63,7 @@ int*** dc_shading_next;
 float* SkyPatchLuminance;
 float* SkyPatchSolarRadiation;
 int* NextNonEmptySkyPatch;
-float Dx_dif_patch[148],Dy_dif_patch[148],Dz_dif_patch[148]; /*direction of diffuse sky patches */
+float Dx_dif_patch[DAYLIGHT_COEFFICIENTS], Dy_dif_patch[DAYLIGHT_COEFFICIENTS], Dz_dif_patch[DAYLIGHT_COEFFICIENTS]; /*direction of diffuse sky patches */
 FILE *DIRECT_SUNLIGHT_FILE;
 FILE *INPUT_DATAFILE;
 FILE *SHADING_ILLUMINANCE_FILE[100]; // file pointer for the different blind settings defined in "shading"
@@ -315,19 +315,19 @@ int main( int argc, char **argv )
 	}
 	if(dds_file_format) // new dds file format chosen
 	{
-		Dx_dif_patch[145]=0.9397f;
-		Dy_dif_patch[145]=0.0;
-		Dz_dif_patch[145]=-0.342f;
+		Dx_dif_patch[SKY_PATCHES] = 0.9397f;
+		Dy_dif_patch[SKY_PATCHES] = 0.0;
+		Dz_dif_patch[SKY_PATCHES] = -0.342f;
 	}else{
-		Dx_dif_patch[145]=0.9961946f;
-		Dy_dif_patch[145]=0.0;
-		Dz_dif_patch[145]=-0.087156f;
-		Dx_dif_patch[146]=0.9397f;
-		Dy_dif_patch[146]=0.0;
-		Dz_dif_patch[146]=-0.342f;
-		Dx_dif_patch[147]=0.0;
-		Dy_dif_patch[147]=0.0;
-		Dz_dif_patch[147]=-1.0;
+		Dx_dif_patch[SKY_PATCHES] = 0.9961946f;
+		Dy_dif_patch[SKY_PATCHES] = 0.0;
+		Dz_dif_patch[SKY_PATCHES] = -0.087156f;
+		Dx_dif_patch[SKY_PATCHES + 1] = 0.9397f;
+		Dy_dif_patch[SKY_PATCHES + 1] = 0.0;
+		Dz_dif_patch[SKY_PATCHES + 1] = -0.342f;
+		Dx_dif_patch[SKY_PATCHES + 2] = 0.0;
+		Dy_dif_patch[SKY_PATCHES + 2] = 0.0;
+		Dz_dif_patch[SKY_PATCHES + 2] = -1.0;
 	}
 
 	/* calculate Perez if chosen */
@@ -360,7 +360,7 @@ void process_dc_shading(int number_direct_coefficients)
 	int number_of_dc_lines=0;
 	int number_of_DC_lines;
 	int last_element_was_seperator;
-	int number_of_diffuse_and_ground_DC=148;
+	int number_of_diffuse_and_ground_DC = DAYLIGHT_COEFFICIENTS;
 	char line_string[2000000]="";
 	char CurrentDC_FileName[2000]="";
 //#ifndef PROCESS_ROW
@@ -369,7 +369,7 @@ void process_dc_shading(int number_direct_coefficients)
 
 	// This function reads in the daylight cofficients from a DC file.
 	if(dds_file_format)
-		number_of_diffuse_and_ground_DC=146;
+		number_of_diffuse_and_ground_DC = SKY_PATCHES + 1;
 
 	// At first the required arrays are dynamically allocated.
 

@@ -7,7 +7,7 @@
 
 #define HOURS_PER_YEAR	8760
 #define SKY_PATCHES	145	/* assumed maximum # Klems patches */
-#define DAYLIGHT_COEFFICIENTS	148
+#define DAYLIGHT_COEFFICIENTS	(SKY_PATCHES + 3)	/* 145 sky and 3 ground patches */
 #define WHTEFFICACY				179
 #define AU					149597890E3
 #define SOLAR_CONSTANT_E	1367	/* solar constant W/m^2 */

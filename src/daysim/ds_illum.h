@@ -26,7 +26,7 @@ extern int***   dc_shading_next;
 extern float*   SkyPatchLuminance;
 extern float*   SkyPatchSolarRadiation;
 extern int*     NextNonEmptySkyPatch;
-extern float    Dx_dif_patch[148],Dy_dif_patch[148],Dz_dif_patch[148]; /*direction of diffuse sky patches */
+extern float    Dx_dif_patch[DAYLIGHT_COEFFICIENTS], Dy_dif_patch[DAYLIGHT_COEFFICIENTS], Dz_dif_patch[DAYLIGHT_COEFFICIENTS]; /*direction of diffuse sky patches */
 extern FILE     *DIRECT_SUNLIGHT_FILE;
 extern FILE     *INPUT_DATAFILE;
 extern FILE     *SHADING_ILLUMINANCE_FILE[100]; // file pointer for the different blind settings defined in "shading"

@@ -348,7 +348,7 @@ const int comma = ',';
 
 
 /* number and luminance of sky segments */
-int    numberOfSkySegments=     148;
+int    numberOfSkySegments = DAYLIGHT_COEFFICIENTS;
 double luminanceOfSkySegments= 1000.0;
 
 /* rtrace simulation options for direct and diffuse illumination calculation */
