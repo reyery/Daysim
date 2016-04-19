@@ -15,6 +15,7 @@
 #include "read_in_header.h"
 #include "BlindModel.h"
 #include "ds_el_lighting.h"
+#include "ds_constants.h"
 
 
 //====================================================================
