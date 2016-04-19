@@ -76,24 +76,10 @@ double	solarradiance_luminance;
 double	diffusilluminance, directilluminance, diffusirradiance, directirradiance;
 double	sunzenith, daynumber=150, atm_preci_water=2;
 double 	diffnormalization, dirnormalization;
-double  diffnormalization_visible_radiation;
-double  diffnormalization_solar_radiation;
-double	diffnormalization_luminance;
 
 /* default values */
 int  cloudy = 0;				/* 1=standard, 2=uniform */
 int  dosun = 1;
-double  zenithbr_visible_radiation = -1.0;
-double  zenithbr_solar_radiation = -1.0;
-double  zenithbr_luminance = -1.0;
-
-double  betaturbidity = 0.1;
-/* computed values */
-double  sundir[3];
-double  groundbr_visible_radiation;
-double 	groundbr_solar_radiation;
-double 	groundbr_luminance;
-double  F2;
 
 /* defines current time */
 double hour;
@@ -338,10 +324,19 @@ int write_segments_diffuse(double dir,double dif)
 	double 	dzeta, gamma;
 	double	normfactor=0.0;
 	double altitude,azimuth;
-	int S_INTER=0;
 	double  A1,A2,A3,A4,A5,A6,A7;
 	double reduction=1.0;
 	double  sd, st;
+	double  sundir[3];
+	double  groundbr_visible_radiation;
+	double 	groundbr_solar_radiation;
+	double 	groundbr_luminance;
+	double  zenithbr_visible_radiation = -1.0;
+	double  zenithbr_solar_radiation = -1.0;
+	double  zenithbr_luminance = -1.0;
+	double  diffnormalization_visible_radiation;
+	double  diffnormalization_solar_radiation;
+	double	diffnormalization_luminance;
 
 	float 	lv_mod[SKY_PATCHES];  /* 145 luminance values*/
 
@@ -488,17 +483,15 @@ int write_segments_diffuse(double dir,double dif)
 		normfactor = 0.777778;
 
 	if (skyclearness>=6)
-		{
-			F2 = 0.274*(0.91 + 10.0*exp(-3.0*(PI/2.0-altitude)) + 0.45*sundir[2]*sundir[2]);
-			normfactor = normsc(altitude,S_INTER)/F2/PI;
-		}
-
-	if ( (skyclearness>1) && (skyclearness<6) )
-		{
-			S_INTER=1;
-			F2 = (2.739 + .9891*sin(.3119+2.6*altitude)) * exp(-(PI/2.0-altitude)*(.4441+1.48*altitude));
-			normfactor = normsc(altitude,S_INTER)/F2/PI;
-		}
+	{
+		double F2 = 0.274*(0.91 + 10.0*exp(-3.0*(PI / 2.0 - altitude)) + 0.45*sundir[2] * sundir[2]);
+		normfactor = normsc(altitude, 0) / F2 / PI;
+	}
+	else if (skyclearness>1)
+	{
+		double F2 = (2.739 + .9891*sin(.3119 + 2.6*altitude)) * exp(-(PI / 2.0 - altitude)*(.4441 + 1.48*altitude));
+		normfactor = normsc(altitude, 1) / F2 / PI;
+	}
 
 	groundbr_visible_radiation = zenithbr_visible_radiation*normfactor;
 	groundbr_solar_radiation = zenithbr_solar_radiation*normfactor;
@@ -705,7 +698,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 	int base_value=0;
 
 	if(dds_file_format) { //DDS
-		number_of_diffuse_and_ground_dc=146;
+		number_of_diffuse_and_ground_dc = SKY_PATCHES + 1;
 		dc_coupling_mode=4;
 	}
 
@@ -1685,23 +1678,26 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 /* Perez models */
 /*============================================*/
 
+#define PEREZ_CATEGORIES	8
+
 /* Perez global horizontal luminous efficacy model */
 double glob_h_effi_PEREZ()
 {
-	int   	category_total_number = 8, category_number = 0, i;
+	int   	category_number = 0, i;
 
 	/* initialize category bounds (clearness index bounds) */
-	double 	category_bounds[9] = { 1, 1.065, 1.230, 1.500, 1.950, 2.800, 4.500, 6.200, 12.1 }; /*changed from 12.01 , Tito */
+	double 	category_bounds[PEREZ_CATEGORIES + 1] = { 1, 1.065, 1.230, 1.500, 1.950, 2.800, 4.500, 6.200, 12.1 }; /*changed from 12.01 , Tito */
 
 	/* initialize model coefficients */
-	double  a[8] = { 96.63, 107.54, 98.73, 92.72, 86.73, 88.34,  78.63, 99.65 };
-	double  b[8] = { -0.47,   0.79,  0.70,  0.56,  0.98,  1.39,   1.47,  1.86 };
-	double  c[8] = { 11.50,   1.79,  4.40,  8.36,  7.10,  6.06,   4.93, -4.46 };
-	double  d[8] = { -9.16,  -1.19, -6.95, -8.3, -10.94, -7.60, -11.37, -3.15 };
+	double  a[PEREZ_CATEGORIES] = { 96.63, 107.54, 98.73, 92.72, 86.73, 88.34,  78.63, 99.65 };
+	double  b[PEREZ_CATEGORIES] = { -0.47,   0.79,  0.70,  0.56,  0.98,  1.39,   1.47,  1.86 };
+	double  c[PEREZ_CATEGORIES] = { 11.50,   1.79,  4.40,  8.36,  7.10,  6.06,   4.93, -4.46 };
+	double  d[PEREZ_CATEGORIES] = { -9.16,  -1.19, -6.95, -8.3, -10.94, -7.60, -11.37, -3.15 };
 
-	//if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup){;}
+	//if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup)
+	//	error(WARNING, "skyclearness or skybrightness out of range: check your input parameters");
 
-	for (i=0; i<category_total_number; i++)
+	for (i = 0; i<PEREZ_CATEGORIES; i++)
 		if ((skyclearness >= category_bounds[i]) && (skyclearness < category_bounds[i + 1]))
 		{
 			category_number = i;
@@ -1715,21 +1711,21 @@ double glob_h_effi_PEREZ()
 /* global horizontal diffuse efficacy model, according to PEREZ */
 double glob_h_diffuse_effi_PEREZ()
 {
-	int   	category_total_number = 8, category_number = 0, i;
+	int   	category_number = 0, i;
 
 	/* initialize category bounds (clearness index bounds) */
-	double 	category_bounds[9] = { 1, 1.065, 1.230, 1.500, 1.950, 2.800, 4.500, 6.200, 12.1 }; /*changed from 12.01 , Tito */
+	double 	category_bounds[PEREZ_CATEGORIES + 1] = { 1, 1.065, 1.230, 1.500, 1.950, 2.800, 4.500, 6.200, 12.1 }; /*changed from 12.01 , Tito */
 
 	/* initialize model coefficients */
-	double 	a[8] = { 97.24, 107.22, 104.97, 102.39, 100.71, 106.42, 141.88, 152.23 };
-	double 	b[8] = { -0.46,   1.15,   2.96,   5.59,   5.94,   3.83,   1.90,   0.35 };
-	double 	c[8] = { 12.00,   0.59,  -5.53, -13.95, -22.75, -36.15, -53.24, -45.27 };
-	double 	d[8] = { -8.91,  -3.95,  -8.77, -13.90, -23.74, -28.83, -14.03,  -7.98 };
+	double 	a[PEREZ_CATEGORIES] = { 97.24, 107.22, 104.97, 102.39, 100.71, 106.42, 141.88, 152.23 };
+	double 	b[PEREZ_CATEGORIES] = { -0.46,   1.15,   2.96,   5.59,   5.94,   3.83,   1.90,   0.35 };
+	double 	c[PEREZ_CATEGORIES] = { 12.00,   0.59,  -5.53, -13.95, -22.75, -36.15, -53.24, -45.27 };
+	double 	d[PEREZ_CATEGORIES] = { -8.91,  -3.95,  -8.77, -13.90, -23.74, -28.83, -14.03,  -7.98 };
 
-	if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup)
-		{/*fprintf(stdout, "Warning : skyclearness or skybrightness out of range ; \n Check your input parameters\n");*/};
+	//if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup)
+	//	error(WARNING, "skyclearness or skybrightness out of range: check your input parameters");
 
-	for (i = 0; i<category_total_number; i++)
+	for (i = 0; i<PEREZ_CATEGORIES; i++)
 		if ((skyclearness >= category_bounds[i]) && (skyclearness < category_bounds[i + 1]))
 		{
 			category_number = i;
@@ -1746,22 +1742,21 @@ double direct_n_effi_PEREZ()
 
 {
 	double 	value;
-	int   	category_total_number = 8, category_number = 0, i;
+	int   	category_number = 0, i;
 
 	/* initialize category bounds (clearness index bounds) */
-	double 	category_bounds[9] = { 1, 1.065, 1.230, 1.500, 1.950, 2.800, 4.500, 6.200, 12.1 };
+	double 	category_bounds[PEREZ_CATEGORIES + 1] = { 1, 1.065, 1.230, 1.500, 1.950, 2.800, 4.500, 6.200, 12.1 };
 
 	/* initialize model coefficients */
-	double 	a[8] = {  57.20, 98.99, 109.83, 110.34, 106.36, 107.19, 105.75, 101.18 };
-	double 	b[8] = {  -4.55, -3.46,  -4.90,  -5.84,  -3.97,  -1.25,   0.77,   1.58 };
-	double 	c[8] = {  -2.98, -1.21,  -1.71,  -1.99,  -1.75,  -1.51,  -1.26,  -1.10 };
-	double 	d[8] = { 117.12, 12.38,  -8.81,  -4.56,  -6.16, -26.73, -34.44,  -8.29 };
+	double 	a[PEREZ_CATEGORIES] = {  57.20, 98.99, 109.83, 110.34, 106.36, 107.19, 105.75, 101.18 };
+	double 	b[PEREZ_CATEGORIES] = {  -4.55, -3.46,  -4.90,  -5.84,  -3.97,  -1.25,   0.77,   1.58 };
+	double 	c[PEREZ_CATEGORIES] = {  -2.98, -1.21,  -1.71,  -1.99,  -1.75,  -1.51,  -1.26,  -1.10 };
+	double 	d[PEREZ_CATEGORIES] = { 117.12, 12.38,  -8.81,  -4.56,  -6.16, -26.73, -34.44,  -8.29 };
 
-	if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup)
-		{/*fprintf(stdout, "Warning : skyclearness or skybrightness out of range ; \n Check your input parameters\n")*/;}
+	//if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup)
+	//	error(WARNING, "skyclearness or skybrightness out of range: check your input parameters");
 
-
-	for (i = 0; i<category_total_number; i++)
+	for (i = 0; i<PEREZ_CATEGORIES; i++)
 		if ((skyclearness >= category_bounds[i]) && (skyclearness < category_bounds[i + 1]))
 		{
 			category_number = i;

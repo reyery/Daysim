@@ -98,8 +98,6 @@ float direct_pts[288][4];    /* position of sky patches of direct daylight coeff
 float direct_calendar[13][25][4]; /* position of sky patches of direct daylight coefficients otherwise*/
 float horizon[36];
 float horizon_factor[SKY_PATCHES];
-double  sundir[3];
-float point_coefficients[6];
 
 /* diverse functions */
 int shadow_testing_new=0;

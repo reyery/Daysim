@@ -22,6 +22,8 @@
 #include "shadow_testing.h"
 
 int *shadow_testing_results;
+float point_coefficients[6];
+
 
 // function write out sensor point file for initial shadow testing routine
 void make_Direct_DC_point_file(char long_sensor_file[1024],int num_direct_coefficients,float x,float y, float z)
