@@ -3,9 +3,9 @@ create_version_file("${VERSION_FILE}")
 
 include_directories(${CMAKE_SOURCE_DIR}/common)
 
-add_library(daysim_common daylightfactor.c diverse_functions.c eputs.c fropen.c gethomedir.c getpath.c parse.c read_in_header.c words.c sun.c "${VERSION_FILE}")
+add_library(daysim_common daylightfactor.c diverse_functions.c eputs.c fropen.c gethomedir.c getpath.c parse.c read_in_header.c words.c nrutil.c numerical.c sun.c "${VERSION_FILE}")
 
-add_executable(gen_reindl gen_reindl.c nrutil.c numerical.c skartveit.c)
+add_executable(gen_reindl gen_reindl.c skartveit.c)
 target_link_libraries(gen_reindl rtrad daysim_common)
 
 add_executable(gencumsky gendiscretesky.cpp climateFile.cpp cPerezSkyModel.cpp cSkyVault.cpp cSun.cpp)

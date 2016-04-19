@@ -86,7 +86,6 @@ float UDI_2000_zone_passive=0;
 /* temporary variables: for analysis */
 /*===================================*/
 int histo[20][1001];
-float histo_step=0.1;
 int number_of_weekdays=0;
 float AnnualNumberOfOccupiedHours=0;
 float HoursWithAView[11];

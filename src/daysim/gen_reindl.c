@@ -14,8 +14,6 @@
 
 #include "fropen.h"
 #include "sun.h"
-#include "nrutil.h"
-#include "numerical.h"
 
 
 char *header;

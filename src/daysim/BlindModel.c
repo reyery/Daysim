@@ -35,9 +35,9 @@ int getBlindSettings(int UserBehaviorBlinds)
 	int JulianDay = 0;
 	int SecondBlindGroupIndex = 0;
 	float CurrentIlluminanceReading = 0, CurrentAllOpenIlluminanceReading = 0;
-	float sd = 0;
+	double sd = 0;
 	int GlareCondition = 0;
-	float alt, azi, solar_time;
+	double alt, azi, solar_time;
 	int CoolingPeriodActivated = 0;
 	FILE *ANNUAL_SHADING_PROFILE_FILE[11];
 

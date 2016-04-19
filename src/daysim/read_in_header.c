@@ -41,9 +41,9 @@ int		time_step=5;   			// time_step in minutes
 int		time_steps_in_year = HOURS_PER_YEAR * 60 / 5;
 int		first_weekday=1; 		// 1= Monday... 7= Sunday
 int		daylight_savings_time=1;// switched daylight savings time on/off (0/1)
-float	s_latitude=-999;  		// in RADIANS North is positive
-float	s_longitude=-999; 		// in RADIANS West is positive
-float	s_meridian=-999;		// meridian of pertaining time zone
+double	s_latitude = -999;  	// in RADIANS North is positive
+double	s_longitude = -999; 	// in RADIANS West is positive
+double	s_meridian = -999;		// meridian of pertaining time zone
 float	gprefl=0.0; 			// ground reflectance
 
 float	dir_threshold=0;		// lower threshold in Wm-2 for direct irradiances for the
@@ -1376,7 +1376,7 @@ void read_in_header( char *header_file )
 				}
 			}
 			for (i=0 ; i<NumUserProfiles ; i++){ // normalize frequencies to unity
-				user_type_frequency[i]*=100.0/frequency_sum;
+				user_type_frequency[i]*=100/frequency_sum;
 			}
 		}
 		else if( !strcmp(keyword,"DirectIrradianceGlareThreshold") ){ //Direct threshold level in W/m2 for blind control

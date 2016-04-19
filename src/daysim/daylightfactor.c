@@ -24,8 +24,8 @@ float *daylight_factor;
 
 double CIE_SKY(double Dz)
 {	/* CIE overcast sky: values taken from gensky 6 21 12  */
-	float A2=41.6; /*  zenith brightness */
-	float A3=6.47;   /* ground plane brightness*/
+	double A2 = 41.6; /*  zenith brightness */
+	double A3 = 6.47;   /* ground plane brightness*/
 	double luminance, intersky;
 	intersky= A2 * (1 + 2*Dz)/3;
 	luminance=(pow(Dz+1.01,10)*intersky+pow(Dz+1.01,-10)*A3)/(pow(Dz+1.01,10)+pow(Dz+1.01,-10));
@@ -74,13 +74,14 @@ void getDaylightFactor( )
 
 	//calculate luminances of diffuse sky patches
 	for (i = 0; i < NUM_COEFFICIENTS; i++) {
-		overcast[i]=CIE_SKY(DZ[i])/ill_hor;
+		overcast[i] = (float)(CIE_SKY(DZ[i]) / ill_hor);
 	}
 
 	//open DC input files
 	if(!check_if_file_exists(shading_dc_file[1]))
 	{
-		printf("getDaylightFactor - WARNING: %s does not exist.\n",shading_dc_file[1]);
+		sprintf(errmsg, "%s does not exist", shading_dc_file[1]);
+		error(WARNING, errmsg);
 	}else{
 		INPUT_FILE=open_input(shading_dc_file[1]);
 		for (j=0 ; j<number_of_sensors ; j++){
@@ -91,7 +92,7 @@ void getDaylightFactor( )
 					fscanf(INPUT_FILE,"%*[\n\r]");
 					fscanf(INPUT_FILE,"%s ",test_string);
 				}
-				diffuse_dc[0]=atof(test_string);
+				diffuse_dc[0] = (float)atof(test_string);
 
 				for (k = 1; k < NUM_COEFFICIENTS; k++)
 					fscanf(INPUT_FILE,"%f ",&diffuse_dc[k]);

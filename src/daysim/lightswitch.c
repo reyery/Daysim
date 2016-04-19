@@ -21,7 +21,7 @@
 	double	b_hunt=-4.0835;
 	double	c_hunt=1.0361;
 	double	m_hunt=1.8223;
-	double switch_prob(float ill, float a,float b, float c, float m)
+	double switch_prob(float ill, double a, double b, double c, double m)
 	{
 		double prob=0;
 		/* Hunt's function for arbitrary user profiles */
@@ -274,7 +274,7 @@ for (LightingGroupIndex=1 ; LightingGroupIndex<= NumberOfLightingGroups ; Lighti
 					{ /* Does the occupant leave? YES */
 						if(UserLight==1 || UserLight==2){
 							//Pigg's switch off probability
-							electric_lighting_profile[LightingGroupIndex][i+j]=Pigg_switch_off(i+j, LightingSystemType[LightingGroupIndex],UserLight,dep);
+							electric_lighting_profile[LightingGroupIndex][i + j] = (float)Pigg_switch_off(i + j, LightingSystemType[LightingGroupIndex], UserLight, dep);
 						}
 		   	      		if(LightingSystemType[LightingGroupIndex] ==2 || LightingSystemType[LightingGroupIndex] ==5 || LightingSystemType[LightingGroupIndex] ==50 )
 						{ // energy-efficient occupancy sensor
@@ -284,7 +284,7 @@ for (LightingGroupIndex=1 ; LightingGroupIndex<= NumberOfLightingGroups ; Lighti
 							//printf ("LG %d k test %d time %d\n",LightingGroupIndex,k,j);
 							//keep the electric ighting on for the duration of the occupancy sensor delay time
 		   			    	if(k*time_step > OccSenDelayTime[LightingGroupIndex])
-		   						electric_lighting_profile[LightingGroupIndex][i+j]=OccSenDelayTime[LightingGroupIndex]/60.0;
+		   						electric_lighting_profile[LightingGroupIndex][i+j]=OccSenDelayTime[LightingGroupIndex]/60.0f;
 		   				}
 					}else{ /* Does the occupant leave? NO */;}
 				}else{ // Is the light already switched on? NO
@@ -304,7 +304,7 @@ for (LightingGroupIndex=1 ; LightingGroupIndex<= NumberOfLightingGroups ; Lighti
 									{
 										if(ran1(&idum) <= switch_on_prob_intermediate_prob(minimum_work_plane_ill[LightingGroupIndex][i+j]) )
 										{
-											electric_lighting_profile[LightingGroupIndex][i+j]=(12-intermediate_counter)/12.0;
+											electric_lighting_profile[LightingGroupIndex][i+j]=(12-intermediate_counter)/12.0f;
 											intermediate_counter=100;
 										}	
 									}
@@ -356,7 +356,7 @@ for (LightingGroupIndex=1 ; LightingGroupIndex<= NumberOfLightingGroups ; Lighti
 					while(occ_profile[i+j-k]==0 && (i+j-k) >=0)
 						k++;
 					if(k*time_step > OccSenDelayTime[LightingGroupIndex])
-						electric_lighting_profile[LightingGroupIndex][i+j]=OccSenDelayTime[LightingGroupIndex]/60.0;
+						electric_lighting_profile[LightingGroupIndex][i+j]=OccSenDelayTime[LightingGroupIndex]/60.0f;
 				}
 			}
 			break;

@@ -153,7 +153,7 @@ void get_DGP_profiles( )
 	int j,k,l,i,counter=1;
 	int number_of_dgp_columns=0;
 	int last_element_blank=0;
-	int StringLength=0;
+	size_t StringLength = 0;
 	int BlindGroupIndex,Setting_Index;
 	float x;
 	float current_DGP=0;

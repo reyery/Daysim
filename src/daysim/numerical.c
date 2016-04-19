@@ -135,7 +135,7 @@ float ran1 ( long *idum )
 		for (j=1;j<=97;j++) {
 			ix1=(IA1*ix1+IC1) % M1;
 			ix2=(IA2*ix2+IC2) % M2;
-			r[j]=(ix1+ix2*RM2)*RM1;
+			r[j] = (float)((ix1 + ix2*RM2)*RM1);
 		}
 		*idum=1;
 	}
@@ -145,7 +145,7 @@ float ran1 ( long *idum )
 	j=1 + ((97*ix3)/M3);
 	if (j > 97 || j < 1) error(INTERNAL, "RAN1: This cannot happen");
 	temp=r[j];
-	r[j]=(ix1+ix2*RM2)*RM1;
+	r[j] = (float)((ix1 + ix2*RM2)*RM1);
 	return temp;
 }
 

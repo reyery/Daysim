@@ -8,29 +8,13 @@
 
 
 
-#define M1 259200
-#define IA1 7141
-#define IC1 54773
-#define RM1 (1.0/M1)
-#define M2 134456
-#define IA2 8121
-#define IC2 28411
-#define RM2 (1.0/M2)
-#define M3 243000
-#define IA3 4561
-#define IC3 51349
-
-
 void generate_routine_file(char *filename,int weekday,char *filename1);
 void read_occupancy_profile(char *filename);
-int  get_occupancy(int weekday, int time_step, float hour);
+int  get_occupancy(int weekday, int time_step, double hour);
 void occupancy_profile( int occupancy_mode, int daylight_savings_time,
-						int start_work, int end_work, int time_step,
-						int first_weekday);
+	float start_work, float end_work, int time_step, int first_weekday);
 void read_occupancy_profile(char *filename);
 void gen_Lightswitch_routine();
-void nrerror ( char *error_text );
-float ran1 ( long *idum );
 
 
 #endif

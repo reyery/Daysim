@@ -43,9 +43,9 @@ extern int time_step;   		   /* time_step in minutes */
 extern int time_steps_in_year;
 extern int first_weekday; 			/* 1= Monday... 7= Sunday */
 extern int daylight_savings_time;    /* switched daylight savings time on/off (0/1) */
-extern float  s_latitude;  		/* in RADIANS North is positive */
-extern float  s_longitude; 		/* in RADIANS West is positive */
-extern float  s_meridian;			/* meridian of pertaining time zone */
+extern double  s_latitude;  		/* in RADIANS North is positive */
+extern double  s_longitude; 		/* in RADIANS West is positive */
+extern double  s_meridian;			/* meridian of pertaining time zone */
 extern float  gprefl; 				/* ground reflectance */
 extern float dir_threshold;			/* threshold for direct irradiances */
 extern float dif_threshold; 			/* threshold for diffuse irradiances */

@@ -11,6 +11,7 @@
 #include "fropen.h"
 #include "read_in_header.h"
 #include "occ_func.h"
+#include "numerical.h"
 #include "sun.h"
 
 //=======================================================================
@@ -27,7 +28,7 @@ void gen_Lightswitch_routine()
 	lunch_time_length=1.0;
 
 	for (j=0 ; j<288 ; j++){
-		occ_routine[j][0]=j*(1.0/12.0);
+		occ_routine[j][0] = j / 12.0f;
 		occ_routine[j][1]=0;
 		occ_routine[j][2]=0;
 		occ_routine[j][3]=0;
@@ -43,9 +44,9 @@ void gen_Lightswitch_routine()
 	if(length_of_working_day>0.25){
 		for (j=0 ; j<6 ; j++){
 			i=(int)(start_work*12.0);
-			occ_routine[j-2+i][1]=0.166; 	//arrival
+			occ_routine[j-2+i][1]=0.166f; 	//arrival
 			i=(int)(end_work*12.0);
-			occ_routine[j-2+i][2]=0.166;	//departure
+			occ_routine[j-2+i][2]=0.166f;	//departure
 		}
 	}
 
@@ -55,20 +56,20 @@ void gen_Lightswitch_routine()
 	if(length_of_working_day>6.00){
 		for (j=0 ; j<6 ; j++){
 			i=(int)(0.5*(0.5*(start_work+end_work)+start_work)*12.0);
-			occ_routine[j-2+i][3]=0.166; 	//morning break
+			occ_routine[j-2+i][3]=0.166f; 	//morning break
 		}
 		occ_routine[6][4]=1.0;				// length of morning break
 
 		for (j=0 ; j<6 ; j++){
 			i=(int)(0.5*(end_work+start_work)*12.0);
-			occ_routine[j-2+i][5]=0.166; 	//lunch break
+			occ_routine[j-2+i][5]=0.166f; 	//lunch break
 
 		}
 		occ_routine[12][6]=1.0;				// length of lunch break
 
 		for (j=0 ; j<6 ; j++){
 			i=(int)(0.5*(0.5*(start_work+end_work+2.0)+end_work)*12.0);
-			occ_routine[j-2+i][7]=0.166; 	//afternoon break
+			occ_routine[j-2+i][7]=0.166f; 	//afternoon break
 		}
 		occ_routine[6][8]=1.0;				// length of afternoon break
 	}else{ // end (length_of_working_day>6.00)
@@ -77,13 +78,13 @@ void gen_Lightswitch_routine()
 		if(length_of_working_day>3.00){
 			for (j=0 ; j<6 ; j++){
 				i=(int)((start_work+ 0.3333*(end_work-start_work))*12.0);
-				occ_routine[j-2+i][3]=0.166; 	//morning break
+				occ_routine[j-2+i][3]=0.166f; 	//morning break
 			}
 			occ_routine[6][4]=1.0;				// length of morning break
 
 			for (j=0 ; j<6 ; j++){
 				i=(int)((start_work+ 0.6666*(end_work-start_work))*12.0);
-				occ_routine[j-2+i][7]=0.166; 	//afternoon break
+				occ_routine[j-2+i][7]=0.166f; 	//afternoon break
 			}
 			occ_routine[6][8]=1.0;				// length of afternoon break
 		}else{
@@ -91,7 +92,7 @@ void gen_Lightswitch_routine()
 		// for a 30 minute break.
 			for (j=0 ; j<6 ; j++){
 				i=(int)((start_work+ 0.5*(end_work-start_work))*12.0);
-				occ_routine[j-2+i][3]=0.166; 	//morning break
+				occ_routine[j-2+i][3]=0.166f; 	//morning break
 			}
 			occ_routine[6][4]=1.0;				// length of morning break
 		}
@@ -327,7 +328,6 @@ void get_arrival()
 	int j,i;
 	int month=0,day=0;
 	double hour=0;
-	float ran1 ( long *idum );
 
 	v1=ran1(&idum);
 	j=0;
@@ -389,7 +389,6 @@ void get_day_profile()
 	int morning_break=0;
 	int lunch_break=0;
 	int AfternoonBreak=0;
-	float ran1 ( long *idum );
 
 	
 	v1=ran1(&idum);
@@ -477,9 +476,9 @@ void get_day_profile()
 
 // This function is called by "occupancy_profile" and sets the occupancy for a given time step depending on
 // predetermined arrival, departure, morning, lunch, and afternoon break
-int get_occupancy(int weekday, int time_step, float hour)
+int get_occupancy(int weekday, int time_step, double hour)
 {
-int occupancy;
+	int occupancy;
 	if((hour+(time_step/120.0))>=arrival && hour-(time_step/120.0)<=departure && weekday<6 ){
 		occupancy=1;
 		if(hour-(time_step/120.0)<arrival){
@@ -537,7 +536,7 @@ int occupancy;
 // end_work				: end of work day
 // time_step			: time step of weahter file in minutes
 // first_weekday		: weekday of the first day of the annual weather file
-void occupancy_profile(int occupancy_mode, int daylight_savings_time, int start_work, int end_work, int time_step, int first_weekday)
+void occupancy_profile(int occupancy_mode, int daylight_savings_time, float start_work, float end_work, int time_step, int first_weekday)
 {
 	int k,i,InSession;
 	int month=1, day=1;
@@ -548,13 +547,12 @@ void occupancy_profile(int occupancy_mode, int daylight_savings_time, int start_
 	int value_from_measured_occupancy=0;
 	int weekday;
 	int time_step_occ_file= 60;
-	float hour=0;
+	double hour=0;
 	float hour_from_measured_occupancy=0;
 	float DaylightSavingsTimeShift=0;
 	float EndOfSchoolDay;
 	float v1,v2,v3;
 	int OccPeriod1,OccPeriod2,OccPeriod3;
-	float ran1 ( long *idum );
 	FILE *MEASURED_OCCUPANCY_FILE= NULL;
 	int test_header=1;
 	char  character='\0';
@@ -797,48 +795,3 @@ void occupancy_profile(int occupancy_mode, int daylight_savings_time, int start_
 	if(occupancy_mode==5)
 		close_file(MEASURED_OCCUPANCY_FILE);
 }
-
-
-
-void nrerror ( char *error_text )
-{
-	fprintf(stderr,"Numerical Recipes run-time error...\n");
-	fprintf(stderr,"%s\n",error_text);
-	fprintf(stderr,"...now exiting to system...\n");
-	exit(1);
-}
-
-float ran1 ( long *idum )
-{
-	static long ix1,ix2,ix3;
-	static float r[98];
-	float temp;
-	static int iff=0;
-	int j;
-
-	if (*idum < 0 || iff == 0) {
-		iff=1;
-		ix1=(IC1-(*idum)) % M1;
-		ix1=(IA1*ix1+IC1) % M1;
-		ix2=ix1 % M2;
-		ix1=(IA1*ix1+IC1) % M1;
-		ix3=ix1 % M3;
-		for (j=1;j<=97;j++) {
-			ix1=(IA1*ix1+IC1) % M1;
-			ix2=(IA2*ix2+IC2) % M2;
-			r[j]=(ix1+ix2*RM2)*RM1;
-		}
-		*idum=1;
-	}
-	ix1=(IA1*ix1+IC1) % M1;
-	ix2=(IA2*ix2+IC2) % M2;
-	ix3=(IA3*ix3+IC3) % M3;
-	j=1 + ((97*ix3)/M3);
-	if (j > 97 || j < 1) nrerror("RAN1: This cannot happen.");
-	temp=r[j];
-	r[j]=(ix1+ix2*RM2)*RM1;
-	return temp;
-}
-
-
-
