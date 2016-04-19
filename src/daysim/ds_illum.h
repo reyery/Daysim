@@ -2,8 +2,8 @@
 #define DS_ILLUM_H
 
 #include <stdio.h>
-#include <math.h>
 #include <string.h>
+#include "ds_constants.h"
 
 
 extern int 		CalculateLuminance;
@@ -57,11 +57,11 @@ extern FILE *PEREZ_OUTPUTFILE;
 extern FILE *DC_FILE;
 extern FILE *ILL_FILE;
 /* diverse arrays */
-extern float diffuse_pts[145][2]; /* position of sky patches of diffuse daylight coefficients */
+extern float diffuse_pts[SKY_PATCHES][2]; /* position of sky patches of diffuse daylight coefficients */
 extern float direct_pts[288][4];    /* position of sky patches of direct daylight coefficients if n.n.*/
 extern float direct_calendar[13][25][4]; /* position of sky patches of direct daylight coefficients otherwise*/
 extern float horizon[36];
-extern float horizon_factor[145];
+extern float horizon_factor[SKY_PATCHES];
 extern double  sundir[3];
 extern float point_coefficients[6];
 

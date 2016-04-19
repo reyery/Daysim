@@ -18,9 +18,8 @@
 #include "sun.h"
 #include "fropen.h"
 #include "read_in_header.h"
+#include "ds_constants.h"
 
-#define DTR (PI/180.0)
-#define HOURS_PER_YEAR	8760
 
 //===============
 //project details

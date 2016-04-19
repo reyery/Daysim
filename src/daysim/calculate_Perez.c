@@ -20,6 +20,7 @@
 
 #include "ds_illum.h"
 #include "shadow_testing.h"
+#include "ds_constants.h"
 
 
 int write_segments_diffuse(double dir,double dif);
@@ -28,12 +29,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 double  normsc(double altitude, int S_INTER);
 
 
-#define  WHTEFFICACY            179.
-
 /* constants */
-const double	AU = 149597890E3;
-const double 	solar_constant_e = 1367;    /* solar constant W/m^2 */
-const double  	solar_constant_l = 127.5;   /* solar constant klux */
 const double	half_sun_angle = 0.2665;
 const double	skyclearinf = 1.000;	/* limitations for the variation of the Perez parameters */
 const double	skyclearsup = 12.1;
@@ -347,9 +343,9 @@ int write_segments_diffuse(double dir,double dif)
 	double reduction=1.0;
 	double  sd, st;
 
-	float 	lv_mod[145];  /* 145 luminance values*/
+	float 	lv_mod[SKY_PATCHES];  /* 145 luminance values*/
 
-	static float theta_o[145] = {
+	static float theta_o[SKY_PATCHES] = {
 		84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84,
 		72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72,
 		60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
@@ -360,7 +356,7 @@ int write_segments_diffuse(double dir,double dif)
 		0
 	};
 
-	static float phi_o[145] = {
+	static float phi_o[SKY_PATCHES] = {
 		0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348,
 		0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348,
 		0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345,
@@ -454,7 +450,7 @@ int write_segments_diffuse(double dir,double dif)
 	coeff_lum_perez(radians(sunzenith), skyclearness, skybrightness, coeff_perez);
 
 	/*calculation of the modelled luminance */
-	for (j=0;j<145;j++)	{
+	for (j = 0; j<SKY_PATCHES; j++)	{
 		theta_phi_to_dzeta_gamma(radians(theta_o[j]),radians(phi_o[j]),&dzeta,&gamma,radians(sunzenith));
 		lv_mod[j] = (float)calc_rel_lum_perez(dzeta, gamma, radians(sunzenith), skyclearness, skybrightness, coeff_perez);
 	}
@@ -558,7 +554,7 @@ int write_segments_diffuse(double dir,double dif)
 			A7= c_perez[4];
 
 
-			for (j=0 ; j<145 ; j++){
+			for (j = 0; j<SKY_PATCHES; j++){
 				SkyPatchLuminance[j] = (float)(horizon_factor[j] * skybright(Dx_dif_patch[j], Dy_dif_patch[j], Dz_dif_patch[j], A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, j));
 				if( horizon_factor[j]<1)
 					SkyPatchLuminance[j] += (float)((1 - horizon_factor[j]) * skybright(0.9961946, 0, -0.087156, A1, A2, A3, A4, A5, A6, A7, sundir[0], sundir[1], sundir[2], dir, 0));
@@ -660,7 +656,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 	static int number2305[29]= { 0,120,240,360,480,600,720,840,960,1056,1152,1248,1344,1440,1536,1632,1728,1800,1872,1944,2016,2064,2112,2160,2208,2232,2256,2280,2304 };
 	static double ring_division2305[29]= { 120.0,120.0,120.0,120.0,120.0,120.0,120.0,120.0,96.0,96.0,96.0,96.0,96.0,96.0,96.0,96.0,72.0,72.0,72.0,72.0,48.0,48.0,48.0,48.0,24.0,24.0,24.0,24.0,0.0 };
 
-	static float DirectDC_theta[145] = {
+	static float DirectDC_theta[SKY_PATCHES] = {
 		6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
 		18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
 		30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
@@ -671,7 +667,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 		90
 	};
 
-	static float DirectDC_phi[145] = {
+	static float DirectDC_phi[SKY_PATCHES] = {
 		-96, -108, -120, -132, -144, -156, -168, 180, 168, 156, 144, 132, 120, 108, 96, 84, 72, 60, 48, 36, 24, 12, 0, -12, -24, -36, -48, -60, -72, -84,
 		-96, -108, -120, -132, -144, -156, -168, 180, 168, 156, 144, 132, 120, 108, 96, 84, 72, 60, 48, 36, 24, 12, 0, -12, -24, -36, -48, -60, -72, -84,
 		-97.5, -112.5, -127.5, -142.5, -157.5, -172.5, 172.5, 157.5, 142.5, 127.5, 112.5, 97.5, 82.5, 67.5, 52.5, 37.5, 22.5, 7.5, -7.5, -22.5, -37.5, -52.5, -67.5, -82.5,
@@ -1446,15 +1442,15 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 
 
 
-			SkyPatchLuminance[145 + chosen_value1] = (float)(solarradiance_luminance * weight1);
-			SkyPatchLuminance[145 + chosen_value2] = (float)(solarradiance_luminance * weight2);
-			SkyPatchLuminance[145 + chosen_value3] = (float)(solarradiance_luminance * weight3);
-			SkyPatchLuminance[145 + chosen_value4] = (float)(solarradiance_luminance * weight4);
+			SkyPatchLuminance[SKY_PATCHES + chosen_value1] = (float)(solarradiance_luminance * weight1);
+			SkyPatchLuminance[SKY_PATCHES + chosen_value2] = (float)(solarradiance_luminance * weight2);
+			SkyPatchLuminance[SKY_PATCHES + chosen_value3] = (float)(solarradiance_luminance * weight3);
+			SkyPatchLuminance[SKY_PATCHES + chosen_value4] = (float)(solarradiance_luminance * weight4);
 
-			SkyPatchSolarRadiation[145 + chosen_value1] = (float)(solarradiance_solar_radiation * weight1);
-			SkyPatchSolarRadiation[145 + chosen_value2] = (float)(solarradiance_solar_radiation * weight2);
-			SkyPatchSolarRadiation[145 + chosen_value3] = (float)(solarradiance_solar_radiation * weight3);
-			SkyPatchSolarRadiation[145 + chosen_value4] = (float)(solarradiance_solar_radiation * weight4);
+			SkyPatchSolarRadiation[SKY_PATCHES + chosen_value1] = (float)(solarradiance_solar_radiation * weight1);
+			SkyPatchSolarRadiation[SKY_PATCHES + chosen_value2] = (float)(solarradiance_solar_radiation * weight2);
+			SkyPatchSolarRadiation[SKY_PATCHES + chosen_value3] = (float)(solarradiance_solar_radiation * weight3);
+			SkyPatchSolarRadiation[SKY_PATCHES + chosen_value4] = (float)(solarradiance_solar_radiation * weight4);
 			
 
 			// Step 2: Identify in which patch the sun currently is for the direct-direct DC
@@ -1506,8 +1502,8 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				chosen_value = number145[ringnumber] + (int)((-90.0 - azimuth) / (360.0 / ring_division145[ringnumber]));
 			}
 
-			SkyPatchLuminance[145 + chosen_value] = (float)solarradiance_luminance;
-			SkyPatchSolarRadiation[145 + chosen_value] = (float)solarradiance_solar_radiation;
+			SkyPatchLuminance[SKY_PATCHES + chosen_value] = (float)solarradiance_luminance;
+			SkyPatchSolarRadiation[SKY_PATCHES + chosen_value] = (float)solarradiance_solar_radiation;
 
 
 			//printf("dds %d dc.coup %d, date %d %d %.3f altitude %f azimuth %f  chosen_value %d ",dds_file_format,dc_coupling_mode,month, day,hour,altitude, azimuth,chosen_value);
@@ -1594,8 +1590,8 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 					}
 					summe1*=.25;
 				}else if(dds_file_format==2) { //DDS and SHADOWTESTING
-					//*number_direct_coefficients= 145; //count only direct indirect
-					while(i< (number_of_diffuse_and_ground_dc+ 145)){
+					//*number_direct_coefficients= SKY_PATCHES; //count only direct indirect
+					while (i< (number_of_diffuse_and_ground_dc + SKY_PATCHES)){
 						summe1+= (*pointer_dc) * (*pointer_sky);
 						if(i<number_of_diffuse_and_ground_dc){
 //#ifndef PROCESS_ROW
@@ -1817,10 +1813,10 @@ void check_parametrization()
 /* likelihood of the direct and diffuse components */
 void 	check_illuminances()
 {
-	if (!( (directilluminance>=0) && (directilluminance<=solar_constant_l*1000) && (diffusilluminance>0) ))
+	if (!((directilluminance >= 0) && (directilluminance <= SOLAR_CONSTANT_L * 1000) && (diffusilluminance>0)))
 		{
-			if(directilluminance > solar_constant_l*1000){
-				directilluminance=solar_constant_l*1000;
+			if (directilluminance > SOLAR_CONSTANT_L * 1000){
+				directilluminance = SOLAR_CONSTANT_L * 1000;
 				sprintf(errmsg, "direct illuminance set to max at %d %d %.3f", month, day, hour);
 				error(WARNING, errmsg);
 			}
@@ -1832,7 +1828,7 @@ void 	check_illuminances()
 
 void 	check_irradiances()
 {
-	if (!( (directirradiance>=0) && (directirradiance<=solar_constant_e) && (diffusirradiance>0) ))
+	if (!((directirradiance >= 0) && (directirradiance <= SOLAR_CONSTANT_E) && (diffusirradiance>0)))
 	{
 		if(diffusirradiance!=0 && directirradiance!=0){
 			sprintf(errmsg, "direct or diffuse irradiances out of range (date %d %d %f\n dir %f dif %f)", month, day, hour, directirradiance, diffusirradiance);
@@ -1846,7 +1842,7 @@ void 	check_irradiances()
 /* Perez sky's brightness */
 double sky_brightness()
 {
-	return diffusirradiance * air_mass() / (solar_constant_e*get_eccentricity());
+	return diffusirradiance * air_mass() / (SOLAR_CONSTANT_E*get_eccentricity());
 }
 
 
@@ -1863,7 +1859,7 @@ double sky_clearness()
 /* diffus horizontal irradiance from Perez sky's brightness */
 double diffus_irradiance_from_sky_brightness()
 {
-	return skybrightness / air_mass() * (solar_constant_e*get_eccentricity());
+	return skybrightness / air_mass() * (SOLAR_CONSTANT_E*get_eccentricity());
 }
 
 
@@ -1881,8 +1877,8 @@ void illu_to_irra_index()
 	double	test1=0.1, test2=0.1;
 	int	counter=0;
 
-	diffusirradiance = diffusilluminance*solar_constant_e/(solar_constant_l*1000);
-	directirradiance = directilluminance*solar_constant_e/(solar_constant_l*1000);
+	diffusirradiance = diffusilluminance*SOLAR_CONSTANT_E / (SOLAR_CONSTANT_L * 1000);
+	directirradiance = directilluminance*SOLAR_CONSTANT_E / (SOLAR_CONSTANT_L * 1000);
 	skyclearness =  sky_clearness();
 	skybrightness = sky_brightness();
 	if (skyclearness>12) skyclearness=12;
@@ -2069,7 +2065,7 @@ double integ_lv(float *lv,float *theta)
 	int i;
 	double buffer=0.0;
 
-	for (i=0;i<145;i++)
+	for (i = 0; i<SKY_PATCHES; i++)
 		buffer += lv[i] * cos(radians(theta[i]));
 
 	return buffer*2*PI/144;

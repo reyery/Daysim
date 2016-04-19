@@ -1,10 +1,10 @@
 #include <cassert>
+#include <stdio.h>
 
 #include "cPerezSkyModel.h"
 
 #define _USE_MATH_DEFINES
-#include <math.h>
-#include <stdio.h>
+#include "ds_constants.h"
 
 // Perez all weather sky model coefficients
 double cPerezSkyModel::m_a1[8]= {1.3525,-1.2219,-1.1000,-0.5484,-0.6000,-1.0156,-1.0000,-1.0500};
@@ -108,7 +108,7 @@ bool cPerezSkyModel::SetSkyConditions(double Idh, double Ibh, cSun *Sun)
 	// TODO: check IextraT and AirMass eqns with task 3 microclimate modelling paper
 	day_angle=Sun->GetDay()*2*M_PI/365;
 
-    E0 = 1367 * (1.00011+0.034221*cos(day_angle)+0.00128*sin(day_angle)
+	E0 = SOLAR_CONSTANT_E * (1.00011 + 0.034221*cos(day_angle) + 0.00128*sin(day_angle)
 								+0.000719*cos(2*day_angle)+0.000077*sin(2*day_angle));
 
 	// air optical mass

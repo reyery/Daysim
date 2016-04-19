@@ -7,13 +7,6 @@
 
 #pragma once
 
-#ifndef PI
-#include <rtmath.h>
-#endif
-
-#define DTR (PI/180.0)
-#define RTD (180.0/PI)
-
 int    jdate( int month, int day);     /* Julian date (days into year) */
 double stadj( int jd);                 /* solar time adjustment from Julian date */
 double sdec( int jd);                  /* solar declination angle from Julian date */

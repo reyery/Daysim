@@ -3,9 +3,8 @@
 #include "climateFile.h"
 #include <stdio.h>
 #include <iostream>
-#include <math.h>
 
-
+#include "ds_constants.h"
 #include "paths.h"
 
 cClimateFile::cClimateFile(void)
@@ -46,7 +45,7 @@ bool cClimateFile::ReadClimateFile(char *FileName, int /*HourConvention*/, eClim
 	delete[] m_ptIdh;
 
 	//Assume we've got 8760 points
-	m_NumPoints=8760;
+	m_NumPoints = HOURS_PER_YEAR;
 
 	double *Col1 = new double[m_NumPoints];
 	double *Col2 = new double[m_NumPoints];
@@ -212,7 +211,7 @@ double cClimateFile::GetDirectRad(double hour, int day)
 	// if pointer < 0, don't have data for specified day
 	if (pointer < 0) return -9999;
 
-	float ratio, diff;
+	double ratio, diff;
 
 	ratio=hour-hour1;
 	// TODO: CHeck this (first/last hours of day)
@@ -224,7 +223,7 @@ double cClimateFile::GetDirectRad(double hour, int day)
 double cClimateFile::GetDiffuseRad(double hour, int day)
 {
 	// interpolate linearly between two closest hours
-	float hour1, hourdiff;
+	double hour1, hourdiff;
 	int pointer;
 
 	// find the half hour before current time (climate file has data for 0:30, 1:30,2:30, etc...)
@@ -238,7 +237,7 @@ double cClimateFile::GetDiffuseRad(double hour, int day)
 	// if pointer < 0, don't have data for specified day
 	if (pointer < 0) return -9999;
 
-	float ratio, diff;
+	double ratio, diff;
 
 	ratio=hour-hour1;
 	diff=m_ptIdh[pointer+1]-m_ptIdh[pointer];
@@ -252,7 +251,7 @@ double cClimateFile::GetDiffuseRad(double hour, int day)
 double cClimateFile::GetGlobalRad(double hour, int day)
 {
 	// interpolate linearly between two closest hours
-	float hour1, hourdiff;
+	double hour1, hourdiff;
 	int pointer;
 
 	// find the half hour before current time (climate file has data for 0:30, 1:30,2:30, etc...)
@@ -266,7 +265,7 @@ double cClimateFile::GetGlobalRad(double hour, int day)
 	// if pointer < 0, don't have data for specified day
 	if (pointer < 0) return -9999;
 
-	float ratio, diff;
+	double ratio, diff;
 
 	ratio=hour-hour1;
 	diff=m_ptIgh[pointer+1]-m_ptIgh[pointer];

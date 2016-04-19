@@ -1,9 +1,9 @@
 #include <cassert>
 #include <memory.h>
 
-#include "./cSkyVault.h"
+#include "cSkyVault.h"
 #define _USE_MATH_DEFINES
-#include <math.h>
+#include "ds_constants.h"
 
 //////////////////////////
 // Sky Vault
@@ -34,7 +34,7 @@ cSkyVault::cSkyVault(double latitude, double longitude):
 	m_ptRadiance=0;
 
 	// create sky patches
-	m_NumPatches=145;
+	m_NumPatches = SKY_PATCHES;
 
 	m_ptPatchAlt=new double[m_NumPatches];
 	m_ptPatchAz=new double[m_NumPatches];
@@ -43,9 +43,9 @@ cSkyVault::cSkyVault(double latitude, double longitude):
 	m_ptPatchLuminance=new double[m_NumPatches];
 	m_ptPatchSolidAngle=new double[m_NumPatches];
 
-	m_ptRadiance=new float[8760][145];
+	m_ptRadiance = new float[HOURS_PER_YEAR][SKY_PATCHES];
 	// CMR: I think that the program relies on this memory being zero.
-	memset(m_ptRadiance, 0, sizeof(float[8760][145]));
+	memset(m_ptRadiance, 0, sizeof(float[HOURS_PER_YEAR][SKY_PATCHES]));
 
 	CurrentPatch=0;
 
@@ -270,7 +270,7 @@ double temp=0;
 			else
 				Ibn=0;
 
-			if (Ibn> 1367)
+			if (Ibn > SOLAR_CONSTANT_E)
 			{
 				// Very large value for direct radiation - probably low solar altitude
 				Idh=Idh+Ibh;
@@ -342,7 +342,7 @@ NextHour:
 	for (i=0; i<m_NumPatches; i++)
 	{
 		m_CumSky[i]=0;
-		for (j=0; j<8760; j++)
+		for (j = 0; j<HOURS_PER_YEAR; j++)
 		{
 			m_CumSky[i]+=m_ptRadiance[j][i]/SunUpHourCount;
 		}
@@ -399,7 +399,7 @@ NextHour:
 				else
 					Ibn = 0;
 
-				if (Ibn > 1367)
+				if (Ibn > SOLAR_CONSTANT_E)
 				{
 					// Very large value for direct radiation - probably low solar altitude
 					Ibn = 0;

@@ -14,6 +14,7 @@
 
 #include "fropen.h"
 #include "sun.h"
+#include "ds_constants.h"
 
 
 char *header;
@@ -56,10 +57,6 @@ float horizon_azimuth_out[36];            /*  divide [-180°,180°] of the output 
                                           /*  (south=0°, horizon heights in degrees)                          */
 int linke_estimation=1;                   /*  flag that indicates if estimation of the monthly linke factors is necessary  */
 
-/*  constants used  */
-
-const float solar_constant_e = 1367.0;
-
 /*  versioning  */
 
 extern char  VersionID[];	/* Radiance version ID string */
@@ -99,7 +96,7 @@ double diffuse_fraction(double irrad_glo, double solar_elevation, double eccentr
 	double index_glo_ex;
 	double dif_frac;
 
-	if (solar_elevation > 0)  irrad_ex = solar_constant_e * eccentricity_correction * sin(DTR*solar_elevation);
+	if (solar_elevation > 0)  irrad_ex = SOLAR_CONSTANT_E * eccentricity_correction * sin(DTR*solar_elevation);
 	else irrad_ex = 0;
 
 	if (irrad_ex <= 0) return 0;
@@ -113,15 +110,13 @@ double diffuse_fraction(double irrad_glo, double solar_elevation, double eccentr
 		dif_frac = 1.02 - 0.254*index_glo_ex + 0.0123*sin(DTR*solar_elevation);
 		if (dif_frac > 1)  { dif_frac = 1; }
 	}
-
-	if (index_glo_ex > 0.3 && index_glo_ex < 0.78)
+	else if (index_glo_ex < 0.78)
 	{
 		dif_frac = 1.4 - 1.749*index_glo_ex + 0.177*sin(DTR*solar_elevation);
 		if (dif_frac > 0.97)  { dif_frac = 0.97; }
-		if (dif_frac < 0.1)   { dif_frac = 0.1; }
+		else if (dif_frac < 0.1)   { dif_frac = 0.1; }
 	}
-
-	if (index_glo_ex >= 0.78)
+	else
 	{
 		dif_frac = 0.486*index_glo_ex - 0.182*sin(DTR*solar_elevation);
 		if (dif_frac < 0.1)  { dif_frac = 0.1; }
@@ -218,9 +213,9 @@ int main(int argc, char *argv[])
 
 	if (command_line)
 	{
-		jday = month_and_day_to_julian_day(month, day);
-		if (irrad_glo < 0 || irrad_glo > solar_constant_e)          /*  check irradiances and exit if necessary  */
-			irrad_glo = solar_constant_e;
+		jday = jdate(month, day);
+		if (irrad_glo < 0 || irrad_glo > SOLAR_CONSTANT_E)          /*  check irradiances and exit if necessary  */
+			irrad_glo = SOLAR_CONSTANT_E;
 
 		solar_elev_azi_ecc(latitude, longitude, time_zone, jday, time, 0, &solar_elevation, &solar_azimuth, &eccentricity_correction);
 		irrad_dif = diffuse_fraction(irrad_glo, solar_elevation, eccentricity_correction)*irrad_glo;
@@ -232,9 +227,9 @@ int main(int argc, char *argv[])
 			irrad_beam_nor = 0;
 			irrad_dif = irrad_glo;
 		}
-		if (irrad_beam_nor > solar_constant_e)
+		if (irrad_beam_nor > SOLAR_CONSTANT_E)
 		{
-			irrad_beam_nor = solar_constant_e;
+			irrad_beam_nor = SOLAR_CONSTANT_E;
 			irrad_dif = irrad_glo - irrad_beam_nor*sin(DTR*solar_elevation);
 		}
 		fprintf(stdout, "%.0f %.0f\n", irrad_beam_nor, irrad_dif);
@@ -246,8 +241,8 @@ int main(int argc, char *argv[])
 		while (EOF != fscanf(HOURLY_DATA, "%d %d %f %f", &month, &day, &time, &irrad_glo))
 		{
 			jday = month_and_day_to_julian_day(month, day);
-			if (irrad_glo < 0 || irrad_glo > solar_constant_e)          /*  check irradiances and exit if necessary  */
-				irrad_glo = solar_constant_e;
+			if (irrad_glo < 0 || irrad_glo > SOLAR_CONSTANT_E)          /*  check irradiances and exit if necessary  */
+				irrad_glo = SOLAR_CONSTANT_E;
 
 			solar_elev_azi_ecc(latitude, longitude, time_zone, jday, time, 0, &solar_elevation, &solar_azimuth, &eccentricity_correction);
 
@@ -259,9 +254,9 @@ int main(int argc, char *argv[])
 				irrad_beam_nor = 0;
 				irrad_dif = irrad_glo;
 			}
-			if (irrad_beam_nor > solar_constant_e)
+			if (irrad_beam_nor > SOLAR_CONSTANT_E)
 			{
-				irrad_beam_nor = solar_constant_e;
+				irrad_beam_nor = SOLAR_CONSTANT_E;
 				irrad_dif = irrad_glo - irrad_beam_nor*sin(DTR*solar_elevation);
 			}
 			fprintf(SHORT_TERM_DATA, "%d %d %.3f %.0f %.0f\n", month, day, time, irrad_beam_nor, irrad_dif);

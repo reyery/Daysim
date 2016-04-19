@@ -14,7 +14,7 @@ extern "C" char  VersionID[];	/* Radiance version ID string */
 int main(int argc, char* argv[])
 {
 	cSkyVault sky;
-	double (*patchData)[5] = new double[145][5];
+	double(*patchData)[5] = new double[SKY_PATCHES][5];
 	int i,j, counter;
 
 	double *CumSky;

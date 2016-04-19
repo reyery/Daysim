@@ -10,6 +10,7 @@
 #include <rterror.h>
 
 #include "sun.h"
+#include "ds_constants.h"
 
 
 int jdate( int month, int day)		/* Julian date (days into year) */

@@ -93,11 +93,11 @@ FILE *PEREZ_OUTPUTFILE;
 FILE *DC_FILE;
 FILE *ILL_FILE;
 /* diverse arrays */
-float diffuse_pts[145][2]; /* position of sky patches of diffuse daylight coefficients */
+float diffuse_pts[SKY_PATCHES][2]; /* position of sky patches of diffuse daylight coefficients */
 float direct_pts[288][4];    /* position of sky patches of direct daylight coefficients if n.n.*/
 float direct_calendar[13][25][4]; /* position of sky patches of direct daylight coefficients otherwise*/
 float horizon[36];
-float horizon_factor[145];
+float horizon_factor[SKY_PATCHES];
 double  sundir[3];
 float point_coefficients[6];
 
@@ -132,7 +132,7 @@ int main( int argc, char **argv )
 	FILE *HORIZON_DATA_FILE;
 
 	for (i=0;i<36;i++){horizon[i]=0;}
-	for (i=0;i<145;i++){horizon_factor[i]=1;}
+	for (i = 0; i<SKY_PATCHES; i++){ horizon_factor[i] = 1; }
 	progname = fixargv0(argv[0]);
 
 	if (argc == 1) {
@@ -308,7 +308,7 @@ int main( int argc, char **argv )
 	}
 
 	/* calculate diffuse sky patch directions Dx_dif_patch... */
-	for (j=0 ; j<145 ; j++){
+	for (j = 0; j<SKY_PATCHES; j++){
 		Dx_dif_patch[j] = (float)(cos(DTR*diffuse_pts[j][1])*cos(DTR*(90 - diffuse_pts[j][0])));
 		Dy_dif_patch[j] = (float)(sin(DTR*diffuse_pts[j][1])*cos(DTR*(90 - diffuse_pts[j][0])));
 		Dz_dif_patch[j] = (float)(sin(DTR*(90 - diffuse_pts[j][0])));

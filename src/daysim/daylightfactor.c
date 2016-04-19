@@ -16,8 +16,7 @@
 
 #include "fropen.h"
 #include "read_in_header.h"
-
-#define NUM_COEFFICIENTS	148
+#include "ds_constants.h"
 
 
 float *daylight_factor;
@@ -38,14 +37,14 @@ double CIE_SKY(double Dz)
 //=====================================
 void getDaylightFactor( )
 {
-	float diffuse_dc[NUM_COEFFICIENTS], overcast[NUM_COEFFICIENTS], DZ[NUM_COEFFICIENTS];
+	float diffuse_dc[DAYLIGHT_COEFFICIENTS], overcast[DAYLIGHT_COEFFICIENTS], DZ[DAYLIGHT_COEFFICIENTS];
 	int i,j,k;
 	float ill_hor=101.5; /* outside horizontal irradiance under the CIE overcat sky at June 21st noon */
 	char test_string[300]="";
 	FILE *INPUT_FILE;
 
 	//initialize arrays
-	for (i = 0; i < NUM_COEFFICIENTS; i++)
+	for (i = 0; i < DAYLIGHT_COEFFICIENTS; i++)
 	{
 		diffuse_dc[i]=0;
 		overcast[i]=0;
@@ -73,7 +72,7 @@ void getDaylightFactor( )
 	DZ[147] = -1.0f;
 
 	//calculate luminances of diffuse sky patches
-	for (i = 0; i < NUM_COEFFICIENTS; i++) {
+	for (i = 0; i < DAYLIGHT_COEFFICIENTS; i++) {
 		overcast[i] = (float)(CIE_SKY(DZ[i]) / ill_hor);
 	}
 
@@ -94,13 +93,13 @@ void getDaylightFactor( )
 				}
 				diffuse_dc[0] = (float)atof(test_string);
 
-				for (k = 1; k < NUM_COEFFICIENTS; k++)
+				for (k = 1; k < DAYLIGHT_COEFFICIENTS; k++)
 					fscanf(INPUT_FILE,"%f ",&diffuse_dc[k]);
 				fscanf(INPUT_FILE,"%*[^\n]");
 				fscanf(INPUT_FILE,"%*[\n\r]");
 
 				/* calculate daylight factor */
-				for (k = 0; k < NUM_COEFFICIENTS; k++)
+				for (k = 0; k < DAYLIGHT_COEFFICIENTS; k++)
 	        	{
 	        		daylight_factor[j]+=diffuse_dc[k]*overcast[k];
 	        	}

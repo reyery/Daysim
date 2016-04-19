@@ -1,5 +1,6 @@
 #include "cPerezSkyModel.h"
 #include "ClimateFile.h"
+#include "ds_constants.h"
 
 /////////////////////////////////////////////
 // Check to see if cSkyVault has already been declared
@@ -57,7 +58,7 @@ private:
 
 	// Sky radiances (last element is mean annual radiance)
 	// define as float to improve run time (with minimal loss of accuracy)
-	float (*m_ptRadiance)[145];
+	float(*m_ptRadiance)[SKY_PATCHES];
 
 	// The sky luminance model to be used
 	cPerezSkyModel m_SkyModel;

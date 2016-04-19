@@ -20,7 +20,6 @@
 #include  <paths.h>
 
 #include  "read_in_header.h"
-#include  "sun.h"
 #include  "fropen.h"
 #include  "occ_func.h"
 #include  "daylightfactor.h"
