@@ -1692,145 +1692,55 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 /* Perez global horizontal luminous efficacy model */
 double glob_h_effi_PEREZ()
 {
+	int   	category_total_number = 8, category_number = 0, i;
 
-	double 	value;
-	double 	category_bounds[10], a[10], b[10], c[10], d[10];
-	int   	category_total_number, category_number=0, i;
+	/* initialize category bounds (clearness index bounds) */
+	double 	category_bounds[9] = { 1, 1.065, 1.230, 1.500, 1.950, 2.800, 4.500, 6.200, 12.1 }; /*changed from 12.01 , Tito */
+
+	/* initialize model coefficients */
+	double  a[8] = { 96.63, 107.54, 98.73, 92.72, 86.73, 88.34,  78.63, 99.65 };
+	double  b[8] = { -0.47,   0.79,  0.70,  0.56,  0.98,  1.39,   1.47,  1.86 };
+	double  c[8] = { 11.50,   1.79,  4.40,  8.36,  7.10,  6.06,   4.93, -4.46 };
+	double  d[8] = { -9.16,  -1.19, -6.95, -8.3, -10.94, -7.60, -11.37, -3.15 };
 
 	//if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup){;}
 
-	/* initialize category bounds (clearness index bounds) */
-
-	category_total_number = 8 ; /*changed from 8 , Tito */
-	category_bounds[1] = 1;
-	category_bounds[2] = 1.065;
-	category_bounds[3] = 1.230;
-	category_bounds[4] = 1.500;
-	category_bounds[5] = 1.950;
-	category_bounds[6] = 2.800;
-	category_bounds[7] = 4.500;
-	category_bounds[8] = 6.200;
-	category_bounds[9] = 12.1; /*changed from 12.01 , Tito */
-
-	/* initialize model coefficients */
-	a[1] = 96.63;
-	a[2] = 107.54;
-	a[3] = 98.73;
-	a[4] = 92.72;
-	a[5] = 86.73;
-	a[6] = 88.34;
-	a[7] = 78.63;
-	a[8] = 99.65;
-
-	b[1] = -0.47;
-	b[2] = 0.79;
-	b[3] = 0.70;
-	b[4] = 0.56;
-	b[5] = 0.98;
-	b[6] = 1.39;
-	b[7] = 1.47;
-	b[8] = 1.86;
-
-	c[1] = 11.50;
-	c[2] = 1.79;
-	c[3] = 4.40;
-	c[4] = 8.36;
-	c[5] = 7.10;
-	c[6] = 6.06;
-	c[7] = 4.93;
-	c[8] = -4.46;
-
-	d[1] = -9.16;
-	d[2] = -1.19;
-	d[3] = -6.95;
-	d[4] = -8.31;
-	d[5] = -10.94;
-	d[6] = -7.60;
-	d[7] = -11.37;
-	d[8] = -3.15;
-
-	for (i=1; i<=category_total_number; i++)
+	for (i=0; i<category_total_number; i++)
+		if ((skyclearness >= category_bounds[i]) && (skyclearness < category_bounds[i + 1]))
 		{
-			if ( (skyclearness >= category_bounds[i]) && (skyclearness < category_bounds[i+1]) )
-				category_number = i;
+			category_number = i;
+			break;
 		}
 
-	value = a[category_number] + b[category_number]*atm_preci_water  +
-	    c[category_number]*cos(sunzenith*DTR) +  d[category_number]*log(skybrightness);
-
-	return(value);
+	return a[category_number] + b[category_number] * atm_preci_water + c[category_number] * cos(sunzenith*DTR) + d[category_number] * log(skybrightness);
 }
 
 
 /* global horizontal diffuse efficacy model, according to PEREZ */
 double glob_h_diffuse_effi_PEREZ()
 {
-	double 	value;
-	double 	category_bounds[10], a[10], b[10], c[10], d[10];
-	int   	category_total_number, category_number=0, i;
+	int   	category_total_number = 8, category_number = 0, i;
+
+	/* initialize category bounds (clearness index bounds) */
+	double 	category_bounds[9] = { 1, 1.065, 1.230, 1.500, 1.950, 2.800, 4.500, 6.200, 12.1 }; /*changed from 12.01 , Tito */
+
+	/* initialize model coefficients */
+	double 	a[8] = { 97.24, 107.22, 104.97, 102.39, 100.71, 106.42, 141.88, 152.23 };
+	double 	b[8] = { -0.46,   1.15,   2.96,   5.59,   5.94,   3.83,   1.90,   0.35 };
+	double 	c[8] = { 12.00,   0.59,  -5.53, -13.95, -22.75, -36.15, -53.24, -45.27 };
+	double 	d[8] = { -8.91,  -3.95,  -8.77, -13.90, -23.74, -28.83, -14.03,  -7.98 };
 
 	if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup)
 		{/*fprintf(stdout, "Warning : skyclearness or skybrightness out of range ; \n Check your input parameters\n");*/};
 
-	/* initialize category bounds (clearness index bounds) */
-
-	category_total_number = 8;
-	category_bounds[1] = 1;
-	category_bounds[2] = 1.065;
-	category_bounds[3] = 1.230;
-	category_bounds[4] = 1.500;
-	category_bounds[5] = 1.950;
-	category_bounds[6] = 2.800;
-	category_bounds[7] = 4.500;
-	category_bounds[8] = 6.200;
-	category_bounds[9] = 12.1; /*changed from 12.01 , Tito */
-
-	/* initialize model coefficients */
-	a[1] = 97.24;
-	a[2] = 107.22;
-	a[3] = 104.97;
-	a[4] = 102.39;
-	a[5] = 100.71;
-	a[6] = 106.42;
-	a[7] = 141.88;
-	a[8] = 152.23;
-
-	b[1] = -0.46;
-	b[2] = 1.15;
-	b[3] = 2.96;
-	b[4] = 5.59;
-	b[5] = 5.94;
-	b[6] = 3.83;
-	b[7] = 1.90;
-	b[8] = 0.35;
-
-	c[1] = 12.00;
-	c[2] = 0.59;
-	c[3] = -5.53;
-	c[4] = -13.95;
-	c[5] = -22.75;
-	c[6] = -36.15;
-	c[7] = -53.24;
-	c[8] = -45.27;
-
-	d[1] = -8.91;
-	d[2] = -3.95;
-	d[3] = -8.77;
-	d[4] = -13.90;
-	d[5] = -23.74;
-	d[6] = -28.83;
-	d[7] = -14.03;
-	d[8] = -7.98;
-
-	for (i=1; i<=category_total_number; i++)
+	for (i = 0; i<category_total_number; i++)
+		if ((skyclearness >= category_bounds[i]) && (skyclearness < category_bounds[i + 1]))
 		{
-			if ( (skyclearness >= category_bounds[i]) && (skyclearness <= category_bounds[i+1]) )
-				category_number = i;
+			category_number = i;
+			break;
 		}
-	value = a[category_number] + b[category_number]*atm_preci_water  + c[category_number]*cos(sunzenith*DTR) +
-	    d[category_number]*log(skybrightness);
 
-	return(value);
+	return a[category_number] + b[category_number] * atm_preci_water + c[category_number] * cos(sunzenith*DTR) + d[category_number] * log(skybrightness);
 }
 
 
@@ -1840,75 +1750,29 @@ double direct_n_effi_PEREZ()
 
 {
 	double 	value;
-	double 	category_bounds[10], a[10], b[10], c[10], d[10];
-	int   	category_total_number, category_number=0, i;
+	int   	category_total_number = 8, category_number = 0, i;
 
+	/* initialize category bounds (clearness index bounds) */
+	double 	category_bounds[9] = { 1, 1.065, 1.230, 1.500, 1.950, 2.800, 4.500, 6.200, 12.1 };
+
+	/* initialize model coefficients */
+	double 	a[8] = {  57.20, 98.99, 109.83, 110.34, 106.36, 107.19, 105.75, 101.18 };
+	double 	b[8] = {  -4.55, -3.46,  -4.90,  -5.84,  -3.97,  -1.25,   0.77,   1.58 };
+	double 	c[8] = {  -2.98, -1.21,  -1.71,  -1.99,  -1.75,  -1.51,  -1.26,  -1.10 };
+	double 	d[8] = { 117.12, 12.38,  -8.81,  -4.56,  -6.16, -26.73, -34.44,  -8.29 };
 
 	if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<=skybriginf || skybrightness>skybrigsup)
 		{/*fprintf(stdout, "Warning : skyclearness or skybrightness out of range ; \n Check your input parameters\n")*/;}
 
 
-	/* initialize category bounds (clearness index bounds) */
-
-	category_total_number = 8;
-
-	category_bounds[1] = 1;
-	category_bounds[2] = 1.065;
-	category_bounds[3] = 1.230;
-	category_bounds[4] = 1.500;
-	category_bounds[5] = 1.950;
-	category_bounds[6] = 2.800;
-	category_bounds[7] = 4.500;
-	category_bounds[8] = 6.200;
-	category_bounds[9] = 12.1;
-
-
-	/* initialize model coefficients */
-	a[1] = 57.20;
-	a[2] = 98.99;
-	a[3] = 109.83;
-	a[4] = 110.34;
-	a[5] = 106.36;
-	a[6] = 107.19;
-	a[7] = 105.75;
-	a[8] = 101.18;
-
-	b[1] = -4.55;
-	b[2] = -3.46;
-	b[3] = -4.90;
-	b[4] = -5.84;
-	b[5] = -3.97;
-	b[6] = -1.25;
-	b[7] = 0.77;
-	b[8] = 1.58;
-
-	c[1] = -2.98;
-	c[2] = -1.21;
-	c[3] = -1.71;
-	c[4] = -1.99;
-	c[5] = -1.75;
-	c[6] = -1.51;
-	c[7] = -1.26;
-	c[8] = -1.10;
-
-	d[1] = 117.12;
-	d[2] = 12.38;
-	d[3] = -8.81;
-	d[4] = -4.56;
-	d[5] = -6.16;
-	d[6] = -26.73;
-	d[7] = -34.44;
-	d[8] = -8.29;
-
-
-
-	for (i=1; i<=category_total_number; i++)
+	for (i = 0; i<category_total_number; i++)
+		if ((skyclearness >= category_bounds[i]) && (skyclearness < category_bounds[i + 1]))
 		{
-			if ( (skyclearness >= category_bounds[i]) && (skyclearness <= category_bounds[i+1]) )
-				category_number = i;
+			category_number = i;
+			break;
 		}
 
-	value = a[category_number] + b[category_number]*atm_preci_water  + c[category_number]*exp(5.73*sunzenith*DTR - 5) +  d[category_number]*skybrightness;
+	value = a[category_number] + b[category_number] * atm_preci_water + c[category_number] * exp(5.73*sunzenith*DTR - 5) + d[category_number] * skybrightness;
 
 	if (value < 0) value = 0;
 
@@ -1919,39 +1783,34 @@ double direct_n_effi_PEREZ()
 /*check the range of epsilon and delta indexes of the perez parametrization*/
 void check_parametrization()
 {
-
-	if (skyclearness<skyclearinf || skyclearness>skyclearsup || skybrightness<skybriginf || skybrightness>skybrigsup)
-		{
-			if (skyclearness<skyclearinf){
-				if(all_warnings &&((fabs(hour- 12+12-stadj(jdate(month, day))-solar_sunset(month,day))<0.25)||(fabs(hour-solar_sunset(month,day)-stadj(jdate(month, day)) )<0.25) )){
-					sprintf(errmsg, "sky clearness (%.1f) below range (%d %d %.3f)", skyclearness, month, day, hour);
-					error(WARNING, errmsg);
-				}
-				skyclearness=skyclearinf;
-			}
-			if (skyclearness>skyclearsup){
-				if(all_warnings &&((fabs(hour- 12+12-stadj(jdate(month, day))-solar_sunset(month,day))<0.25)||(fabs(hour-solar_sunset(month,day)-stadj(jdate(month, day)) )<0.25) )){
-					sprintf(errmsg, "sky clearness (%.1f) above range (%d %d %.3f)", skyclearness, month, day, hour);
-					error(WARNING, errmsg);
-				}
-				skyclearness=skyclearsup;
-			}
-			if (skybrightness<skybriginf){
-				if(all_warnings &&((fabs(hour- 12+12-stadj(jdate(month, day))-solar_sunset(month,day))<0.25)||(fabs(hour-solar_sunset(month,day)-stadj(jdate(month, day)) )<0.25) )){
-					sprintf(errmsg, "sky brightness (%.1f) below range (%d %d %.3f)", skybrightness, month, day, hour);
-					error(WARNING, errmsg);
-				}
-				skybrightness=skybriginf;
-			}
-			if (skybrightness>skybrigsup){
-				if(all_warnings &&((fabs(hour- 12+12-stadj(jdate(month, day))-solar_sunset(month,day))<0.25)||(fabs(hour-solar_sunset(month,day)-stadj(jdate(month, day)) )<0.25) )){
-					sprintf(errmsg, "sky brightness (%.1f) above range (%d %d %.3f)", skybrightness, month, day, hour);
-					error(WARNING, errmsg);
-				}
-				skybrightness=skybrigsup;
-			}
-
+	if (skyclearness<skyclearinf){
+		if (all_warnings && ((fabs(hour - 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day))<0.25) || (fabs(hour - solar_sunset(month, day) - stadj(jdate(month, day)))<0.25))){
+			sprintf(errmsg, "sky clearness (%.1f) below range (%d %d %.3f)", skyclearness, month, day, hour);
+			error(WARNING, errmsg);
 		}
+		skyclearness = skyclearinf;
+	}
+	if (skyclearness>skyclearsup){
+		if (all_warnings && ((fabs(hour - 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day))<0.25) || (fabs(hour - solar_sunset(month, day) - stadj(jdate(month, day)))<0.25))){
+			sprintf(errmsg, "sky clearness (%.1f) above range (%d %d %.3f)", skyclearness, month, day, hour);
+			error(WARNING, errmsg);
+		}
+		skyclearness = skyclearsup;
+	}
+	if (skybrightness<skybriginf){
+		if (all_warnings && ((fabs(hour - 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day))<0.25) || (fabs(hour - solar_sunset(month, day) - stadj(jdate(month, day)))<0.25))){
+			sprintf(errmsg, "sky brightness (%.1f) below range (%d %d %.3f)", skybrightness, month, day, hour);
+			error(WARNING, errmsg);
+		}
+		skybrightness = skybriginf;
+	}
+	if (skybrightness>skybrigsup){
+		if (all_warnings && ((fabs(hour - 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day))<0.25) || (fabs(hour - solar_sunset(month, day) - stadj(jdate(month, day)))<0.25))){
+			sprintf(errmsg, "sky brightness (%.1f) above range (%d %d %.3f)", skybrightness, month, day, hour);
+			error(WARNING, errmsg);
+		}
+		skybrightness = skybrigsup;
+	}
 }
 
 
@@ -1987,22 +1846,16 @@ void 	check_irradiances()
 /* Perez sky's brightness */
 double sky_brightness()
 {
-	double value;
-
-	value = diffusirradiance * air_mass() / ( solar_constant_e*get_eccentricity());
-
-	return(value);
+	return diffusirradiance * air_mass() / (solar_constant_e*get_eccentricity());
 }
 
 
 /* Perez sky's clearness */
 double sky_clearness()
 {
-	double value;
-	if(diffusirradiance > 0){
-		value = ((diffusirradiance + directirradiance) / (diffusirradiance)+1.041*sunzenith*DTR*sunzenith*DTR*sunzenith*DTR) / (1 + 1.041*sunzenith*DTR * sunzenith*DTR * sunzenith*DTR);
-	}else{value=0;}
-	return(value);
+	if(diffusirradiance > 0)
+		return ((diffusirradiance + directirradiance) / (diffusirradiance)+1.041*sunzenith*DTR*sunzenith*DTR*sunzenith*DTR) / (1 + 1.041*sunzenith*DTR * sunzenith*DTR * sunzenith*DTR);
+	return 0;
 }
 
 
@@ -2010,26 +1863,20 @@ double sky_clearness()
 /* diffus horizontal irradiance from Perez sky's brightness */
 double diffus_irradiance_from_sky_brightness()
 {
-	double value;
-
-	value = skybrightness / air_mass() * ( solar_constant_e*get_eccentricity());
-
-	return(value);
+	return skybrightness / air_mass() * (solar_constant_e*get_eccentricity());
 }
 
 
 /* direct normal irradiance from Perez sky's clearness */
 double direct_irradiance_from_sky_clearness()
 {
-	double value;
-
-	value = diffus_irradiance_from_sky_brightness();
-	value = value * ((skyclearness - 1) * (1 + 1.041*sunzenith*DTR*sunzenith*DTR * sunzenith*DTR));
+	double value = diffus_irradiance_from_sky_brightness();
+	value *= ((skyclearness - 1) * (1 + 1.041*sunzenith*DTR*sunzenith*DTR * sunzenith*DTR));
 	return(value);
 }
 
 
-void illu_to_irra_index(void)
+void illu_to_irra_index()
 {
 	double	test1=0.1, test2=0.1;
 	int	counter=0;
@@ -2232,32 +2079,22 @@ double integ_lv(float *lv,float *theta)
 /* enter day number(double), return E0 = square(R0/R):  eccentricity correction factor  */
 double get_eccentricity()
 {
-	double day_angle;
-	double E0;
-
-	day_angle  = 2*PI*(daynumber - 1)/365;
-	E0         = 1.00011+0.034221*cos(day_angle)+0.00128*sin(day_angle)+
+	double day_angle = 2 * PI*(daynumber - 1) / 365;
+	return 1.00011+0.034221*cos(day_angle)+0.00128*sin(day_angle)+
 	    0.000719*cos(2*day_angle)+0.000077*sin(2*day_angle);
-
-	return (E0);
 }
 
 /* enter sunzenith angle (degrees) return relative air mass (double) */
 double 	air_mass()
 {
-	double	m;
-	m = 1/( cos(sunzenith*DTR)+0.15*exp( log(93.885-sunzenith)*(-1.253) ) );
-	return(m);
+	return 1 / (cos(sunzenith*DTR) + 0.15*exp(log(93.885 - sunzenith)*(-1.253)));
 }
 
 
 double get_angle_sun_direction(double sun_zenith, double sun_azimut, double direction_zenith, double direction_azimut)
 {
-	double angle;
 	if (sun_zenith == 0)
         error(WARNING, "zenith_angle = 0 in function get_angle_sun_direction");
 
-	angle = acos(cos(sun_zenith*DTR)*cos(direction_zenith*DTR) + sin(sun_zenith*DTR)*sin(direction_zenith*DTR)*cos((sun_azimut - direction_azimut)*DTR));
-	angle = angle*RTD;
-	return(angle);
+	return RTD * acos(cos(sun_zenith*DTR)*cos(direction_zenith*DTR) + sin(sun_zenith*DTR)*sin(direction_zenith*DTR)*cos((sun_azimut - direction_azimut)*DTR));
 }
