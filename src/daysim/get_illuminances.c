@@ -193,22 +193,22 @@ void get_DGP_profiles( )
 						if(last_element_blank==0)
 							number_of_dgp_columns++;
 						last_element_blank=1;
-						continue; //goes to the next iteration of the loop without finishing the current iteration
 					}else {
 						last_element_blank=0;
-						continue;
 					}
 				}
 				number_of_dgp_columns=number_of_dgp_columns-3;
 				if(number_of_dgp_columns<1)
 				{
 					DGP_filesDoNotExist=1;
-					printf("WARNING: DGP profile: %s has the wrong data format.\n",DGP_Profiles_file[counter]);
+					sprintf(errmsg, "DGP profile: %s has the wrong data format", DGP_Profiles_file[counter]);
+					error(WARNING, errmsg);
 				}
 				if(number_of_dgp_columns!=number_of_view_points)
 				{
-					printf("WARNING: DGP profile: %s The number of dgp columns in the file (%d) differs form the number of lines in the view file (%d). Going forward %d is used.\n",DGP_Profiles_file[counter],number_of_dgp_columns,number_of_view_points,number_of_dgp_columns);
-					number_of_view_points=number_of_dgp_columns;
+					sprintf(errmsg, "DGP profile: %s The number of dgp columns in the file (%d) differs form the number of lines in the view file (%d). Going forward %d is used", DGP_Profiles_file[counter], number_of_dgp_columns, number_of_view_points, number_of_dgp_columns);
+					error(WARNING, errmsg);
+					number_of_view_points = number_of_dgp_columns;
 				}
 				
 				//printf("Number of dgp columns in %s is %d.\n",DGP_Profiles_file[counter], number_of_view_points);
@@ -245,7 +245,8 @@ void get_DGP_profiles( )
 					printf("DGP for Blind Group %d setting %d found and processed: %s\n\n",BlindGroupIndex, Setting_Index, DGP_Profiles_file[counter]);
 			}else{ //DGP file does not exist.
 				DGP_filesDoNotExist=1;
-				printf("WARNING: DGP profile: %s not found.\n",DGP_Profiles_file[counter]);
+				sprintf(errmsg, "DGP profile: %s not found", DGP_Profiles_file[counter]);
+				error(WARNING, errmsg);
 			}
 			counter++;
 		}	
