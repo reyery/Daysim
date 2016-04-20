@@ -31,14 +31,14 @@ void esra_clearsky_irradiance_instant(double solar_elevation, double solar_azimu
 
 	/*  beam irradiance  */
 
-	delta_solar_elevation = 0.061359*RTD*(0.1594 + 1.123*DTR*solar_elevation
-		+ 0.065656*pow(DTR, 2)*pow(solar_elevation, 2))
-		/ (1 + 28.9344*DTR * solar_elevation + 277.3971*pow(DTR, 2)*pow(solar_elevation, 2));
+	delta_solar_elevation = 0.061359*degrees(0.1594 + 1.123 * radians(solar_elevation)
+		+ 0.065656 * pow(radians(solar_elevation), 2))
+		/ (1 + 28.9344 * radians(solar_elevation) + 277.3971 * pow(radians(solar_elevation), 2));
 
 	solar_elevation_true = solar_elevation + delta_solar_elevation;
 
 	relative_optical_air_mass = exp(-site_elevation/rayleigh_atmosphere_scale_height) \
-		/ ( sin(DTR*solar_elevation_true) + 0.50572 * pow(solar_elevation_true+6.07995,-1.6364) );
+		/ (sin(radians(solar_elevation_true)) + 0.50572 * pow(solar_elevation_true + 6.07995, -1.6364));
 
 	if ( relative_optical_air_mass <= 20 )
 		rayleigh_optical_thickness = 6.62960 + 1.7513 * relative_optical_air_mass - 0.1202 * pow(relative_optical_air_mass,2) \
@@ -94,7 +94,7 @@ void esra_clearsky_irradiance_instant(double solar_elevation, double solar_azimu
 
 	if ( a0 * diffuse_transmission_function < 0.002 )    a0 = 0.002 / diffuse_transmission_function;
 
-	diffuse_angular_function = a0 + a1 * sin(DTR*solar_elevation) + a2 * pow(sin(DTR*solar_elevation),2);
+	diffuse_angular_function = a0 + a1 * sin(radians(solar_elevation)) + a2 * pow(sin(radians(solar_elevation)), 2);
 
 	*irrad_dif_clear = SOLAR_CONSTANT_E * eccentricity_correction * diffuse_transmission_function * diffuse_angular_function;
 
@@ -102,7 +102,7 @@ void esra_clearsky_irradiance_instant(double solar_elevation, double solar_azimu
 
 	/*  global irradiance  */
 
-	*irrad_glo_clear = *irrad_beam_nor_clear * sin(DTR*solar_elevation) + *irrad_dif_clear;
+	*irrad_glo_clear = *irrad_beam_nor_clear * sin(radians(solar_elevation)) + *irrad_dif_clear;
 }
 
 void glo_and_beam_indices_hour(double latitude, double longitude, double time_zone,
@@ -221,7 +221,7 @@ void estimate_linke_factor_from_hourly_direct_irradiances()
 							if ( fabs(time-sunset_localtime) <= 0.5 )  centrum_time=time-0.5+(sunset_localtime-(time-0.5))/2.0;
 							solar_elev_azi_ecc ( latitude, longitude, time_zone, jday, \
 												 centrum_time, solar_time, &solar_elevation, &solar_azimuth, &eccentricity_correction);
-							irrad_beam_nor=irrad_beam_hor/sin(DTR*solar_elevation);
+							irrad_beam_nor = irrad_beam_hor / sin(radians(solar_elevation));
 							if ( irrad_beam_nor < 0 )  irrad_beam_nor=0;
 						}
 					else irrad_beam_nor=0;

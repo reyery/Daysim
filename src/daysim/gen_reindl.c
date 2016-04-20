@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 		irrad_dif = diffuse_fraction(irrad_glo, solar_elevation, eccentricity_correction)*irrad_glo;
 		if (solar_elevation > 5.0)
 		{
-			irrad_beam_nor = (irrad_glo - irrad_dif)*1.0 / sin(DTR*solar_elevation);
+			irrad_beam_nor = (irrad_glo - irrad_dif) / sin(radians(solar_elevation));
 		}
 		else{
 			irrad_beam_nor = 0;
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 		if (irrad_beam_nor > SOLAR_CONSTANT_E)
 		{
 			irrad_beam_nor = SOLAR_CONSTANT_E;
-			irrad_dif = irrad_glo - irrad_beam_nor*sin(DTR*solar_elevation);
+			irrad_dif = irrad_glo - irrad_beam_nor * sin(radians(solar_elevation));
 		}
 		fprintf(stdout, "%.0f %.0f\n", irrad_beam_nor, irrad_dif);
 
@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 			irrad_dif = diffuse_fraction(irrad_glo, solar_elevation, eccentricity_correction)*irrad_glo;
 			if (solar_elevation > 5.0)
 			{
-				irrad_beam_nor = (irrad_glo - irrad_dif)*1.0 / sin(DTR*solar_elevation);
+				irrad_beam_nor = (irrad_glo - irrad_dif) / sin(radians(solar_elevation));
 			}else{
 				irrad_beam_nor = 0;
 				irrad_dif = irrad_glo;
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 			if (irrad_beam_nor > SOLAR_CONSTANT_E)
 			{
 				irrad_beam_nor = SOLAR_CONSTANT_E;
-				irrad_dif = irrad_glo - irrad_beam_nor*sin(DTR*solar_elevation);
+				irrad_dif = irrad_glo - irrad_beam_nor * sin(radians(solar_elevation));
 			}
 			fprintf(SHORT_TERM_DATA, "%d %d %.3f %.0f %.0f\n", month, day, time, irrad_beam_nor, irrad_dif);
 		}

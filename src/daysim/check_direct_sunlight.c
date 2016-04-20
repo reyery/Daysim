@@ -161,8 +161,8 @@ void calculate_visible_sky_angle(char *octree)
 	{
 		for (j=0 ; j<2305 ; j++)
 		{
-			alt = DTR*(90.0 - DirectDC[j][1]);
-			azi = -DTR*(DirectDC[j][0] + 90.0);
+			alt = radians(90.0 - DirectDC[j][1]);
+			azi = -radians(DirectDC[j][0] + 90.0);
 			fprintf(DIRECT_POINTS_FILE,"%f %f %f\t%f %f %f\n", points[0][i],points[1][i],points[2][i],sin(alt)*cos(azi),sin(alt)*sin(azi),cos(alt));
 		}
 	}

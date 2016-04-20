@@ -279,7 +279,7 @@ int main( int argc, char **argv )
 	
 
 	/* consistency checks */
-	if (fabs(s_meridian - s_longitude) > 30 * DTR){
+	if (fabs(s_meridian - s_longitude) > radians(30)){
 		sprintf(errmsg,
 				"%.1f hours btwn. standard meridian and longitude",
 				(s_longitude-s_meridian)*12/PI);
@@ -307,9 +307,9 @@ int main( int argc, char **argv )
 
 	/* calculate diffuse sky patch directions Dx_dif_patch... */
 	for (j = 0; j<SKY_PATCHES; j++){
-		Dx_dif_patch[j] = (float)(cos(DTR*diffuse_pts[j][1])*cos(DTR*(90 - diffuse_pts[j][0])));
-		Dy_dif_patch[j] = (float)(sin(DTR*diffuse_pts[j][1])*cos(DTR*(90 - diffuse_pts[j][0])));
-		Dz_dif_patch[j] = (float)(sin(DTR*(90 - diffuse_pts[j][0])));
+		Dx_dif_patch[j] = (float)(cos(radians(diffuse_pts[j][1]))*cos(radians(90 - diffuse_pts[j][0])));
+		Dy_dif_patch[j] = (float)(sin(radians(diffuse_pts[j][1]))*cos(radians(90 - diffuse_pts[j][0])));
+		Dz_dif_patch[j] = (float)(sin(radians(90 - diffuse_pts[j][0])));
 	}
 	if(dds_file_format) // new dds file format chosen
 	{

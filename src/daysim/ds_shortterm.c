@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
 									if ( fabs(time-sunrise_localtime) <= 0.5 )  centrum_time=sunrise_localtime+(time+0.5-sunrise_localtime)/2.0;
 									if ( fabs(time-sunset_localtime) <= 0.5 )  centrum_time=time-0.5+(sunset_localtime-(time-0.5))/2.0;
 									solar_elev_azi_ecc ( latitude, longitude, time_zone, jday, centrum_time, solar_time, &solar_elevation, &solar_azimuth, &eccentricity_correction);
-									irrad_beam_nor=irrad_beam_hor/sin(DTR*solar_elevation);
+									irrad_beam_nor = irrad_beam_hor / sin(radians(solar_elevation));
 									if ( irrad_beam_nor < 0 )  irrad_beam_nor=0;
 								}
 							else irrad_beam_nor=0;
@@ -326,7 +326,7 @@ int main(int argc, char *argv[])
 									if ( fabs(time-sunrise_localtime) <= 0.5 )  centrum_time=sunrise_localtime+(time+0.5-sunrise_localtime)/2.0;
 									if ( fabs(time-sunset_localtime) <= 0.5 )  centrum_time=time-0.5+(sunset_localtime-(time-0.5))/2.0;
 									solar_elev_azi_ecc ( latitude, longitude, time_zone, jday, centrum_time, solar_time, &solar_elevation, &solar_azimuth, &eccentricity_correction);
-									irrad_beam_hor=irrad_beam_nor*sin(DTR*solar_elevation);
+									irrad_beam_hor = irrad_beam_nor * sin(radians(solar_elevation));
 									if ( irrad_beam_hor < 0 )  irrad_beam_hor=0;
 								}
 							else irrad_beam_hor=0;
@@ -343,7 +343,7 @@ int main(int argc, char *argv[])
 									if ( fabs(time-sunrise_localtime) <= 0.5 )  centrum_time=sunrise_localtime+(time+0.5-sunrise_localtime)/2.0;
 									if ( fabs(time-sunset_localtime) <= 0.5 )  centrum_time=time-0.5+(sunset_localtime-(time-0.5))/2.0;
 									solar_elev_azi_ecc ( latitude, longitude, time_zone, jday, centrum_time, solar_time, &solar_elevation, &solar_azimuth, &eccentricity_correction);
-									irrad_beam_nor=irrad_beam_hor/sin(DTR*solar_elevation);
+									irrad_beam_nor = irrad_beam_hor / sin(radians(solar_elevation));
 									if ( irrad_beam_nor < 0 )  irrad_beam_nor=0;
 								}
 							else irrad_beam_nor=0;
@@ -519,7 +519,7 @@ int main(int argc, char *argv[])
 														else   azimuth_class = ((int)solar_azimuth)/10 + 18;
 
 														if ( solar_elevation > horizon_azimuth_out[azimuth_class] )
-															irrads_beam_nor_st[j-1]=(irrads_glo_st[j-1]-irrads_dif_st[j-1])/sin(DTR*solar_elevation);
+															irrads_beam_nor_st[j - 1] = (irrads_glo_st[j - 1] - irrads_dif_st[j - 1]) / sin(radians(solar_elevation));
 														else
 															{
 																irrads_beam_nor_st[j-1]=0;
@@ -566,7 +566,7 @@ int main(int argc, char *argv[])
 																		/*if ( solar_elevation < 0 )  solar_elevation=0;*/
 																		punk = solar_elevation;
 																		if ( solar_elevation < 0 )  punk=0;
-																		fprintf ( SHORT_TERM_DATA,"%.3f %.0f %.0f %.3f %.3f\n", (last_jday-1)*24+time_t, irrads_beam_nor_st[j-1]*sin(DTR*punk), irrads_dif_st[j-1], solar_elevation, solar_azimuth );
+																		fprintf(SHORT_TERM_DATA, "%.3f %.0f %.0f %.3f %.3f\n", (last_jday - 1) * 24 + time_t, irrads_beam_nor_st[j - 1] * sin(radians(punk)), irrads_dif_st[j - 1], solar_elevation, solar_azimuth);
 																	}
 															}
 														else
@@ -592,7 +592,7 @@ int main(int argc, char *argv[])
 																				time_k = times[i] - 0.5 + ( k + 0.5 ) / 60;
 																				solar_elev_azi_ecc (latitude, longitude, time_zone, last_jday, time_k, solar_time,&solar_elevation, &solar_azimuth, &eccentricity_correction);
 																				if ( solar_elevation < 0 )  solar_elevation=0;
-																				sum_beam_hor+=irrads_beam_nor_st[k]*sin(DTR*solar_elevation);
+																				sum_beam_hor += irrads_beam_nor_st[k] * sin(radians(solar_elevation));
 																				sum_dif+=irrads_dif_st[k];
 																			}
 																		fprintf ( SHORT_TERM_DATA,"%.3f %.0f %.0f\n", (last_jday-1)*24+time_t, sum_beam_hor/shortterm_timestep, sum_dif/shortterm_timestep );

@@ -300,14 +300,14 @@ sprintf(MainTextString,"%s<p>\n",MainTextString);
 	sprintf(MainTextString,"%s<ul><font color=\"#000000\">\n",MainTextString);
 	sprintf(MainTextString,"%s The investigated building is located in %s ",MainTextString,place);
 	if(s_latitude>0)
-		sprintf(MainTextString, "%s(%2.2f N/", MainTextString, s_latitude * RTD);
+		sprintf(MainTextString, "%s(%2.2f N/", MainTextString, degrees(s_latitude));
 	else
-		sprintf(MainTextString, "%s(%2.2f S/", MainTextString, s_latitude * -RTD);
+		sprintf(MainTextString, "%s(%2.2f S/", MainTextString, -degrees(s_latitude));
 
 	if(s_longitude>0)
-		sprintf(MainTextString, "%s %2.2f E). ", MainTextString, s_longitude * RTD);
+		sprintf(MainTextString, "%s %2.2f E). ", MainTextString, degrees(s_longitude));
 	else
-		sprintf(MainTextString, "%s %2.2f W). ", MainTextString, s_longitude * -RTD);
+		sprintf(MainTextString, "%s %2.2f W). ", MainTextString, -degrees(s_longitude));
 	
 	sprintf(MainTextString,"%s</ul>\n",MainTextString);
 	sprintf(MainTextString,"%s\n<p>\n",MainTextString);

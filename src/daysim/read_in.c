@@ -42,13 +42,13 @@ void read_in_genshortterm_header()        /*  read in header file  */
 	read_in[11]=1;
 
 
-	latitude = s_latitude * RTD;
+	latitude = degrees(s_latitude);
 	read_in[5]=1;
 
-	longitude = s_longitude * RTD;
+	longitude = degrees(s_longitude);
 	read_in[6]=1;
 
-	time_zone = s_meridian * RTD;
+	time_zone = degrees(s_meridian);
 	read_in[7]=1;
 
 	//site elevation

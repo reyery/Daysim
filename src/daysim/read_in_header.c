@@ -533,7 +533,7 @@ void read_in_header( char *header_file )
 		else if( !strcmp(keyword,"time_zone") ){
 			fscanf(HEADER_FILE,"%f",&s_meridian);
 			if( (s_meridian > 180.0 )|| (s_meridian < -180.0)) fprintf(stderr," WARNING: time_zone lies out of range (%.2f)!\n",s_meridian);
-			s_meridian *= DTR;
+			s_meridian = radians(s_meridian);
 		}
 		else if( !strcmp(keyword,"time_step")){
 			fscanf(HEADER_FILE,"%d",&time_step);
@@ -547,7 +547,7 @@ void read_in_header( char *header_file )
 			fscanf(HEADER_FILE,"%f",&s_longitude);
 			if( s_longitude >180 || s_longitude < -180)
 				fprintf(stderr," WARNING: longitude lies out of range (%.2f)!\n",s_longitude);
-			s_longitude *= DTR;
+			s_longitude = radians(s_longitude);
 		}
 		else if( !strcmp(keyword,"site_elevation") ){
 			fscanf(HEADER_FILE,"%f",&site_elevation);
@@ -559,7 +559,7 @@ void read_in_header( char *header_file )
 			fscanf(HEADER_FILE,"%f",&s_latitude);
 			if( s_latitude >90 || s_latitude <-90)
 				fprintf(stderr," WARNING: longitude lies out of range (%.2f)!\n",s_latitude);
-			s_latitude *= DTR;
+			s_latitude = radians(s_latitude);
 		}
 		else if( !strcmp(keyword,"lower_direct_threshold") ){
 			fscanf(HEADER_FILE,"%f",&dir_threshold);
