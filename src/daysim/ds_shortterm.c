@@ -1,6 +1,8 @@
 /*	This program has been written by Oliver Walkenhorst at the
  *	Fraunhofer Institute for Solar Energy Systems in Freiburg, Germany
  *	last changes were added in January 2001
+ *
+ *	Update by Nathaniel Jones at MIT, April 2016
  */
 
 #include <stdio.h>
@@ -17,7 +19,6 @@
 #include "paths.h"
 #include "read_in.h"
 #include "sun.h"
-#include "nrutil.h"
 #include "numerical.h"
 #include "clearsky_models.h"
 #include "skartveit.h"
@@ -94,7 +95,7 @@ int main(int argc, char *argv[])
 
 	double time, centrum_time, *times;
 	double irrad_glo = 0.0, irrad_beam_nor, irrad_beam_hor, irrad_dif;     /* in W/m² */
-	double *irrads_glo, *irrads_beam_nor, *irrads_dif, *indices_glo, *indices_beam, *sr_ss_indices_glo;
+	double *irrads_glo, *irrads_beam_nor, *irrads_dif, *indices_glo, *indices_beam, sr_ss_indices_glo[3];
 	double *irrads_glo_st, *irrads_glo_clear_st, *irrads_beam_nor_st, *irrads_dif_st, *indices_glo_st;
 	double time_t, time_k, mean_glo_st, mean_beam_st, mean_dif_st, sum_beam_nor, sum_beam_hor, sum_dif;
 	double sunrise_localtime, sunset_localtime;
@@ -201,7 +202,6 @@ int main(int argc, char *argv[])
 	if ((irrads_dif = malloc(24 * sizeof(double))) == NULL) goto memerr;
 	if ((indices_glo = malloc(24 * sizeof(double))) == NULL) goto memerr;
 	if ((indices_beam = malloc(24 * sizeof(double))) == NULL) goto memerr;
-	if ((sr_ss_indices_glo = malloc(3 * sizeof(double))) == NULL) goto memerr;
 	if ((daylight_status = malloc(24 * sizeof(int))) == NULL) goto memerr;
 
 	if ((irrads_glo_st = malloc(sph*sizeof(double))) == NULL) goto memerr;
@@ -420,16 +420,18 @@ int main(int argc, char *argv[])
 												if ( irrads_glo[i-1] < 0.001 && irrads_glo[i] < 0.001 )  daylight_status[i]=0;
 												if ( irrads_glo[i] < 0.001 && irrads_glo[i+1] < 0.001 )  daylight_status[i]=0;
 												if ( irrads_glo[i-1] >= 0.001 && irrads_glo[i] < 0.001 && irrads_glo[i+1] >= 0.001 )
-													{
-														irrads_glo[i]=0.5*(irrads_glo[i-1]+irrads_glo[i+1]);
-														printf("genshortterm: warning - at %d %d %.3f global irradiance = 0 in between two hours with\n non-vanishing global irradiance: check your data and try again\n",last_month,last_day,times[i]);
-													}
+												{
+													irrads_glo[i]=0.5*(irrads_glo[i-1]+irrads_glo[i+1]);
+													sprintf(errmsg, "at %d %d %.3f global irradiance = 0 in between two hours with\n non-vanishing global irradiance: check your data and try again", last_month, last_day, times[i]);
+													error(WARNING, errmsg);
+												}
 
 												if ( irrads_glo[i-1] < 0.001 && irrads_glo[i] >= 0.001 && irrads_glo[i+1] < 0.001 )
-													{
-														irrads_glo[i]=0.5*(irrads_glo[i-1]+irrads_glo[i+1]);
-														printf("genshortterm: warning - month=%d day=%d contains only one hour with non-vanishing global irradiance: remove this day from your input data file and try again\n",last_month,last_day);
-													}
+												{
+													irrads_glo[i]=0.5*(irrads_glo[i-1]+irrads_glo[i+1]);
+													sprintf(errmsg, "month=%d day=%d contains only one hour with non-vanishing global irradiance: remove this day from your input data file and try again", last_month, last_day);
+													error(WARNING, errmsg);
+												}
 												if ( irrads_glo[i-1] < 0.001 && irrads_glo[i] >= 0.001 && irrads_glo[i+1] >= 0.001 )  daylight_status[i]=1;
 												if ( irrads_glo[i-1] >= 0.001 && irrads_glo[i] >= 0.001 && irrads_glo[i+1] < 0.001 )  daylight_status[i]=1;
 												if ( irrads_glo[i-1] >= 0.001 && irrads_glo[i] >= 0.001 && irrads_glo[i+1] >= 0.001 )  daylight_status[i]=2;
@@ -439,10 +441,10 @@ int main(int argc, char *argv[])
 											{
 												glo_and_beam_indices_hour ( latitude, longitude, time_zone, last_jday, times[i], solar_time, irrads_glo[i], irrads_beam_nor[i], &indices_glo[i], &indices_beam[i] );
 												if ( i < nhd-1 && times[i+1]-times[i] > 1.5 )
-													{
-														printf("genshortterm: fatal error - at %d %d %.3f the time difference to the subsequent hour is greater than 1.5:\n check your data and try again (innerday time differences should equal 1)\n",last_month,last_day,times[i]);
-														exit(1);
-													}
+												{
+													sprintf(errmsg, "at %d %d %.3f the time difference to the subsequent hour is greater than 1.5: check your data and try again (innerday time differences should equal 1)", last_month, last_day, times[i]);
+													error(USER, errmsg);
+												}
 											}
 									}
 
@@ -490,7 +492,7 @@ int main(int argc, char *argv[])
 														if ( irrads_glo[i] <= 0.001 )
 															{
 																irrads_glo[i]=0.5*(irrads_glo[i-1]+irrads_glo[i+1]);
-																sprintf(errmsg, "at month=%d day=%d time=%.3f should be non-vanishing global irradiance check your input file and try again", last_month, last_day, times[i]);
+																sprintf(errmsg, "at month=%d day=%d time=%.3f should be non-vanishing global irradiance: check your input file and try again", last_month, last_day, times[i]);
 																error(USER, errmsg);
 															}
 														else  skartveit ( &indices_glo[i-1], indices_beam[i], sph, previous_ligoh, indices_glo_st, &actual_ligoh );
