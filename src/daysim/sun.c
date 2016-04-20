@@ -80,6 +80,35 @@ double f_salt( double sd, double alt)	/* solar altitude from solar declination a
     return((12.0/PI)*acos((E-sin(alt))/F));
 }	
 
+void solar_elev_azi_ecc(float latitude, float longitude, float time_zone, int jday, \
+	float time, int solar_time, float *solar_elevation, float *solar_azimuth, float *eccentricity_correction)
+
+	/*  angles in degrees, times in hours  */
+{
+	float sol_time = 0.0;
+	float solar_declination, jday_angle;
+	/*  solar elevation and azimuth formulae from sun.c  */
+	if (solar_time == 1)
+		sol_time = time;
+	if (solar_time == 0)
+		sol_time = time + 0.170 * sin((4 * PI / 373) * (jday - 80))
+		- 0.129 * sin((2 * PI / 355) * (jday - 8)) + 12 / 180.0 * (time_zone - longitude);
+
+	solar_declination = RTD * 0.4093 * sin((2 * PI / 368) * (jday - 81));
+	jday_angle = 2 * PI*(jday - 1) / 365;
+
+	*solar_elevation = RTD * asin(sin(latitude*DTR) * sin(solar_declination*DTR) \
+		- cos(latitude*DTR) * cos(solar_declination*DTR) * cos(sol_time*(PI / 12)));
+
+	*solar_azimuth = RTD * (-atan2(cos(solar_declination*DTR) * sin(sol_time*(PI / 12)),
+		-cos(latitude*DTR)*sin(solar_declination*DTR) -
+		sin(latitude*DTR)*cos(solar_declination*DTR)*cos(sol_time*(PI / 12))));
+
+	/*  eccentricity_correction formula used in genjdaylit.c */
+
+	*eccentricity_correction = 1.00011 + 0.034221*cos(jday_angle) + 0.00128*sin(jday_angle) + 0.000719*cos(2 * jday_angle) + 0.000077*sin(2 * jday_angle);
+}
+
 void sunrise_sunset_localtime ( float latitude, float longitude, float time_zone, int jday,\
                                 float *sunrise_localtime, float *sunset_localtime )
 { float solar_declination;
