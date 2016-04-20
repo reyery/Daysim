@@ -53,7 +53,7 @@ void esra_clearsky_irradiance_instant ( float solar_elevation, float solar_azimu
 
 	if ( solar_elevation > 0 )
 		{
-			*irrad_beam_nor_clear = solar_constant_e * eccentricity_correction * beam_transmittance;
+			*irrad_beam_nor_clear = SOLAR_CONSTANT_E * eccentricity_correction * beam_transmittance;
 
 			if ( horizon == 1 )
 				{
@@ -97,7 +97,7 @@ void esra_clearsky_irradiance_instant ( float solar_elevation, float solar_azimu
 
 	diffuse_angular_function = a0 + a1 * sin(DTR*solar_elevation) + a2 * pow(sin(DTR*solar_elevation),2);
 
-	*irrad_dif_clear = solar_constant_e * eccentricity_correction * diffuse_transmission_function * diffuse_angular_function;
+	*irrad_dif_clear = SOLAR_CONSTANT_E * eccentricity_correction * diffuse_transmission_function * diffuse_angular_function;
 
 	if ( *irrad_dif_clear < 0 ) *irrad_dif_clear = 0;
 

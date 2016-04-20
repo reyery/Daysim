@@ -53,13 +53,6 @@ extern int linke_estimation;                   /*  flag that indicates if estima
  
 /*  constants used  */
 
-extern const float solar_constant_e;
-extern const double DTR;
-extern const double RTD;
-
-extern const int F;
-extern const int I;
-
 extern char keyword[200];			// strings for the header
 
 extern char header_line_1[300];	//=======================

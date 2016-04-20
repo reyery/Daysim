@@ -10,7 +10,7 @@
 //#include <strings.h>
 
 /*  header files used  */
-
+#include "rterror.h"
 #include "fropen.h"
 #include "read_in_header.h"
 
@@ -67,12 +67,6 @@ float horizon_azimuth_out[36];            /*  divide [-180°,180°] of the output 
                                           /*  (south=0°, horizon heights in degrees)                          */
 int linke_estimation=1;                   /*  flag that indicates if estimation of the monthly linke factors is necessary  */
 
-/*  constants used  */
-
-const float solar_constant_e = 1367.0;
-const int F = sizeof(float);
-
-const int I = sizeof(int);
 char keyword[200]="";			// strings for the header
 char header_line_1[300]="";	//=======================
 char header_line_2[300]="";
@@ -80,6 +74,10 @@ char header_line_3[300]="";
 char header_line_4[300]="";
 char header_line_5[300]="";
 char header_line_6[300]="";
+
+/*  versioning  */
+
+extern char  VersionID[];	/* Radiance version ID string */
 
 /*  main program  */
 
@@ -108,13 +106,19 @@ int main(int argc, char *argv[])
 	
 	
 	if (argc == 1) {
-		fprintf(stdout,"ds_shorrterm: fatal error -  header file missing\n");
-		fprintf(stdout,"start program with:  ds_shortterm  <header file>\n ");
+		char *progname = fixargv0(argv[0]);
+		fprintf(stdout, "%s: fatal error -  header file missing\n", progname);
+		fprintf(stdout, "start program with:  %s  <header file>\n ", progname);
 		exit(1);
-	} else {
-		header=argv[1];
-		read_in_genshortterm_header();
 	}
+
+	if (!strcmp(argv[1], "-version")) {
+		puts(VersionID);
+		exit(0);
+	}
+
+	header=argv[1];
+	read_in_genshortterm_header();
 
 	
 
@@ -191,20 +195,20 @@ int main(int argc, char *argv[])
   	fprintf(SHORT_TERM_DATA,"%s", header_line_6);
 
 
-	if ( (times = malloc (24*F)) == NULL  )     {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (irrads_glo = malloc (24*F)) == NULL  )        {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (irrads_beam_nor = malloc (24*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (irrads_dif = malloc (24*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (indices_glo = malloc (24*F)) == NULL  )        {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (indices_beam = malloc (24*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (sr_ss_indices_glo = malloc (3*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (daylight_status = malloc (24*I)) == NULL  )   {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
+	if ((times = malloc(24 * sizeof(float))) == NULL) goto memerr;
+	if ((irrads_glo = malloc(24 * sizeof(float))) == NULL) goto memerr;
+	if ((irrads_beam_nor = malloc(24 * sizeof(float))) == NULL) goto memerr;
+	if ((irrads_dif = malloc(24 * sizeof(float))) == NULL) goto memerr;
+	if ((indices_glo = malloc(24 * sizeof(float))) == NULL) goto memerr;
+	if ((indices_beam = malloc(24 * sizeof(float))) == NULL) goto memerr;
+	if ((sr_ss_indices_glo = malloc(3 * sizeof(float))) == NULL) goto memerr;
+	if ((daylight_status = malloc(24 * sizeof(int))) == NULL) goto memerr;
 
-	if ( (irrads_glo_st = malloc (sph*F)) == NULL  )        {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (irrads_glo_clear_st = malloc (sph*F)) == NULL  )        {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (irrads_beam_nor_st = malloc (sph*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (irrads_dif_st = malloc (sph*F)) == NULL  )   {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
-	if ( (indices_glo_st = malloc (sph*F)) == NULL  )      {   fprintf(stderr,"Out of memory in function main\n");  exit(1);  }
+	if ((irrads_glo_st = malloc(sph*sizeof(float))) == NULL) goto memerr;
+	if ((irrads_glo_clear_st = malloc(sph*sizeof(float))) == NULL) goto memerr;
+	if ((irrads_beam_nor_st = malloc(sph*sizeof(float))) == NULL) goto memerr;
+	if ((irrads_dif_st = malloc(sph*sizeof(float))) == NULL) goto memerr;
+	if ((indices_glo_st = malloc(sph*sizeof(float))) == NULL) goto memerr;
 
 
 	if ( shortterm_timestep == test_input_time_step )      /*  no generation of shortterm data, but conversion of direct-hor to direct-norm irradiance  */
@@ -351,35 +355,41 @@ int main(int argc, char *argv[])
 					/*  check irradiances and correct numbers if necessary  */
 					if ( irrad_glo < 0 )
 						{
-							printf("genshortterm: warning - irrad_glo=%f at month: %d day: %d time: %.3f has been replaced with 0\n",irrad_glo,month,day,time);
+							sprintf(errmsg, "irrad_glo=%f at month: %d day: %d time: %.3f has been replaced with 0", irrad_glo, month, day, time);
+							error(WARNING, errmsg);
 							irrad_glo=0.0;
 						}
-					if ( irrad_glo > solar_constant_e )
+					if (irrad_glo > SOLAR_CONSTANT_E)
 						{
-							printf("genshortterm: warning - irrad_glo=%f at month: %d day: %d time: %.3f has been replaced with %f\n",irrad_glo,month,day,time,solar_constant_e);
-							irrad_glo=solar_constant_e;
+							sprintf(errmsg, "irrad_glo=%f at month: %d day: %d time: %.3f has been replaced with %f\n", irrad_glo, month, day, time, SOLAR_CONSTANT_E);
+							error(WARNING, errmsg);
+							irrad_glo = SOLAR_CONSTANT_E;
 						}
 
 					if ( irrad_beam_nor < 0 )
 						{
-							printf("genshortterm: warning - irrad_beam_nor=%e at month: %d day: %d time: %.3f has been replaced with %f\n",irrad_beam_nor,month,day,time,0.0);
-							irrad_beam_nor=0.0;
+							sprintf(errmsg, "irrad_beam_nor=%e at month: %d day: %d time: %.3f has been replaced with %f\n", irrad_beam_nor, month, day, time, 0.0);
+							error(WARNING, errmsg);
+							irrad_beam_nor = 0.0;
 						}
-					if ( irrad_beam_nor > solar_constant_e )
+					if (irrad_beam_nor > SOLAR_CONSTANT_E)
 						{
-							printf("genshortterm: warning - irrad_beam_nor=%f at month: %d day: %d time: %.3f has been replaced with %f\n",irrad_beam_nor,month,day,time,solar_constant_e);
-							irrad_beam_nor=solar_constant_e;
+							sprintf(errmsg, "irrad_beam_nor=%f at month: %d day: %d time: %.3f has been replaced with %f\n", irrad_beam_nor, month, day, time, SOLAR_CONSTANT_E);
+							error(WARNING, errmsg);
+							irrad_beam_nor = SOLAR_CONSTANT_E;
 						}
 
 					if ( irrad_dif < 0 )
 						{
-							printf("genshortterm: warning - irrad_dif=%f at month: %d day: %d time: %.3f has been replaced with %f\n",irrad_beam_nor,month,day,time,0.0);
-							irrad_dif=0.0;
+							sprintf(errmsg, "irrad_dif=%f at month: %d day: %d time: %.3f has been replaced with %f\n", irrad_beam_nor, month, day, time, 0.0);
+							error(WARNING, errmsg);
+							irrad_dif = 0.0;
 						}
-					if ( irrad_dif > solar_constant_e )
+					if (irrad_dif > SOLAR_CONSTANT_E)
 						{
-							printf("genshortterm: warning - irrad_dif=%f at month: %d day: %d time: %.3f has been replaced with %f\n",irrad_beam_nor,month,day,time,solar_constant_e);
-							irrad_dif=solar_constant_e;
+							sprintf(errmsg, "irrad_dif=%f at month: %d day: %d time: %.3f has been replaced with %f\n", irrad_beam_nor, month, day, time, SOLAR_CONSTANT_E);
+							error(WARNING, errmsg);
+							irrad_dif = SOLAR_CONSTANT_E;
 						}
 
 					if ( fatal == 1 )  exit(1);
@@ -480,8 +490,8 @@ int main(int argc, char *argv[])
 														if ( irrads_glo[i] <= 0.001 )
 															{
 																irrads_glo[i]=0.5*(irrads_glo[i-1]+irrads_glo[i+1]);
-																printf("genshortterm: fatal error - at month=%d day=%d time=%.3f should be non-vanishing global irradiance check your input file and try again\n",last_month,last_day,times[i]);
-
+																sprintf(errmsg, "at month=%d day=%d time=%.3f should be non-vanishing global irradiance check your input file and try again", last_month, last_day, times[i]);
+																error(USER, errmsg);
 															}
 														else  skartveit ( &indices_glo[i-1], indices_beam[i], sph, previous_ligoh, &indices_glo_st[0], &actual_ligoh );
 													}
@@ -496,7 +506,7 @@ int main(int argc, char *argv[])
 													for ( j=1 ; j<=sph ; j++ )
 														irrads_glo_st[j-1] = irrads_glo[i] / mean_glo_st * irrads_glo_st[j-1];
 
-												for ( j=1 ; j<=sph ; j++ )  if ( irrads_glo_st[j-1] > solar_constant_e )  irrads_glo_st[j-1]=solar_constant_e;
+												for (j = 1; j <= sph; j++)  if (irrads_glo_st[j - 1] > SOLAR_CONSTANT_E)  irrads_glo_st[j - 1] = SOLAR_CONSTANT_E;
 
 												for ( j=1 ; j<=sph ; j++ )        /*  Reindl diffuse fraction estimation  */
 													{
@@ -514,7 +524,7 @@ int main(int argc, char *argv[])
 																irrads_dif_st[j-1]=irrads_glo_st[j-1];
 															}
 
-														if ( irrads_beam_nor_st[j-1] > solar_constant_e )  irrads_beam_nor_st[j-1]=solar_constant_e;
+														if (irrads_beam_nor_st[j - 1] > SOLAR_CONSTANT_E)  irrads_beam_nor_st[j - 1] = SOLAR_CONSTANT_E;
 													}
 
 												mean_beam_st = mean ( sph, &irrads_beam_nor_st[0] );
@@ -539,7 +549,7 @@ int main(int argc, char *argv[])
 														irrads_dif_st[j-1] = irrads_dif[i] / mean_dif_st * irrads_dif_st[j-1];
 
 												for ( j=1 ; j<=sph ; j++ )
-													if ( irrads_beam_nor_st[j-1] > solar_constant_e )  irrads_beam_nor_st[j-1]=solar_constant_e;
+													if (irrads_beam_nor_st[j - 1] > SOLAR_CONSTANT_E)  irrads_beam_nor_st[j - 1] = SOLAR_CONSTANT_E;
 
 												for ( j=1 ; j<=(60/shortterm_timestep) ; j++ )
 													{
@@ -621,4 +631,6 @@ int main(int argc, char *argv[])
 
 	}
 	return 0;
+memerr:
+	error(SYSTEM, "out of memory in function main");
 }

@@ -2,11 +2,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "rterror.h"
 #include "fropen.h"
 #include "read_in_header.h"
 
 #include "ds_shortterm.h"
 #include "read_in.h"
+#include "ds_constants.h"
 
 
 void read_in_genshortterm_header()        /*  read in header file  */
@@ -32,22 +34,21 @@ void read_in_genshortterm_header()        /*  read in header file  */
 	input_units_genshortterm=wea_data_file_units;
 	read_in[3]=1;
 	if ( input_units_genshortterm == 3 )
-	    {
-			printf("read_in_genshortterm_header: fatal error - input_units_genshortterm = 3 (illuminances) is currently not supported\n");
-			exit(1);
-	    }
+	{
+		error(USER, "input_units_genshortterm = 3 (illuminances) is currently not supported");
+	}
 
 	output_units_genshortterm=wea_data_short_file_units;
 	read_in[11]=1;
 
 
-	latitude=s_latitude*(180.0/3.14159);
+	latitude = s_latitude * RTD;
 	read_in[5]=1;
 
-    longitude=s_longitude*(180.0/3.14159);
+	longitude = s_longitude * RTD;
 	read_in[6]=1;
 
-	time_zone=s_meridian*(180.0/3.14159);
+	time_zone = s_meridian * RTD;
 	read_in[7]=1;
 
 	//site elevation
@@ -87,64 +88,56 @@ void read_in_genshortterm_header()        /*  read in header file  */
 	close_file(HEADER);
 
 	if ( !read_in[0] )
-		{
-			printf("read_in_genshortterm_header: fatal error - the weather input file is missing\n");
-			exit(1);
-		}
+	{
+		error(USER, "the weather input file is missing");
+	}
 
 	if ( !read_in[1] )
-		{
-			strcpy(input_weather_data_shortterm,input_weather_data);
-			strcat(input_weather_data_shortterm,".short");
-			printf("read_in_genshortterm_header: warning - the variable input_weather_data_shortterm was not given\n");
-			printf("read_in_genshortterm_header: it is set to *.short by default\n");
-		}
+	{
+		strcpy(input_weather_data_shortterm,input_weather_data);
+		strcat(input_weather_data_shortterm,".short");
+		error(WARNING, "the variable input_weather_data_shortterm was not given and is set to *.short by default");
+	}
 
 	if ( !read_in[2] )
-		{
-			if ( shortterm_timestep != 1 && shortterm_timestep != 2 && shortterm_timestep != 3 && shortterm_timestep != 4 && \
-				 shortterm_timestep != 5 && shortterm_timestep != 6 && shortterm_timestep != 10 && shortterm_timestep != 12 && \
-				 shortterm_timestep != 15 && shortterm_timestep != 20 && shortterm_timestep != 30 )
-				{
-					printf("read_in_genshortterm_header: fatal error - shortterm_timestep is not allowed\n");
-					printf("Allowed values are (minutes): {1,2,3,4,5,6,10,12,15,20,30}\n");
-				}
-			exit(1);
-		}
+	{
+		error(USER, "time step is not specified in read_in_genshortterm_header");
+	}
+	if (shortterm_timestep != 1 && shortterm_timestep != 2 && shortterm_timestep != 3 && shortterm_timestep != 4 && \
+		shortterm_timestep != 5 && shortterm_timestep != 6 && shortterm_timestep != 10 && shortterm_timestep != 12 && \
+		shortterm_timestep != 15 && shortterm_timestep != 20 && shortterm_timestep != 30)
+	{
+		error(USER, "shortterm_timestep is not allowed. Allowed values are (minutes): {1,2,3,4,5,6,10,12,15,20,30}");
+	}
 
 	if ( !read_in[3] )
-		{
-			printf("read_in_genshortterm_header: fatal error - the weather input units are not specified\n");
-			exit(1);
-		}
+	{
+		error(USER, "the weather input units are not specified in read_in_genshortterm_header");
+	}
 
 	if ( !read_in[5] )
-		{
-			printf("read_in_genshortterm_header: fatal error - latitude is not specified\n");
-			exit(1);
-		}
+	{
+		error(USER, "latitude is not specified in read_in_genshortterm_header");
+	}
 
 	if ( !read_in[6] )
-		{
-			printf("read_in_genshortterm_header: fatal error - longitude is not specified\n");
-			exit(1);
-		}
+	{
+		error(USER, "longitude is not specified in read_in_genshortterm_header");
+	}
 
 	if ( !read_in[7] )
-		{
-			printf("read_in_genshortterm_header: fatal error - time_zone is not specified\n");
-			exit(1);
-		}
+	{
+		error(USER, "time_zone is not specified in read_in_genshortterm_header");
+	}
 
 	if ( !read_in[8] )
-		{
-			printf("read_in_genshortterm_header: warning - site_elevation is not specified, default value is sea level\n");
-		}
+	{
+		error(WARNING, "site_elevation is not specified, default value is sea level");
+	}
 
 	//if ( output_units_genshortterm == 2 && shortterm_timestep == 60 )
 	//	{
-	//		printf("read_in_genshortterm_header: fatal error - output_units_genshortterm=2 && shortterm_timestep=60 is not supported\n");
-	//		exit(1);
+	//		error(USER, "output_units_genshortterm=2 && shortterm_timestep=60 is not supported");
 	//	}
 
 
@@ -157,10 +150,11 @@ int read_horizon_azimuth_data ( char *filename, float *horizon_azimuth )
 	float temp;
 
 	if ( (HORIZON_AZIMUTH_DATA = open_input(filename)) == NULL )
-		{
-			fprintf(stderr,"file %s cannot be opened\n", filename);
-			return 1;
-		}
+	{
+		sprintf(errmsg, "file %s cannot be opened", filename);
+		error(WARNING, errmsg);
+		return 1;
+	}
 
 	for ( i=1; i<=36; i++ )  {  fscanf(HORIZON_AZIMUTH_DATA,"%f",&temp);  horizon_azimuth[i-1] = temp;  }
 
