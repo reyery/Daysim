@@ -10,5 +10,5 @@ void rank ( unsigned long n, int *indx, int *irank );
 void sort(unsigned long n, float arr[]);  
 void four1(float data[], unsigned long nn, int isign);
 void realft(float data[], unsigned long n, int isign);
-float mean ( int n, float *array );
+double mean(int n, double *array);
 void mean_var_99 ( float *data, int n, float *mean, float *var);  

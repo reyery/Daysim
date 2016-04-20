@@ -31,9 +31,9 @@ extern int new;
 
 /*  global variables for the header file key words representing station specific data  */
 
-extern float latitude;
-extern float longitude;
-extern float time_zone;
+extern double latitude;
+extern double longitude;
+extern double time_zone;
 extern float linke_turbidity_factor_am2[12];       /*  monthly means for jan-dec  */
 extern char horizon_data_in[200];            /*  name of the horizon data file for the station where the input irradiance data were collected  */
 /*  (the file contains 36 horizon heights in degrees starting from N to E)                        */

@@ -12,7 +12,7 @@
 extern int new;
 extern long random_seed;
 
-void skartveit(float *indices_glo, float index_beam, int sph, float previous_ligoh, float *indices_glo_st, float *actual_ligoh)
+void skartveit(double *indices_glo, double index_beam, int sph, double previous_ligoh, double *indices_glo_st, double *actual_ligoh)
 {
   int i, est_glo=1;
   int *glo_ranking;
@@ -269,42 +269,4 @@ void estimate_indices_glo_st ( float index_glo, float index_beam, int sph, float
 
 memerr:
   error(SYSTEM, "out of memory in estimate_indices_glo_st");
-}
-
-float diffuse_fraction(float irrad_glo, float solar_elevation, float eccentricity_correction)
-{
-	/*  estimation of the diffuse fraction according to Reindl et al., Solar Energy, Vol.45, pp.1-7, 1990  = [Rei90]  */
-	/*                        (reduced form without temperatures and humidities)                                                                          */
-
-	float irrad_ex;
-	float index_glo_ex;
-	float dif_frac = 0.0;
-
-	if (solar_elevation > 0)  irrad_ex = SOLAR_CONSTANT_E * eccentricity_correction * sin(DTR*solar_elevation);
-	else irrad_ex = 0;
-
-	if (irrad_ex <= 0) return 0;
-	index_glo_ex = irrad_glo / irrad_ex;
-
-	if (index_glo_ex < 0)  { error(INTERNAL, "negative irrad_glo in diffuse_fraction_th"); }
-	if (index_glo_ex > 1)  { index_glo_ex = 1; }
-
-	if (index_glo_ex <= 0.3)
-	{
-		dif_frac = 1.02 - 0.254*index_glo_ex + 0.0123*sin(DTR*solar_elevation);
-		if (dif_frac > 1)  { dif_frac = 1; }
-	}
-	else if (index_glo_ex < 0.78)
-	{
-		dif_frac = 1.4 - 1.749*index_glo_ex + 0.177*sin(DTR*solar_elevation);
-		if (dif_frac > 0.97)  { dif_frac = 0.97; }
-		else if (dif_frac < 0.1)   { dif_frac = 0.1; }
-	}
-	else
-	{
-		dif_frac = 0.486*index_glo_ex - 0.182*sin(DTR*solar_elevation);
-		if (dif_frac < 0.1)  { dif_frac = 0.1; }
-	}
-
-	return dif_frac;
 }

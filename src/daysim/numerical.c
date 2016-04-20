@@ -351,7 +351,7 @@ void realft(float data[], unsigned long n, int isign)
 	}
 }
 
-float mean ( int n, float *array )
+double mean(int n, double *array)
 { 
   int i;
   float sum = 0;

@@ -6,29 +6,28 @@
 /*
  * forward declarations
  */
-void beam_nor_clearsky_irradiance_during_hour ( int month, int day, float centrum_time, float T_lam2, float *irrad_beam_nor_clear );
+void beam_nor_clearsky_irradiance_during_hour(int month, int day, double centrum_time, double T_lam2, double *irrad_beam_nor_clear);
 
 
 
 
 
 
-void esra_clearsky_irradiance_instant ( float solar_elevation, float solar_azimuth, float eccentricity_correction, float site_elevation,\
-                                        float linke_turbidity_factor_am2, int horizon,\
-										float *irrad_glo_clear, float *irrad_beam_nor_clear, float *irrad_dif_clear )
+void esra_clearsky_irradiance_instant(double solar_elevation, double solar_azimuth, double eccentricity_correction, double site_elevation, \
+	double linke_turbidity_factor_am2, double horizon, double *irrad_glo_clear, double *irrad_beam_nor_clear, double *irrad_dif_clear)
 {
 	/*  ESRA clearsky model; angles in degrees, formulas from [Rig00] = Rigollier et al., Solar Energy 68,33-48,2000     */
 	/*  modified: if solar_elevation < 0, then all irradiances = 0 ( as this doesn't affect daylight autonomies anyway ) */
 
 	int azimuth_class;
-	float relative_optical_air_mass;
-	float solar_elevation_true, delta_solar_elevation;
-	float rayleigh_atmosphere_scale_height = 8434.5;     /* in metres */
-	float rayleigh_optical_thickness= 0.0;
-	float beam_transmittance;
-	float a0, a1, a2;
-	float diffuse_transmission_function;
-	float diffuse_angular_function;
+	double relative_optical_air_mass;
+	double solar_elevation_true, delta_solar_elevation;
+	double rayleigh_atmosphere_scale_height = 8434.5;     /* in metres */
+	double rayleigh_optical_thickness = 0.0;
+	double beam_transmittance;
+	double a0, a1, a2;
+	double diffuse_transmission_function;
+	double diffuse_angular_function;
 
 	/*  beam irradiance  */
 
@@ -106,20 +105,20 @@ void esra_clearsky_irradiance_instant ( float solar_elevation, float solar_azimu
 	*irrad_glo_clear = *irrad_beam_nor_clear * sin(DTR*solar_elevation) + *irrad_dif_clear;
 }
 
-void glo_and_beam_indices_hour ( float latitude, float longitude, float time_zone,
-                                 int jday, float centrum_time, int solar_time,
-								 float irrad_glo, float irrad_beam_nor,
-								 float *index_glo, float *index_beam )
+void glo_and_beam_indices_hour(double latitude, double longitude, double time_zone,
+	int jday, double centrum_time, int solar_time,
+	double irrad_glo, double irrad_beam_nor,
+	double *index_glo, double *index_beam)
 {
 	int i, month;
 	int sph_k = 60;
 
-	float dt_k, time_i;
-	float irrad_glo_clear, irrad_beam_nor_clear;
-	float solar_elevation_i, solar_azimuth_i, eccentricity_correction_i;
-	float irrad_glo_clear_i, irrad_beam_nor_clear_i, irrad_dif_clear_i;
-	float sum_irrad_glo_clear, sum_irrad_beam_nor_clear;
-	float sunrise_localtime, sunset_localtime;
+	double dt_k, time_i;
+	double irrad_glo_clear, irrad_beam_nor_clear;
+	double solar_elevation_i, solar_azimuth_i, eccentricity_correction_i;
+	double irrad_glo_clear_i, irrad_beam_nor_clear_i, irrad_dif_clear_i;
+	double sum_irrad_glo_clear, sum_irrad_beam_nor_clear;
+	double sunrise_localtime, sunset_localtime;
 
 	sunrise_sunset_localtime ( latitude, longitude, time_zone, jday, &sunrise_localtime, &sunset_localtime );
 
@@ -166,13 +165,12 @@ void glo_and_beam_indices_hour ( float latitude, float longitude, float time_zon
 		}
 }
 
-void irrads_clear_st ( float latitude, float longitude, float time_zone, int jday, float centrum_time, int timecode, int sph,\
-					   float *irrads_glo_clear_st )
+void irrads_clear_st(double latitude, double longitude, double time_zone, int jday, double centrum_time, int timecode, int sph, double *irrads_glo_clear_st)
 {
 	int i, month;
-	float time_i;
-	float solar_elevation_i, solar_azimuth_i, eccentricity_correction_i;
-	float irrad_glo_clear_i, irrad_beam_nor_clear_i, irrad_dif_clear_i;
+	double time_i;
+	double solar_elevation_i, solar_azimuth_i, eccentricity_correction_i;
+	double irrad_glo_clear_i, irrad_beam_nor_clear_i, irrad_dif_clear_i;
 
 	month = day_to_month(jday);
 
@@ -187,7 +185,7 @@ void irrads_clear_st ( float latitude, float longitude, float time_zone, int jda
 											   site_elevation, linke_turbidity_factor_am2[month-1], horizon_out+2,\
 											   &irrad_glo_clear_i, &irrad_beam_nor_clear_i, &irrad_dif_clear_i );
 
-			irrads_glo_clear_st[i-1] = irrad_glo_clear_i;
+			irrads_glo_clear_st[i - 1] = (float)irrad_glo_clear_i;
 		}
 }
 
@@ -196,10 +194,10 @@ void estimate_linke_factor_from_hourly_direct_irradiances()
 	int i, j, status=6, npm=3, counts;
 	int jday, month, day;
 
-	float time, centrum_time, sunrise_localtime, sunset_localtime;
-	float solar_elevation, solar_azimuth, eccentricity_correction;
-	float delta_st_ti, difference_beam, linke_estimate;
-	float irrad_beam_nor, irrad_beam_nor_clear, irrad_beam_hor, irrad_dif;
+	double time, centrum_time, sunrise_localtime, sunset_localtime;
+	double solar_elevation, solar_azimuth, eccentricity_correction;
+	double delta_st_ti, difference_beam, linke_estimate;
+	double irrad_beam_nor, irrad_beam_nor_clear, irrad_beam_hor, irrad_dif;
 	float daily_linke_estimate[366];
 
 	for (i=0;i<366;i++)   daily_linke_estimate[i]=100;
@@ -254,7 +252,7 @@ void estimate_linke_factor_from_hourly_direct_irradiances()
 										}
 								}
 
-							if ( linke_estimate < daily_linke_estimate[jday] )   daily_linke_estimate[jday]=linke_estimate;
+							if (linke_estimate < daily_linke_estimate[jday])   daily_linke_estimate[jday] = (float)linke_estimate;
 						}
 				}
 		}
@@ -296,16 +294,16 @@ void estimate_linke_factor_from_hourly_direct_irradiances()
 	}
 }
 
-void beam_nor_clearsky_irradiance_during_hour ( int month, int day, float centrum_time, float T_lam2, float *irrad_beam_nor_clear )
+void beam_nor_clearsky_irradiance_during_hour(int month, int day, double centrum_time, double T_lam2, double *irrad_beam_nor_clear)
 {
 	int i;
 	int steps_k=60;
 	int jday;
 
-	float dt_k, time_i;
-	float solar_elevation_i, solar_azimuth_i, eccentricity_correction_i;
-	float irrad_glo_clear_i, irrad_beam_nor_clear_i, irrad_dif_clear_i;
-	float sum_irrad_beam_nor_clear=0;
+	double dt_k, time_i;
+	double solar_elevation_i, solar_azimuth_i, eccentricity_correction_i;
+	double irrad_glo_clear_i, irrad_beam_nor_clear_i, irrad_dif_clear_i;
+	double sum_irrad_beam_nor_clear = 0;
 
 	jday = month_and_day_to_julian_day ( month, day );
 

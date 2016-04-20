@@ -10,13 +10,10 @@ void esra_clearsky_irradiance_instant ( float solar_elevation, float solar_azimu
 										float *irrad_glo_clear, float *irrad_beam_nor_clear,
 										float *irrad_dif_clear );				   
 					  
-void glo_and_beam_indices_hour ( float latitude, float longitude, float time_zone,
-								 int jday, float centrum_time, int solar_time,
-								 float irrad_glo, float irrad_beam_nor,
-								 float *index_glo, float *index_beam );
+void glo_and_beam_indices_hour(double latitude, double longitude, double time_zone, int jday, double centrum_time, int solar_time,
+	double irrad_glo, double irrad_beam_nor, double *index_glo, double *index_beam);
 
-void irrads_clear_st ( float latitude, float longitude, float time_zone, int jday,
-					   float centrum_time, int solar_time, int sph, float *irrads_glo_clear_st ); 						 
+void irrads_clear_st(double latitude, double longitude, double time_zone, int jday, double centrum_time, int timecode, int sph, double *irrads_glo_clear_st);
 
 void estimate_linke_factor_from_hourly_direct_irradiances();
 

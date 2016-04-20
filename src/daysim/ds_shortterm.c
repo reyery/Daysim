@@ -14,7 +14,7 @@
 #include "fropen.h"
 #include "read_in_header.h"
 
-//#include "file.h"
+#include "paths.h"
 #include "read_in.h"
 #include "sun.h"
 #include "nrutil.h"
@@ -47,9 +47,9 @@ int new=1;
 
 /*  global variables for the header file key words representing station specific data  */
 
-float latitude;
-float longitude;
-float time_zone;
+double latitude;
+double longitude;
+double time_zone;
 float linke_turbidity_factor_am2[12];       /*  monthly means for jan-dec  */
 char horizon_data_in[200];            /*  name of the horizon data file for the station where the input irradiance data were collected  */
                                       /*  (the file contains 36 horizon heights in degrees starting from N to E)                        */
@@ -92,15 +92,15 @@ int main(int argc, char *argv[])
 	int azimuth_class=0;
 	int *daylight_status;     /*  0=night hour, 1=sunrise/sunset hour, 2=innerday hour  */
 
-	float time, centrum_time, *times;
-	float irrad_glo= 0.0, irrad_beam_nor, irrad_beam_hor, irrad_dif;     /* in W/m² */
-	float *irrads_glo, *irrads_beam_nor , *irrads_dif, *indices_glo, *indices_beam, *sr_ss_indices_glo;
-	float *irrads_glo_st, *irrads_glo_clear_st, *irrads_beam_nor_st, *irrads_dif_st, *indices_glo_st;
-	float time_t, time_k, mean_glo_st, mean_beam_st, mean_dif_st, sum_beam_nor, sum_beam_hor, sum_dif;
-	float sunrise_localtime, sunset_localtime;
-	float solar_elevation, solar_azimuth, eccentricity_correction;
-	float punk;              /*  indicates nice sound  */
-	float previous_ligoh=0, actual_ligoh;
+	double time, centrum_time, *times;
+	double irrad_glo = 0.0, irrad_beam_nor, irrad_beam_hor, irrad_dif;     /* in W/m² */
+	double *irrads_glo, *irrads_beam_nor, *irrads_dif, *indices_glo, *indices_beam, *sr_ss_indices_glo;
+	double *irrads_glo_st, *irrads_glo_clear_st, *irrads_beam_nor_st, *irrads_dif_st, *indices_glo_st;
+	double time_t, time_k, mean_glo_st, mean_beam_st, mean_dif_st, sum_beam_nor, sum_beam_hor, sum_dif;
+	double sunrise_localtime, sunset_localtime;
+	double solar_elevation, solar_azimuth, eccentricity_correction;
+	double punk;              /*  indicates nice sound  */
+	double previous_ligoh = 0, actual_ligoh;
 	/*  ligoh = last index_glo of an hour: introduced to minimize discontinuities between subsequent hours  */
 
 	
@@ -195,20 +195,20 @@ int main(int argc, char *argv[])
   	fprintf(SHORT_TERM_DATA,"%s", header_line_6);
 
 
-	if ((times = malloc(24 * sizeof(float))) == NULL) goto memerr;
-	if ((irrads_glo = malloc(24 * sizeof(float))) == NULL) goto memerr;
-	if ((irrads_beam_nor = malloc(24 * sizeof(float))) == NULL) goto memerr;
-	if ((irrads_dif = malloc(24 * sizeof(float))) == NULL) goto memerr;
-	if ((indices_glo = malloc(24 * sizeof(float))) == NULL) goto memerr;
-	if ((indices_beam = malloc(24 * sizeof(float))) == NULL) goto memerr;
-	if ((sr_ss_indices_glo = malloc(3 * sizeof(float))) == NULL) goto memerr;
+	if ((times = malloc(24 * sizeof(double))) == NULL) goto memerr;
+	if ((irrads_glo = malloc(24 * sizeof(double))) == NULL) goto memerr;
+	if ((irrads_beam_nor = malloc(24 * sizeof(double))) == NULL) goto memerr;
+	if ((irrads_dif = malloc(24 * sizeof(double))) == NULL) goto memerr;
+	if ((indices_glo = malloc(24 * sizeof(double))) == NULL) goto memerr;
+	if ((indices_beam = malloc(24 * sizeof(double))) == NULL) goto memerr;
+	if ((sr_ss_indices_glo = malloc(3 * sizeof(double))) == NULL) goto memerr;
 	if ((daylight_status = malloc(24 * sizeof(int))) == NULL) goto memerr;
 
-	if ((irrads_glo_st = malloc(sph*sizeof(float))) == NULL) goto memerr;
-	if ((irrads_glo_clear_st = malloc(sph*sizeof(float))) == NULL) goto memerr;
-	if ((irrads_beam_nor_st = malloc(sph*sizeof(float))) == NULL) goto memerr;
-	if ((irrads_dif_st = malloc(sph*sizeof(float))) == NULL) goto memerr;
-	if ((indices_glo_st = malloc(sph*sizeof(float))) == NULL) goto memerr;
+	if ((irrads_glo_st = malloc(sph*sizeof(double))) == NULL) goto memerr;
+	if ((irrads_glo_clear_st = malloc(sph*sizeof(double))) == NULL) goto memerr;
+	if ((irrads_beam_nor_st = malloc(sph*sizeof(double))) == NULL) goto memerr;
+	if ((irrads_dif_st = malloc(sph*sizeof(double))) == NULL) goto memerr;
+	if ((indices_glo_st = malloc(sph*sizeof(double))) == NULL) goto memerr;
 
 
 	if ( shortterm_timestep == test_input_time_step )      /*  no generation of shortterm data, but conversion of direct-hor to direct-norm irradiance  */
@@ -467,14 +467,14 @@ int main(int argc, char *argv[])
 
 										else                                  /*  generate short-term irradiances for daylight hours  */
 											{
-												irrads_clear_st ( latitude, longitude, time_zone, last_jday, times[i], solar_time, sph, &irrads_glo_clear_st[0]);
+												irrads_clear_st ( latitude, longitude, time_zone, last_jday, times[i], solar_time, sph, irrads_glo_clear_st);
 
 												if ( daylight_status[i] == 1 && times[i] < 12 )             /*  sunrise hour  */
 													{
 														sr_ss_indices_glo[0] = indices_glo[i+1];
 														sr_ss_indices_glo[1] = indices_glo[i];
 														sr_ss_indices_glo[2] = indices_glo[i+1];
-														skartveit ( &sr_ss_indices_glo[0], indices_beam[i], sph, previous_ligoh, &indices_glo_st[0], &actual_ligoh );
+														skartveit ( sr_ss_indices_glo, indices_beam[i], sph, previous_ligoh, indices_glo_st, &actual_ligoh );
 													}
 
 												if ( daylight_status[i] == 1 && times[i] >= 12 )            /*  sunset hour  */
@@ -482,7 +482,7 @@ int main(int argc, char *argv[])
 														sr_ss_indices_glo[0] = indices_glo[i-1];
 														sr_ss_indices_glo[1] = indices_glo[i];
 														sr_ss_indices_glo[2] = indices_glo[i-1];
-														skartveit ( &sr_ss_indices_glo[0], indices_beam[i], sph, previous_ligoh, &indices_glo_st[0], &actual_ligoh );
+														skartveit ( sr_ss_indices_glo, indices_beam[i], sph, previous_ligoh, indices_glo_st, &actual_ligoh );
 													}
 
 												if ( daylight_status[i] == 2 )                             /*  innerday hours  */
@@ -493,7 +493,7 @@ int main(int argc, char *argv[])
 																sprintf(errmsg, "at month=%d day=%d time=%.3f should be non-vanishing global irradiance check your input file and try again", last_month, last_day, times[i]);
 																error(USER, errmsg);
 															}
-														else  skartveit ( &indices_glo[i-1], indices_beam[i], sph, previous_ligoh, &indices_glo_st[0], &actual_ligoh );
+														else  skartveit ( &indices_glo[i-1], indices_beam[i], sph, previous_ligoh, indices_glo_st, &actual_ligoh );
 													}
 
 												previous_ligoh = actual_ligoh;
