@@ -50,11 +50,11 @@ float f_azimuth(float latitude_rad, float sd, float st,float altitude)
 	return degrees(sazi(sd, st));
 }
 
-float solar_sunset(int month,int day)
-{	float W;
+double solar_sunset(int month, int day)
+{
     extern float s_latitude;
-    W=-1*(tan(s_latitude)*tan(sdec(jdate(month, day))));
-    return((PI/2 - atan2(W,sqrt(1-W*W)))*180/(PI*15)+12);
+	double W = -1 * (tan(s_latitude)*tan(sdec(jdate(month, day))));
+    return(degrees(PI/2 - atan2(W,sqrt(1-W*W)))/15+12);
 }
 double sazi( double sd,  double st)	/* solar azimuth from solar declination and solar time */
 {	extern float s_latitude;
@@ -91,14 +91,14 @@ void solar_elev_azi_ecc(double latitude, double longitude, double time_zone, int
 	if (solar_time)   sol_time = time;
 	else   sol_time = time + 0.170 * sin((4 * PI / 373) * (jday - 80)) - 0.129 * sin((2 * PI / 355) * (jday - 8)) + 12 / 180.0 * (time_zone - longitude);
 
-	solar_declination = degrees(0.4093 * sin((2 * PI / 368) * (jday - 81)));
+	solar_declination = sdec(jday);
 	jday_angle = 2 * PI*(jday - 1) / 365;
 
-	*solar_elevation = degrees(asin(sin(radians(latitude)) * sin(radians(solar_declination)) - cos(radians(latitude)) * cos(radians(solar_declination)) * cos(sol_time*(PI / 12))));
+	*solar_elevation = degrees(asin(sin(radians(latitude)) * sin(solar_declination) - cos(radians(latitude)) * cos(solar_declination) * cos(sol_time*(PI / 12))));
 
-	*solar_azimuth = degrees(-atan2(cos(radians(solar_declination)) * sin(sol_time*(PI / 12)),
-		-cos(radians(latitude))*sin(radians(solar_declination)) -
-		sin(radians(latitude))*cos(radians(solar_declination))*cos(sol_time*(PI / 12))));
+	*solar_azimuth = degrees(-atan2(cos(solar_declination) * sin(sol_time*(PI / 12)),
+		-cos(radians(latitude))*sin(solar_declination) -
+		sin(radians(latitude))*cos(solar_declination)*cos(sol_time*(PI / 12))));
 
 	/*  eccentricity_correction formula used in genjdaylit.c */
 
@@ -147,9 +147,9 @@ void sunrise_sunset_localtime(double latitude, double longitude, double time_zon
 { double solar_declination;
   double sunrise_solartime, sunset_solartime, time_dif;
 
-  solar_declination = degrees(0.4093 * sin((2 * PI / 368) * (jday - 81)));
-  sunrise_solartime = 12 / PI * acos(tan(radians(latitude)) * tan(radians(solar_declination)));
-  sunset_solartime = 12 / PI * (2 * PI - acos(tan(radians(latitude)) * tan(radians(solar_declination))));
+  solar_declination = sdec(jday);
+  sunrise_solartime = 12 / PI * acos(tan(radians(latitude)) * tan(solar_declination));
+  sunset_solartime = 12 / PI * (2 * PI - acos(tan(radians(latitude)) * tan(solar_declination)));
 
   time_dif = + 0.170 * sin( (4*PI/373) * (jday - 80) ) - 0.129 * sin( (2*PI/355) * (jday - 8) ) + 12/180.0 * (time_zone - longitude);
 

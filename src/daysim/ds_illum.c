@@ -719,8 +719,9 @@ void pre_process_dds_shadowtesting()
 		NumberofEntriesInWeaFile++;
 
 		//calculate center of time interval
-		sunrise=12+12-stadj(jdate(month, day))-solar_sunset(month,day);
-		sunset=solar_sunset(month,day)-stadj(jdate(month, day));
+		jd = jdate(month, day);
+		sunrise = 12 + 12 - stadj(jd) - solar_sunset(month, day);
+		sunset = solar_sunset(month, day) - stadj(jd);
 		if( ( hour-(0.5*time_step/60.0)<=sunrise ) && ( hour +(0.5*time_step/60.0)> sunrise )){
 			hour=0.5*(hour +(0.5*time_step/60.0) )+0.5*sunrise;
 		}else{
@@ -731,9 +732,8 @@ void pre_process_dds_shadowtesting()
 
 
 		/* get sun position */
-       	jd= jdate(month, day);
 		sd=sdec(jd);
-		solar_time=hour+stadj(jdate(month, day));
+		solar_time = hour + stadj(jd);
 		alt = salt( sd,solar_time);
 		azi = sazi(sd,solar_time);
   		if(alt >= 0 && dir > dir_threshold && dif >=dif_threshold){
@@ -805,8 +805,9 @@ void pre_process_dds_shadowtesting()
 			fscanf(WEA,"%d %d %f %f %f",&month,&day,&hour,&dir,&dif);
 
  			//calculate center of time interval
-			sunrise=12+12-stadj(jdate(month, day))-solar_sunset(month,day);
-			sunset=solar_sunset(month,day)-stadj(jdate(month, day));
+			jd = jdate(month, day);
+			sunrise = 12 + 12 - stadj(jd) - solar_sunset(month, day);
+			sunset = solar_sunset(month, day) - stadj(jd);
 			if( ( hour-(0.5*time_step/60.0)<=sunrise ) && ( hour +(0.5*time_step/60.0)> sunrise )){
 				hour=0.5*(hour +(0.5*time_step/60.0) )+0.5*sunrise;
 			}else{
@@ -817,9 +818,8 @@ void pre_process_dds_shadowtesting()
 
 
  			/* get sun position */
- 	      	jd= jdate(month, day);
 			sd=sdec(jd);
-			solar_time=hour+stadj(jdate(month, day));
+			solar_time = hour + stadj(jd);
 			alt = salt( sd,solar_time);
 			azi = sazi(sd,solar_time);
 

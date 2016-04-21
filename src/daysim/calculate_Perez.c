@@ -112,7 +112,7 @@ void add_time_step(float time_step)
 void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 {
     
-
+	int jd;
 	int  reset=0;
 	double dir1 = 0.0, dif1 = 0.0, hour_bak = 0.0;
 	double dir = 0.0, dif = 0.0;
@@ -201,11 +201,12 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 	for (m = 0; m<number_data_values; m++){
 
 		fscanf(INPUT_DATAFILE, "%d %d %f %f %f", &month, &day, &hour, &dir1, &dif1);
+		jd = jdate(month, day);
 		dir = dir1;
 		dif = dif1;
 		centrum_hour = hour;
-		sunrise = 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day);
-		sunset = solar_sunset(month, day) - stadj(jdate(month, day));
+		sunrise = 12 + 12 - stadj(jd) - solar_sunset(month, day);
+		sunset = solar_sunset(month, day) - stadj(jd);
 		if ((hour - (0.5*time_step / 60.0) <= sunrise) && (hour + (0.5*time_step / 60.0)> sunrise)){
 			hour = 0.5*(hour + (0.5*time_step / 60.0)) + 0.5*sunrise;
 		}
@@ -222,15 +223,15 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 
 
 		if ((dif<dif_threshold)
-			|| (salt(sdec(jdate(month, day)), hour + stadj(jdate(month, day))) <0)) {
+			|| (salt(sdec(jd), hour + stadj(jd)) <0)) {
 			for (k = 0; k < TotalNumberOfDCFiles; k++){
 				for (j = 0; j<number_of_sensors; j++)
 					fprintf(SHADING_ILLUMINANCE_FILE[k], " %.0f", 0.0);
 			}
 			if ((dif>dif_threshold)
-				&& (salt(sdec(jdate(month, day)), hour + stadj(jdate(month, day))) <0)
+				&& (salt(sdec(jd), hour + stadj(jd)) <0)
 				&& all_warnings) {
-				sprintf(errmsg, "sun below horizon at %d %d %.3f (solar altitude: %.3f)", month, day, hour, 57.38*salt(sdec(jdate(month, day)), hour + stadj(jdate(month, day))));
+				sprintf(errmsg, "sun below horizon at %d %d %.3f (solar altitude: %.3f)", month, day, hour, 57.38*salt(sdec(jd), hour + stadj(jd)));
 				error(WARNING, errmsg);
 			}
 		}
@@ -389,7 +390,7 @@ int write_segments_diffuse(double dir,double dif)
 	st = hour + stadj(jd);
 	altitude = salt(sd, st);
 	azimuth = sazi(sd, st);
-	daynumber = (double)jdate(month, day);
+	daynumber = (double)jd;
 	sundir[0] = -sin(azimuth)*cos(altitude);
 	sundir[1] = -cos(azimuth)*cos(altitude);
 	sundir[2] = sin(altitude);
@@ -757,7 +758,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 	}else{
 		jd= jdate(month, day);
 		sd=sdec(jd);
-		solar_time=hour+stadj(jdate(month, day));
+		solar_time = hour + stadj(jd);
 		altitude = degrees(salt(sd, solar_time));
 		azimuth = degrees(sazi(sd, solar_time));
 
@@ -1445,7 +1446,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 
 			// Step 2: Identify in which patch the sun currently is for the direct-direct DC
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-			ringnumber=(int)(1.0*altitude/3.157895);
+			ringnumber=(int)(altitude/3.157895);
 			if((azimuth>-90) && (azimuth < 180)){
 				chosen_value = number2305[ringnumber] + (int)((270.0 - azimuth) / (360.0 / ring_division2305[ringnumber]));
 			}
@@ -1467,7 +1468,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 
 			// Step 1: Identify in which patch the sun currently is for the direct-indirect DC
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-			ringnumber=(int)(1.0*altitude/12.0);
+			ringnumber=(int)(altitude/12.0);
 			// according to Tregenza, the celestial hemisphere is divided into 7 bands and
 			// the zenith patch. The bands range from:
 			//												altitude center
@@ -1500,7 +1501,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 
 			// Step 2: Identify in which patch the sun currently is for the direct-direct DC
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-			ringnumber=(int)(1.0*altitude/3.157895);
+			ringnumber=(int)(altitude/3.157895);
 			if((azimuth>-90) && (azimuth < 180)){
 				chosen_value = number2305[ringnumber] + (int)((270.0 - azimuth) / (360.0 / ring_division2305[ringnumber]));
 			}
@@ -1772,7 +1773,7 @@ double direct_n_effi_PEREZ()
 void check_parametrization()
 {
 	if (skyclearness<skyclearinf){
-		if (all_warnings && ((fabs(hour - 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day))<0.25) || (fabs(hour - solar_sunset(month, day) - stadj(jdate(month, day)))<0.25))){
+		if (all_warnings && ((fabs(hour - 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day))<0.25) || (fabs(hour - solar_sunset(month, day) - stadj(jdate(month, day)))<0.25))){ //TODO parentheses missing for - 12 + 12?
 			sprintf(errmsg, "sky clearness (%.1f) below range (%d %d %.3f)", skyclearness, month, day, hour);
 			error(WARNING, errmsg);
 		}

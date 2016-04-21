@@ -81,7 +81,7 @@ void  make_annual_point_file_old(float x,float y,float z,char long_sensor_file[1
 		{
 			jd= jdate(month, day);
 			sd=sdec(jd);
-			solar_time=hour+stadj(jdate(month, day));
+			solar_time = hour + stadj(jd);
 			alt = salt( sd,solar_time);
 			azi = sazi(sd,solar_time);
   			fprintf(POINTS,"%f %f %f %f %f %f\n",x,y,z,-cos(alt)*sin(azi),-cos(alt)*cos(azi),sin(alt) );
