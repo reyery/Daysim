@@ -20,4 +20,8 @@ target_link_libraries(ds_illum rtrad daysim_common)
 add_executable(gen_dc gen_dc.c write_dds_files.c calculate_sky_patches_gen_dc.c)
 target_link_libraries(gen_dc rtrad daysim_common)
 
-#install(TARGETS gen_reindl gencumsky ds_el_lighting ds_illum RUNTIME DESTINATION bin)
+add_executable(ds_shortterm ds_shortterm.c clearsky_models.c 60min_file.c read_in.c skartveit.c)
+target_link_libraries(ds_shortterm rtrad daysim_common)
+
+#install(TARGETS gen_reindl gencumsky ds_el_lighting ds_illum ds_shortterm RUNTIME DESTINATION bin)
+

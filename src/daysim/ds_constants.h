@@ -2,8 +2,8 @@
 #include <rtmath.h>
 #endif
 
-#define DTR (PI/180.0)
-#define RTD (180.0/PI)
+#define radians(deg)	((deg)*(PI/180.0))	/* degrees into radians */
+#define degrees(rad)	((rad)*(180.0/PI))	/* radians into degrees */
 
 #define HOURS_PER_YEAR	8760
 #define SKY_PATCHES	145	/* assumed maximum # Klems patches */

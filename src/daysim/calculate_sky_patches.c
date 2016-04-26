@@ -49,8 +49,8 @@ void calculate_sky_patches (int dc_direct_resolution, int dif_pts, int dir_pts, 
 			for(j=0; j< *number_direct_coefficients; j++){
 				fprintf(DIFFUSE_POINTS_FILE,"void light solar%d\n0 \n0 \n3 1000 1000 1000\n\n",j+1);
 				fprintf(DIFFUSE_POINTS_FILE,"solar%d source sun\n0\n0\n",j+1);
-				alt = DTR*(90 - direct_pts[j][1]);
-				azi = -DTR*(direct_pts[j][2] + 90);
+				alt = radians(90 - direct_pts[j][1]);
+				azi = -radians(direct_pts[j][2] + 90);
 				fprintf(DIFFUSE_POINTS_FILE,"4 %f %f %f 0.533\n\n",sin(alt)*cos(azi),sin(alt)*sin(azi),cos(alt));
 			}
 			i=close_file(DIFFUSE_POINTS_FILE);
@@ -130,18 +130,18 @@ void assign_values(int month, int day, int *number_direct_coefficients)
 	double sd;
 	double alt2_rise, alt2_set;
 	sd = sdec(jdate(month, day));
-	alt2_rise = f_salt(sd, 2.0*DTR);
-	alt2_set = 24 - f_salt(sd, 2.0*DTR);
+	alt2_rise = f_salt(sd, radians(2.0));
+	alt2_set = 24 - f_salt(sd, radians(2.0));
 	for (hour1 = 0; hour1< 24; hour1++){
 		st = hour1;
 		if (((hour1 - 0.5)<alt2_rise) && ((hour1 + 0.5) > alt2_rise)){ st = alt2_rise; }
 		if (((hour1 - 0.5)<alt2_set) && ((hour1 + 0.5) > alt2_set)){ st = alt2_set; }
 
-		if (salt(sd, st)*RTD >1.999){
+		if (degrees(salt(sd, st)) > 1.999){
 			direct_pts[*number_direct_coefficients][0] = (float)st;
-			direct_pts[*number_direct_coefficients][1] = (float)(salt(sd, st) * RTD);
+			direct_pts[*number_direct_coefficients][1] = (float)degrees(salt(sd, st));
 			if (direct_pts[*number_direct_coefficients][1] <2.001){ direct_pts[*number_direct_coefficients][1] = 2; }
-			direct_pts[*number_direct_coefficients][2] = (float)(sazi(sd, st) * RTD);
+			direct_pts[*number_direct_coefficients][2] = (float)degrees(sazi(sd, st));
 			direct_calendar[month][hour1][0] = direct_pts[*number_direct_coefficients][0];
 			direct_calendar[month][hour1][1] = direct_pts[*number_direct_coefficients][1];
 			direct_calendar[month][hour1][2] = direct_pts[*number_direct_coefficients][2];
@@ -149,8 +149,8 @@ void assign_values(int month, int day, int *number_direct_coefficients)
 		}
 		else{
 			direct_calendar[month][hour1][0] = (float)st;
-			direct_calendar[month][hour1][1] = (float)(salt(sd, st) * RTD);
-			direct_calendar[month][hour1][2] = (float)(sazi(sd, st) * RTD);
+			direct_calendar[month][hour1][1] = (float)degrees(salt(sd, st));
+			direct_calendar[month][hour1][2] = (float)degrees(sazi(sd, st));
 		}
 	}
 }

@@ -57,8 +57,6 @@ double  calc_rel_lum_perez(double dzeta, double gamma, double Z,
 	double epsilon, double Delta, double *coeff_perez);
 /* coefficients for the sky luminance perez model */
 void 	coeff_lum_perez(double Z, double epsilon, double Delta, double *coeff_perez);
-double	radians(double degres);
-double	degres(double radians);
 void	theta_phi_to_dzeta_gamma(double theta,double phi,double *dzeta,double *gamma, double Z);
 double 	integ_lv(float *lv,float *theta);
 /* astronomy and geometry*/
@@ -114,7 +112,7 @@ void add_time_step(float time_step)
 void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 {
     
-
+	int jd;
 	int  reset=0;
 	double dir1 = 0.0, dif1 = 0.0, hour_bak = 0.0;
 	double dir = 0.0, dif = 0.0;
@@ -153,25 +151,26 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 		double header_longitude;
 		double header_time_zone;
 		double header_site_elevation;
+		const double tollerance = radians(5);
 
 		header_implemented_in_wea = 1;
 		fscanf(INPUT_DATAFILE,"%*[^\n]");fscanf(INPUT_DATAFILE,"%*[\n\r]");
 		//latitude
 		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_latitude);
-		header_latitude *= DTR;
-		if ((header_latitude - s_latitude)>5 * DTR || (header_latitude - s_latitude)<-5 * DTR){
+		header_latitude = radians(header_latitude);
+		if ((header_latitude - s_latitude) > tollerance || (header_latitude - s_latitude) < -tollerance){
 			error(WARNING, "latitude in climate file header (wea) and latitude on project file (hea) differ by more than 5 DEG");
 		}
 		//longitude
 		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_longitude);
-		header_longitude *= DTR;
-		if ((header_longitude - s_longitude)>5 * DTR || (header_longitude - s_longitude)<-5 * DTR){
+		header_longitude = radians(header_longitude);
+		if ((header_longitude - s_longitude) > tollerance || (header_longitude - s_longitude) < -tollerance){
 			error(WARNING, "longitude in climate file header (wea) and longitude on project file (hea) differ by more than 5 DEG");
 		}
 		//time_zone
 		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_time_zone);
-		header_time_zone *= DTR;
-		if ((header_time_zone - s_meridian)>5 * DTR || (header_time_zone - s_meridian)<-5 * DTR){
+		header_time_zone = radians(header_time_zone);
+		if ((header_time_zone - s_meridian) > tollerance || (header_time_zone - s_meridian) < -tollerance){
 			error(WARNING, "time zone in climate file header (wea) and time zone on project file (hea) differ by more than 5 DEG");
 		}
 		//site_elevation
@@ -202,11 +201,12 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 	for (m = 0; m<number_data_values; m++){
 
 		fscanf(INPUT_DATAFILE, "%d %d %f %f %f", &month, &day, &hour, &dir1, &dif1);
+		jd = jdate(month, day);
 		dir = dir1;
 		dif = dif1;
 		centrum_hour = hour;
-		sunrise = 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day);
-		sunset = solar_sunset(month, day) - stadj(jdate(month, day));
+		sunrise = 12 + 12 - stadj(jd) - solar_sunset(month, day);
+		sunset = solar_sunset(month, day) - stadj(jd);
 		if ((hour - (0.5*time_step / 60.0) <= sunrise) && (hour + (0.5*time_step / 60.0)> sunrise)){
 			hour = 0.5*(hour + (0.5*time_step / 60.0)) + 0.5*sunrise;
 		}
@@ -223,15 +223,15 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 
 
 		if ((dif<dif_threshold)
-			|| (salt(sdec(jdate(month, day)), hour + stadj(jdate(month, day))) <0)) {
+			|| (salt(sdec(jd), hour + stadj(jd)) <0)) {
 			for (k = 0; k < TotalNumberOfDCFiles; k++){
 				for (j = 0; j<number_of_sensors; j++)
 					fprintf(SHADING_ILLUMINANCE_FILE[k], " %.0f", 0.0);
 			}
 			if ((dif>dif_threshold)
-				&& (salt(sdec(jdate(month, day)), hour + stadj(jdate(month, day))) <0)
+				&& (salt(sdec(jd), hour + stadj(jd)) <0)
 				&& all_warnings) {
-				sprintf(errmsg, "sun below horizon at %d %d %.3f (solar altitude: %.3f)", month, day, hour, 57.38*salt(sdec(jdate(month, day)), hour + stadj(jdate(month, day))));
+				sprintf(errmsg, "sun below horizon at %d %d %.3f (solar altitude: %.3f)", month, day, hour, 57.38*salt(sdec(jd), hour + stadj(jd)));
 				error(WARNING, errmsg);
 			}
 		}
@@ -258,7 +258,7 @@ int get_sky_patch_number( float Dx,float  Dy,float Dz)
 	double a=0;
 	int  patches[8] = { 30, 30, 24, 24, 18, 12, 6, 1 };
 
-	a = RTD * asin(Dz);
+	a = degrees(asin(Dz));
 	if( (a>=0.0)&&(a<12.0)){j=0;k=0;}
 	if( (a>=12.0)&&(a<24.0)){j=1;k=30;}
 	if( (a>=24.0)&&(a<36.0)){j=2;k=60;}
@@ -268,7 +268,7 @@ int get_sky_patch_number( float Dx,float  Dy,float Dz)
 	if( (a>=72.0)&&(a<84.0)){j=6;k=138;}
 	if( (a>=84.0)&&(a<90.0)){j=7;k=144;i=144;}
 	/*printf(" %f %f\n",a,Dz);*/
-	a= RTD * atan2(Dy, Dx);
+	a = degrees(atan2(Dy, Dx));
 	for (l=0 ; l<patches[j]; l++){
 		if(((l+1)*(360.0/patches[j])>=a )&& ((l)*(360.0/patches[j])<a )){i=k+l;l=patches[j];}
 	}
@@ -390,11 +390,11 @@ int write_segments_diffuse(double dir,double dif)
 	st = hour + stadj(jd);
 	altitude = salt(sd, st);
 	azimuth = sazi(sd, st);
-	daynumber = (double)jdate(month, day);
+	daynumber = (double)jd;
 	sundir[0] = -sin(azimuth)*cos(altitude);
 	sundir[1] = -cos(azimuth)*cos(altitude);
 	sundir[2] = sin(altitude);
-	sunzenith = 90 - altitude * RTD;
+	sunzenith = 90 - degrees(altitude);
 
 	/* compute the inputs for the calculation of the light distribution over the sky*/
 	/*input = 1; input_unities 1	 dir normal Irr [W/m^2] dif hor Irr [W/m^2] */
@@ -417,7 +417,7 @@ int write_segments_diffuse(double dir,double dif)
 
 	if (input_unities==1 || input_unities==2) {
 		if (input_unities==2){
-			if (altitude*RTD<1.0)
+			if (degrees(altitude) < 1.0)
 				{directirradiance=0;diffusirradiance=0;}
 			else {
 				if (directirradiance>0.0)
@@ -466,9 +466,9 @@ int write_segments_diffuse(double dir,double dif)
 
 
 	/* calculation for the solar source */
-	solarradiance_visible_radiation = directilluminance / (2 * PI*(1 - cos(half_sun_angle*DTR))) / WHTEFFICACY;
-	solarradiance_solar_radiation = directirradiance / (2 * PI*(1 - cos(half_sun_angle*DTR)));
-	solarradiance_luminance = directilluminance / (2 * PI*(1 - cos(half_sun_angle*DTR)));
+	solarradiance_visible_radiation = directilluminance / (2 * PI*(1 - cos(radians(half_sun_angle)))) / WHTEFFICACY;
+	solarradiance_solar_radiation = directirradiance / (2 * PI*(1 - cos(radians(half_sun_angle))));
+	solarradiance_luminance = directilluminance / (2 * PI*(1 - cos(radians(half_sun_angle))));
 
 
 	/* Compute the ground radiance */
@@ -758,9 +758,9 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 	}else{
 		jd= jdate(month, day);
 		sd=sdec(jd);
-		solar_time=hour+stadj(jdate(month, day));
-		altitude = RTD * salt( sd,solar_time);
-		azimuth = RTD * sazi(sd, solar_time);
+		solar_time = hour + stadj(jd);
+		altitude = degrees(salt(sd, solar_time));
+		azimuth = degrees(sazi(sd, solar_time));
 
 
 		switch ( dc_coupling_mode) {
@@ -792,10 +792,10 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 			if (jd >= 294 && jd < 355) { 			 /*Oct Dec*/
 				mon0=12; mon1=2;jd1=294;jd0=355;}
 
-			altitude0 = RTD * salt(sdec(jd0), solar_time);
-			azimuth0 = RTD * sazi(sdec(jd0), solar_time);
-			altitude1 = RTD * salt(sdec(jd1), solar_time);
-			azimuth1 = RTD * sazi(sdec(jd1), solar_time);
+			altitude0 = degrees(salt(sdec(jd0), solar_time));
+			azimuth0 = degrees(sazi(sdec(jd0), solar_time));
+			altitude1 = degrees(salt(sdec(jd1), solar_time));
+			azimuth1 = degrees(sazi(sdec(jd1), solar_time));
 
 			/* find corresponding time */
 			adapted_time0=hour+stadj(jdate(mon0, 21));
@@ -810,9 +810,9 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 				if (j == 24) error(INTERNAL, "loop in gendaylit_algorithm failed");
 			}
 
-			Dx = cos(DTR*azimuth)*cos(DTR*altitude);
-			Dy = sin(DTR*azimuth)*cos(DTR*altitude);
-			Dz = sin(DTR*altitude);
+			Dx = cos(radians(azimuth))*cos(radians(altitude));
+			Dy = sin(radians(azimuth))*cos(radians(altitude));
+			Dz = sin(radians(altitude));
 
 			// Step 2: assign weights
 			//======================================
@@ -1000,13 +1000,13 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 			chosen_time=0; time_difference=0;
 			max_time_difference=12; min_alt_difference=90;
 			max_angle=2*PI;
-			Dx = cos(DTR*azimuth)*cos(DTR*altitude);
-			Dy = sin(DTR*azimuth)*cos(DTR*altitude);
-			Dz = sin(DTR*altitude);
+			Dx = cos(radians(azimuth))*cos(radians(altitude));
+			Dy = sin(radians(azimuth))*cos(radians(altitude));
+			Dz = sin(radians(altitude));
 			for (j=0 ; j< number_direct_coefficients; j++){
-				Nx = cos(DTR*direct_pts[j][2])*cos(DTR*direct_pts[j][1]);
-				Ny = sin(DTR*direct_pts[j][2])*cos(DTR*direct_pts[j][1]);
-				Nz = sin(DTR*direct_pts[j][1]);
+				Nx = cos(radians(direct_pts[j][2]))*cos(radians(direct_pts[j][1]));
+				Ny = sin(radians(direct_pts[j][2]))*cos(radians(direct_pts[j][1]));
+				Nz = sin(radians(direct_pts[j][1]));
 				angle1=acos(Nx*Dx+Ny*Dy+Nz*Dz);
 				if (angle1 < max_angle ){
 					if(!(*shadow_testing_on) || ((direct_view[count_var] - direct_pts[j][3]) == 0)){
@@ -1040,15 +1040,13 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 			min_diff4=0;
 
 			if(azimuth<=-90)
-				azimuth_tmp=(-1)*(azimuth+90.0);
+				azimuth_tmp = -radians(azimuth + 90.0);
 			else
-				azimuth_tmp=(270.0-azimuth);
+				azimuth_tmp = radians(270.0 - azimuth);
 
-			azimuth_tmp *= DTR;
-
-			Dx = cos(azimuth_tmp)*cos(DTR*altitude);
-			Dy = sin(azimuth_tmp)*cos(DTR*altitude);
-			Dz = sin(DTR*altitude);
+			Dx = cos(azimuth_tmp)*cos(radians(altitude));
+			Dy = sin(azimuth_tmp)*cos(radians(altitude));
+			Dz = sin(radians(altitude));
 
 			//determine four surrounding direct-indirect DC coordinates:
 
@@ -1448,7 +1446,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 
 			// Step 2: Identify in which patch the sun currently is for the direct-direct DC
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-			ringnumber=(int)(1.0*altitude/3.157895);
+			ringnumber=(int)(altitude/3.157895);
 			if((azimuth>-90) && (azimuth < 180)){
 				chosen_value = number2305[ringnumber] + (int)((270.0 - azimuth) / (360.0 / ring_division2305[ringnumber]));
 			}
@@ -1470,7 +1468,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 
 			// Step 1: Identify in which patch the sun currently is for the direct-indirect DC
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-			ringnumber=(int)(1.0*altitude/12.0);
+			ringnumber=(int)(altitude/12.0);
 			// according to Tregenza, the celestial hemisphere is divided into 7 bands and
 			// the zenith patch. The bands range from:
 			//												altitude center
@@ -1503,7 +1501,7 @@ int write_segments_direct(double dir,double dif, int number_direct_coefficients,
 
 			// Step 2: Identify in which patch the sun currently is for the direct-direct DC
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-			ringnumber=(int)(1.0*altitude/3.157895);
+			ringnumber=(int)(altitude/3.157895);
 			if((azimuth>-90) && (azimuth < 180)){
 				chosen_value = number2305[ringnumber] + (int)((270.0 - azimuth) / (360.0 / ring_division2305[ringnumber]));
 			}
@@ -1704,7 +1702,7 @@ double glob_h_effi_PEREZ()
 			break;
 		}
 
-	return a[category_number] + b[category_number] * atm_preci_water + c[category_number] * cos(sunzenith*DTR) + d[category_number] * log(skybrightness);
+	return a[category_number] + b[category_number] * atm_preci_water + c[category_number] * cos(radians(sunzenith)) + d[category_number] * log(skybrightness);
 }
 
 
@@ -1732,7 +1730,7 @@ double glob_h_diffuse_effi_PEREZ()
 			break;
 		}
 
-	return a[category_number] + b[category_number] * atm_preci_water + c[category_number] * cos(sunzenith*DTR) + d[category_number] * log(skybrightness);
+	return a[category_number] + b[category_number] * atm_preci_water + c[category_number] * cos(radians(sunzenith)) + d[category_number] * log(skybrightness);
 }
 
 
@@ -1763,7 +1761,7 @@ double direct_n_effi_PEREZ()
 			break;
 		}
 
-	value = a[category_number] + b[category_number] * atm_preci_water + c[category_number] * exp(5.73*sunzenith*DTR - 5) + d[category_number] * skybrightness;
+	value = a[category_number] + b[category_number] * atm_preci_water + c[category_number] * exp(5.73 * radians(sunzenith) - 5) + d[category_number] * skybrightness;
 
 	if (value < 0) value = 0;
 
@@ -1775,7 +1773,7 @@ double direct_n_effi_PEREZ()
 void check_parametrization()
 {
 	if (skyclearness<skyclearinf){
-		if (all_warnings && ((fabs(hour - 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day))<0.25) || (fabs(hour - solar_sunset(month, day) - stadj(jdate(month, day)))<0.25))){
+		if (all_warnings && ((fabs(hour - 12 + 12 - stadj(jdate(month, day)) - solar_sunset(month, day))<0.25) || (fabs(hour - solar_sunset(month, day) - stadj(jdate(month, day)))<0.25))){ //TODO parentheses missing for - 12 + 12?
 			sprintf(errmsg, "sky clearness (%.1f) below range (%d %d %.3f)", skyclearness, month, day, hour);
 			error(WARNING, errmsg);
 		}
@@ -1844,8 +1842,9 @@ double sky_brightness()
 /* Perez sky's clearness */
 double sky_clearness()
 {
-	if(diffusirradiance > 0)
-		return ((diffusirradiance + directirradiance) / (diffusirradiance)+1.041*sunzenith*DTR*sunzenith*DTR*sunzenith*DTR) / (1 + 1.041*sunzenith*DTR * sunzenith*DTR * sunzenith*DTR);
+	double sunzenith_rad = radians(sunzenith);
+	if (diffusirradiance > 0)
+		return ((diffusirradiance + directirradiance) / diffusirradiance + 1.041 * sunzenith_rad * sunzenith_rad * sunzenith_rad) / (1 + 1.041 * sunzenith_rad * sunzenith_rad * sunzenith_rad);
 	return 0;
 }
 
@@ -1862,7 +1861,8 @@ double diffus_irradiance_from_sky_brightness()
 double direct_irradiance_from_sky_clearness()
 {
 	double value = diffus_irradiance_from_sky_brightness();
-	value *= ((skyclearness - 1) * (1 + 1.041*sunzenith*DTR*sunzenith*DTR * sunzenith*DTR));
+	double sunzenith_rad = radians(sunzenith);
+	value *= ((skyclearness - 1) * (1 + 1.041 * sunzenith_rad * sunzenith_rad * sunzenith_rad));
 	return(value);
 }
 
@@ -2015,18 +2015,6 @@ void coeff_lum_perez(double Z, double epsilon, double Delta, double *coeff_perez
 }
 
 
-/* degrees into radians */
-double radians(double degres)
-{
-	return degres * DTR;
-}
-
-/* radian into degrees */
-double degres(double radians)
-{
-	return radians * RTD;
-}
-
 /* calculation of the angles dzeta and gamma */
 void theta_phi_to_dzeta_gamma(double theta,double phi,double *dzeta,double *gamma, double Z)
 {
@@ -2078,7 +2066,7 @@ double get_eccentricity()
 /* enter sunzenith angle (degrees) return relative air mass (double) */
 double 	air_mass()
 {
-	return 1 / (cos(sunzenith*DTR) + 0.15*exp(log(93.885 - sunzenith)*(-1.253)));
+	return 1 / (cos(radians(sunzenith)) + 0.15*exp(log(93.885 - sunzenith)*(-1.253)));
 }
 
 
@@ -2087,5 +2075,5 @@ double get_angle_sun_direction(double sun_zenith, double sun_azimut, double dire
 	if (sun_zenith == 0)
         error(WARNING, "zenith_angle = 0 in function get_angle_sun_direction");
 
-	return RTD * acos(cos(sun_zenith*DTR)*cos(direction_zenith*DTR) + sin(sun_zenith*DTR)*sin(direction_zenith*DTR)*cos((sun_azimut - direction_azimut)*DTR));
+	return degrees(acos(cos(radians(sun_zenith))*cos(radians(direction_zenith)) + sin(radians(sun_zenith))*sin(radians(direction_zenith))*cos(radians(sun_azimut - direction_azimut))));
 }

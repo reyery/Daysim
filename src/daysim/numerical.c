@@ -1,6 +1,6 @@
 #include  <stdio.h>
 #include <stdlib.h>
-#include  <math.h>
+#include  <rtmath.h>
 #include  <rterror.h>
 
 #include "numerical.h"
@@ -20,8 +20,7 @@
 #define IA3 4561
 #define IC3 51349
 
-float gammln(float xx)
-
+double gammln(double xx)
 {
 	double x,tmp,ser;
 	static double cof[6]={76.18009173,-86.50532033,24.01409822,
@@ -39,9 +38,9 @@ float gammln(float xx)
 	return -tmp+log(2.50662827465*ser);
 }
 		  
-float betai(float a,float b,float x)
+double betai(double a, double b, double x)
 {
-	float bt, help;
+	double bt, help;
 	
 	if (x < 0.0 || x > 1.0)    error(INTERNAL, "Bad x in routine BETAI");  
 	if (x == 0.0 || x == 1.0) bt=0.0;
@@ -51,22 +50,22 @@ float betai(float a,float b,float x)
 	{
 	  help=betacf(a,b,x);
 	  if ( help > -98 )  return bt*help/a;
-	  else  return -99;
+	  return -99;
 	}  
 	else
 	{
 	  help=betacf(b,a,1.0-x);
 	  if ( help > -98 )  return 1.0-bt*help/b;
-	  else  return -99;
+	  return -99;
 	}
 }
 
 
-float betacf(float a,float b,float x)
+double betacf(double a, double b, double x)
 {
-	float qap,qam,qab,em,tem,d;
-	float bz,bm=1.0,bp,bpp;
-	float az=1.0,am=1.0,ap,app,aold;
+	double qap, qam, qab, em, tem, d;
+	double bz, bm = 1.0, bp, bpp;
+	double az = 1.0, am = 1.0, ap, app, aold;
 	int m;
 	
 	qab=a+b;
@@ -89,16 +88,16 @@ float betacf(float a,float b,float x)
 		bz=1.0;
 		if (fabs(az-aold) < (EPS*fabs(az))) return az;
 	}
-	fprintf(stderr,"warning: a or b too big, or ITMAX too small in BETACF\n");
+	error(WARNING, "a or b too big, or ITMAX too small in BETACF");
 	return -99;
 }
 
 
-float gasdev ( long *idum )
+double gasdev(long *idum)
 {
 	static int iset=0;
-	static float gset;
-	float fac,r,v1,v2;
+	static double gset;
+	double fac, r, v1, v2;
 	
 	if  (iset == 0) {
 		do {
@@ -184,7 +183,7 @@ void indexx ( unsigned long n, float *arrin, int *indx )
 
 void rank ( unsigned long n,int *indx, int *irank )
 {
-	int j;
+	unsigned int j;
 
 	for (j=1;j<=n;j++) irank[indx[j]]=j;
 }
@@ -282,7 +281,7 @@ void four1(float data[], unsigned long nn, int isign)
 	mmax=2;
 	while (n > mmax) {
 		istep=mmax << 1;
-		theta=isign*(6.28318530717959/mmax);
+		theta=isign*(2*PI/mmax);
 		wtemp=sin(0.5*theta);
 		wpr = -2.0*wtemp*wtemp;
 		wpi=sin(theta);
@@ -314,7 +313,7 @@ void realft(float data[], unsigned long n, int isign)
 	float c1=0.5,c2,h1r,h1i,h2r,h2i;
 	double wr,wi,wpr,wpi,wtemp,theta;
 
-	theta=3.141592653589793/(double) (n>>1);
+	theta=PI/(double) (n>>1);
 	if (isign == 1) {
 		c2 = -0.5;
 		four1(data,n>>1,1);
@@ -351,10 +350,10 @@ void realft(float data[], unsigned long n, int isign)
 	}
 }
 
-float mean ( int n, float *array )
+double mean(int n, double *array)
 { 
   int i;
-  float sum = 0;
+  double sum = 0;
   
   if ( n <= 0 ) error(USER, "bad n in function MEAN");
 

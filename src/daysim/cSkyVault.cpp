@@ -1,5 +1,6 @@
 #include <cassert>
 #include <memory.h>
+#include <float.h>
 
 #include "cSkyVault.h"
 #define _USE_MATH_DEFINES
@@ -212,7 +213,7 @@ double temp=0;
 		for (hour=.5; hour<24; hour++)
 		{
 			EIllum=0;
-			CosMinSunDist=-999;
+			CosMinSunDist = -DBL_MAX;
 
 			index=(day-1)*24+(int)hour;
 			ptLv=new double[m_NumPatches];
@@ -363,7 +364,7 @@ NextHour:
 
 				//		for (hour=12.5; hour<=16.5; hour++)
 			{
-				CosMinSunDist = -999;
+				CosMinSunDist = -DBL_MAX;
 
 				// setup sun position
 				m_Sun.SetDay(day);

@@ -279,7 +279,7 @@ int main( int argc, char **argv )
 	
 
 	/* consistency checks */
-	if (fabs(s_meridian - s_longitude) > 30 * DTR){
+	if (fabs(s_meridian - s_longitude) > radians(30)){
 		sprintf(errmsg,
 				"%.1f hours btwn. standard meridian and longitude",
 				(s_longitude-s_meridian)*12/PI);
@@ -307,9 +307,9 @@ int main( int argc, char **argv )
 
 	/* calculate diffuse sky patch directions Dx_dif_patch... */
 	for (j = 0; j<SKY_PATCHES; j++){
-		Dx_dif_patch[j] = (float)(cos(DTR*diffuse_pts[j][1])*cos(DTR*(90 - diffuse_pts[j][0])));
-		Dy_dif_patch[j] = (float)(sin(DTR*diffuse_pts[j][1])*cos(DTR*(90 - diffuse_pts[j][0])));
-		Dz_dif_patch[j] = (float)(sin(DTR*(90 - diffuse_pts[j][0])));
+		Dx_dif_patch[j] = (float)(cos(radians(diffuse_pts[j][1]))*cos(radians(90 - diffuse_pts[j][0])));
+		Dy_dif_patch[j] = (float)(sin(radians(diffuse_pts[j][1]))*cos(radians(90 - diffuse_pts[j][0])));
+		Dz_dif_patch[j] = (float)(sin(radians(90 - diffuse_pts[j][0])));
 	}
 	if(dds_file_format) // new dds file format chosen
 	{
@@ -719,8 +719,9 @@ void pre_process_dds_shadowtesting()
 		NumberofEntriesInWeaFile++;
 
 		//calculate center of time interval
-		sunrise=12+12-stadj(jdate(month, day))-solar_sunset(month,day);
-		sunset=solar_sunset(month,day)-stadj(jdate(month, day));
+		jd = jdate(month, day);
+		sunrise = 12 + 12 - stadj(jd) - solar_sunset(month, day);
+		sunset = solar_sunset(month, day) - stadj(jd);
 		if( ( hour-(0.5*time_step/60.0)<=sunrise ) && ( hour +(0.5*time_step/60.0)> sunrise )){
 			hour=0.5*(hour +(0.5*time_step/60.0) )+0.5*sunrise;
 		}else{
@@ -731,9 +732,8 @@ void pre_process_dds_shadowtesting()
 
 
 		/* get sun position */
-       	jd= jdate(month, day);
 		sd=sdec(jd);
-		solar_time=hour+stadj(jdate(month, day));
+		solar_time = hour + stadj(jd);
 		alt = salt( sd,solar_time);
 		azi = sazi(sd,solar_time);
   		if(alt >= 0 && dir > dir_threshold && dif >=dif_threshold){
@@ -805,8 +805,9 @@ void pre_process_dds_shadowtesting()
 			fscanf(WEA,"%d %d %f %f %f",&month,&day,&hour,&dir,&dif);
 
  			//calculate center of time interval
-			sunrise=12+12-stadj(jdate(month, day))-solar_sunset(month,day);
-			sunset=solar_sunset(month,day)-stadj(jdate(month, day));
+			jd = jdate(month, day);
+			sunrise = 12 + 12 - stadj(jd) - solar_sunset(month, day);
+			sunset = solar_sunset(month, day) - stadj(jd);
 			if( ( hour-(0.5*time_step/60.0)<=sunrise ) && ( hour +(0.5*time_step/60.0)> sunrise )){
 				hour=0.5*(hour +(0.5*time_step/60.0) )+0.5*sunrise;
 			}else{
@@ -817,9 +818,8 @@ void pre_process_dds_shadowtesting()
 
 
  			/* get sun position */
- 	      	jd= jdate(month, day);
 			sd=sdec(jd);
-			solar_time=hour+stadj(jdate(month, day));
+			solar_time = hour + stadj(jd);
 			alt = salt( sd,solar_time);
 			azi = sazi(sd,solar_time);
 

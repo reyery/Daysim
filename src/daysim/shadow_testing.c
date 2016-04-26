@@ -34,8 +34,8 @@ void make_Direct_DC_point_file(char long_sensor_file[1024],int num_direct_coeffi
 
 	POINT_FILE=open_output(long_sensor_file);
 	for (i=0 ; i< num_direct_coefficients; i++){
-		alt = DTR*(90 - direct_pts[i][1]);
-		azi = -DTR*(direct_pts[i][2] + 90);
+		alt = radians(90 - direct_pts[i][1]);
+		azi = -radians(direct_pts[i][2] + 90);
 		fprintf(POINT_FILE,"%f %f %f %f %f %f\n",x,y,z,sin(alt)*cos(azi),sin(alt)*sin(azi),cos(alt));
 	}
 	close_file(POINT_FILE);
@@ -81,7 +81,7 @@ void  make_annual_point_file_old(float x,float y,float z,char long_sensor_file[1
 		{
 			jd= jdate(month, day);
 			sd=sdec(jd);
-			solar_time=hour+stadj(jdate(month, day));
+			solar_time = hour + stadj(jd);
 			alt = salt( sd,solar_time);
 			azi = sazi(sd,solar_time);
   			fprintf(POINTS,"%f %f %f %f %f %f\n",x,y,z,-cos(alt)*sin(azi),-cos(alt)*cos(azi),sin(alt) );

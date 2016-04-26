@@ -23,7 +23,7 @@
  */
 void trim(char* string,char* trimmed_string)
 {
-	int start_pos, end_pos;
+	size_t start_pos, end_pos;
 
 	// find last non " "-position in string
 	for( end_pos= strlen(string) - 1; end_pos >= 0 && isspace(string[end_pos]); end_pos-- );
@@ -228,14 +228,14 @@ int copy_file(char *original_file, char *copied_file)
  *
  */
 char* prepend_path( char* path, char* str ) {
-	int 	offset= 0;
-	int 	n;
+	size_t	offset = 0;
+	size_t	n;
 	char 	token[PATH_SIZE];
 	char 	p[PATH_SIZE];
 	char* 	mpath= NULL;
-	int		mpath_c= 0;		/* capacity */
-	int		mpath_l= 0;		/* len */
-	int		path_l;
+	size_t	mpath_c = 0;		/* capacity */
+	size_t	mpath_l = 0;		/* len */
+	size_t	path_l;
 
 	if( path == NULL )
 		return NULL;

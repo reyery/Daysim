@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <rtmath.h>
 #include <string.h>
-#include <errno.h>
+#include <rterror.h>
 
 #include "sun.h"
 #include "fropen.h"
@@ -532,22 +532,27 @@ void read_in_header( char *header_file )
 
 		else if( !strcmp(keyword,"time_zone") ){
 			fscanf(HEADER_FILE,"%f",&s_meridian);
-			if( (s_meridian > 180.0 )|| (s_meridian < -180.0)) fprintf(stderr," WARNING: time_zone lies out of range (%.2f)!\n",s_meridian);
-			s_meridian *= DTR;
+			if ((s_meridian > 180.0) || (s_meridian < -180.0)) {
+				sprintf(errmsg, "time_zone lies out of range (%.2f)!", s_meridian);
+				error(WARNING, errmsg);
+			}
+			s_meridian = radians(s_meridian);
 		}
 		else if( !strcmp(keyword,"time_step")){
 			fscanf(HEADER_FILE,"%d",&time_step);
 			if(time_step!=60 && time_step!=30 && time_step!=20 && time_step!=15 && time_step!=12 && time_step!=10 && time_step!=6 && time_step!=5 && time_step!=4 && time_step!=3 && time_step!=2 && time_step!=1){
-				fprintf(stderr,"read_in_header: variable \'time_step\' out of bound (%d)\n",time_step);
-				exit(1);
+				sprintf(errmsg, "read_in_header: variable \'time_step\' out of bounds (%d)", time_step);
+				error(USER, errmsg);
 			}
 			time_steps_in_year = HOURS_PER_YEAR * 60 / time_step;
 		}
 		else if( !strcmp(keyword,"longitude") ){
 			fscanf(HEADER_FILE,"%f",&s_longitude);
-			if( s_longitude >180 || s_longitude < -180)
-				fprintf(stderr," WARNING: longitude lies out of range (%.2f)!\n",s_longitude);
-			s_longitude *= DTR;
+			if (s_longitude >180 || s_longitude < -180) {
+				sprintf(errmsg, "longitude lies out of range (%.2f)!", s_longitude);
+				error(WARNING, errmsg);
+			}
+			s_longitude = radians(s_longitude);
 		}
 		else if( !strcmp(keyword,"site_elevation") ){
 			fscanf(HEADER_FILE,"%f",&site_elevation);
@@ -557,9 +562,11 @@ void read_in_header( char *header_file )
 		}
 		else if( !strcmp(keyword,"latitude")  ){
 			fscanf(HEADER_FILE,"%f",&s_latitude);
-			if( s_latitude >90 || s_latitude <-90)
-				fprintf(stderr," WARNING: longitude lies out of range (%.2f)!\n",s_latitude);
-			s_latitude *= DTR;
+			if (s_latitude >90 || s_latitude < -90) {
+				sprintf(errmsg, "longitude lies out of range (%.2f)!", s_latitude);
+				error(WARNING, errmsg);
+			}
+			s_latitude = radians(s_latitude);
 		}
 		else if( !strcmp(keyword,"lower_direct_threshold") ){
 			fscanf(HEADER_FILE,"%f",&dir_threshold);
@@ -591,11 +598,7 @@ void read_in_header( char *header_file )
 				return;
             radiance_source_files=
 				(char (*)[PATH_SIZE])malloc(sizeof(char[PATH_SIZE])*number_of_radiance_source_files);
-		    if(radiance_source_files == NULL)
-				{
-					printf("radiance_source_files: out of memory \n");
-					exit(1);
-				}
+			if (radiance_source_files == NULL) goto memerr;
 
   		    while( my_letter != comma && !feof(HEADER_FILE) )
 				my_letter = fgetc(HEADER_FILE);
@@ -665,7 +668,7 @@ void read_in_header( char *header_file )
 		else if( !strcmp(keyword, "ballast_driver_schedule")){
 			fscanf(HEADER_FILE, "%d", &NumBD);
 			if (NumBD>20 || NumBD<0){
-				printf("Error in ballast_driver_schedule:  \n The number of ballasts/drivers specified is incorrect.\nThe value needs to be between 0 and 20.");
+				error(WARNING, "the number of ballasts/drivers needs to be between 0 and 20");
 			}
 			for (i=0; i<NumBD; i++){
 				fscanf(HEADER_FILE, "%s", BallastDriverLabel[i]);
@@ -677,7 +680,8 @@ void read_in_header( char *header_file )
 						}
 						break;
 					default:
-						printf("Error ballast_driver_schedule: \nThe BDtype for the ballast/driver labeled %s is invalid.\n",BallastDriverLabel[i]);
+						sprintf(errmsg, "the BDtype for the ballast/driver labeled %s is invalid", BallastDriverLabel[i]);
+						error(WARNING, errmsg);
 				}
 			}
 		}
@@ -687,7 +691,7 @@ void read_in_header( char *header_file )
 		else if( !strcmp(keyword, "photosensor_control")){
 			fscanf(HEADER_FILE, "%d", &NumSensors);
 			if (NumSensors>20 || NumSensors<0){
-				printf("Error in photosensors_control:  \n The number of photosensors specified is incorrect.\nThe value needs to be between 0 and 20.");
+				error(WARNING, "the number of photosensors needs to be between 0 and 20.");
 			}
 			for (i=0; i<NumSensors; i++){
 				fscanf(HEADER_FILE, "%s", PSLabel[i]);
@@ -698,8 +702,8 @@ void read_in_header( char *header_file )
 		else if( !strcmp(keyword,"shading")){
 			fscanf(HEADER_FILE,"%d",&NumBlindSettings);
 			if(NumBlindSettings <-20 || NumBlindSettings >10){ // for now the number of blind gorups is capped at 10 for the most advanced shade model
-				fprintf(stderr,"read_in_header: variable \'shading\' is out of range (%d)\nMaximum number of shading device settings is 10\n",NumBlindSettings);
-				exit(1);
+				sprintf(errmsg, "read_in_header: variable \'shading\' is out of range (%d): maximum number of shading device settings is 10", NumBlindSettings);
+				error(USER, errmsg);
 			}
 			//===================
 			// Simple blind model
@@ -866,8 +870,8 @@ void read_in_header( char *header_file )
 						fscanf(HEADER_FILE, "%s", AnnualShadingProfile[i]);
 
 					}else{
-						fprintf(stderr,"read_in_header:\'blind_control\' out of range: \'%s\'\n",blind_control_name[i]);
-						exit(1);
+						sprintf(errmsg, "read_in_header: \'blind_control\' out of range: \'%s\'", blind_control_name[i]);
+						error(USER, errmsg);
 					}
 					
 					//read in geometry of shading system in base mode. This may be a 'null.rad' file
@@ -945,7 +949,8 @@ void read_in_header( char *header_file )
 								fscanf(HEADER_FILE, "%f", &ShadeControlSignalArguments[i][j]);
 							}
 						}else{
-							printf("Error shading: \nThe control algorithm for the shades in the window group named %s is invalid.\n",BlindGroupName[i]);
+							sprintf(errmsg, "the control algorithm for the shades in the window group named %s is invalid", BlindGroupName[i]);
+							error(WARNING, errmsg);
 						}
 					}						
 					fscanf(HEADER_FILE, "%s", keyword);
@@ -1001,7 +1006,8 @@ void read_in_header( char *header_file )
 							TotalNumberOfDCFiles++;
 						}
 					}else{
-						printf("Error shading: \nThe matl_case for the window group named %s is invalid.\n",BlindGroupName[i]);
+						sprintf(errmsg, "the matl_case for the window group named %s is invalid", BlindGroupName[i]);
+						error(WARNING, errmsg);
 					}
 				}
 			}
@@ -1017,11 +1023,14 @@ void read_in_header( char *header_file )
 		//======================
 		else if( !strcmp(keyword,"blind_control") ){
 			fscanf(HEADER_FILE,"%d",&number_of_blind_controls);
-			if(number_of_blind_controls>10 || number_of_blind_controls<0){fprintf(stderr,"FATAL ERROR - header file: number of blind systems out of range 0-10 (%d).\n",number_of_blind_controls);exit(1);}
+			if(number_of_blind_controls>10 || number_of_blind_controls<0){
+				sprintf(errmsg, "header file: number of blind systems out of range 0-10 (%d)", number_of_blind_controls);
+				error(USER, errmsg);
+			}
 			for (i=0 ; i<number_of_blind_controls ; i++){
 				fscanf(HEADER_FILE,"%d ",&BlindSystemType[i]);
 				fscanf(HEADER_FILE,"%s", blind_control_name[i]);
-				if(BlindSystemType[i]>2 || BlindSystemType[i] <0 ){fprintf(stderr,"read_in_header:\'blind_control\' out of range.\n");exit(1);}
+				if(BlindSystemType[i]>2 || BlindSystemType[i] <0 ) error(USER, "read_in_header: \'blind_control\' out of range");
 			}
 		}
 
@@ -1182,7 +1191,10 @@ void read_in_header( char *header_file )
 		}
 		else if( !strcmp(keyword,"electric_lighting_system")){
 			fscanf(HEADER_FILE,"%d",&NumberOfLightingGroups);
-			if(NumberOfLightingGroups>10 || NumberOfLightingGroups<0){fprintf(stderr,"FATAL ERROR - header file: number of lighting scenarios out of range 0-10 (%d).\n",NumberOfLightingGroups);exit(1);}
+			if(NumberOfLightingGroups>10 || NumberOfLightingGroups<0){
+				sprintf(errmsg, "header file: number of lighting scenarios out of range 0-10 (%d)", NumberOfLightingGroups);
+				error(USER, errmsg);
+			}
 			for (i=1 ; i<=NumberOfLightingGroups ; i++){
 				fscanf(HEADER_FILE,"%d ",&LightingSystemType[i]);
 				switch( LightingSystemType[i] ) {
@@ -1228,7 +1240,8 @@ void read_in_header( char *header_file )
 					fscanf(HEADER_FILE, "%s", zone_label[i]);
 					fscanf(HEADER_FILE, "%s", ControlMethod[i]);
 					if (strcmp(ControlMethod[i],"dim_to_min") && strcmp(ControlMethod[i],"dim_to_off") && strcmp(ControlMethod[i],"on") && strcmp(ControlMethod[i],"off") && strcmp(ControlMethod[i],"switched")){
-						printf("Error in electric_lighting_system:  \n The control method for the zone named %s is incorrect.\n",zone_label[i]);
+						sprintf(errmsg, "the control method for the zone named %s is incorrect", zone_label[i]);
+						error(WARNING, errmsg);
 					}
 					fscanf(HEADER_FILE, "%s", ZonePSLabel[i]);
 					//printf("I have made it into the electric lighting system case 20.  The string is %s.", ZonePSLabel[i]);
@@ -1251,7 +1264,8 @@ void read_in_header( char *header_file )
 							fscanf(HEADER_FILE, "%d", &numCP[i]);
 							fscanf(HEADER_FILE, "%f", &TPval[i]);
 							if (TPval[i]>1 || TPval[i]<0){
-								printf("Error in electric_lighting_system:  \n The target percentage in CP_analysis for the zone named %s is incorrect.\nThe value needs to be between 0 and 1.",zone_label[i]);
+								sprintf(errmsg, "the target percentage in CP_analysis for the zone named %s needs to be between 0 and 1", zone_label[i]);
+								error(WARNING, errmsg);
 							}
 							fscanf(HEADER_FILE, "%s", CPArguments[i][2]);
 						}
@@ -1265,12 +1279,14 @@ void read_in_header( char *header_file )
 								fscanf(HEADER_FILE, "%d", &numCP[i]);
 								fscanf(HEADER_FILE, "%f", &TPval[i]);
 								if (TPval[i]>1 || TPval[i]<0){
-									printf("Error in electric_lighting_system:  \n The target percentage in CP_user_specified for the zone named %s is incorrect.\nThe value needs to be between 0 and 1.",zone_label[i]);
+									sprintf(errmsg, "the target percentage in CP_user_specified for the zone named %s needs to be between 0 and 1", zone_label[i]);
+									error(WARNING, errmsg);
 								}
 								fscanf(HEADER_FILE, "%s", CPArguments[i][2]);
 							}
 						}else{
-							printf("Error electric_lighting_system: \nThe Critical Point Method for the zone named %s is invalid.\n",zone_label[i]);
+							sprintf(errmsg, "the Critical Point Method for the zone named %s is invalid", zone_label[i]);
+							error(WARNING, errmsg);
 						}
 					}
 					if (!strcmp(ZonePSLabel[i], "null")){
@@ -1296,7 +1312,8 @@ void read_in_header( char *header_file )
 								fscanf(HEADER_FILE, "%f", &PSAlgorithmArguments[i][j]);
 							}
 						}else{
-							printf("Error electric_lighting_system: \nThe control algorithm for the zone named %s is invalid.\n",zone_label[i]);
+							sprintf(errmsg, "the control algorithm for the zone named %s is invalid", zone_label[i]);
+							error(WARNING, errmsg);
 						}
 					}
 					break;
@@ -1305,7 +1322,10 @@ void read_in_header( char *header_file )
 		}
 		else if( !strcmp(keyword,"minimum_illuminance_level")){ // for daylight autonomy calculation
 			fscanf(HEADER_FILE,"%f",&ill_min);
-			if(ill_min<0){fprintf(stderr,"FATAL ERROR - header file: illuminance levels is negative (%.0f).\n",ill_min);exit(1);}
+			if(ill_min<0){
+				sprintf(errmsg, "header file: illuminance levels is negative (%.0f)", ill_min);
+				error(USER, errmsg);
+			}
 		}
 		//=================
 		// occupancy module
@@ -1313,15 +1333,15 @@ void read_in_header( char *header_file )
 		else if( !strcmp(keyword,"daylight_savings_time")){
 			fscanf(HEADER_FILE,"%d",&daylight_savings_time);
 			if(daylight_savings_time!=0 && daylight_savings_time!=1){
-				fprintf(stderr,"read_in_header: variable \'daylight_savings_time\' out of bound (%d)\n",daylight_savings_time);
-				exit(1);
+				sprintf(errmsg, "read_in_header: variable \'daylight_savings_time\' out of bound (%d)", daylight_savings_time);
+				error(USER, errmsg);
 			}
 		}
 		else if( !strcmp(keyword,"first_weekday")){
 			fscanf(HEADER_FILE,"%d",&first_weekday);
 			if(first_weekday<0 || first_weekday>7){
-				fprintf(stderr,"read_in_header: variable \'first_weekday\' out of bound (%d)\n",first_weekday);
-				exit(1);
+				sprintf(errmsg, "read_in_header: variable \'first_weekday\' out of bound (%d)", first_weekday);
+				error(USER, errmsg);
 			}
 		}
 		else if( !strcmp(keyword,"occupancy")){
@@ -1350,15 +1370,16 @@ void read_in_header( char *header_file )
 				fscanf(HEADER_FILE,"%s", measured_occ);
 			}
 			if(occupancy_mode>5){
-				fprintf(stderr,"read_in_header: variable \'occupancy\' is not valid (%d)\n",occupancy_mode);
-				exit(1);
+				sprintf(errmsg, "read_in_header: variable \'occupancy\' is not valid (%d)", occupancy_mode);
+				error(USER, errmsg);
 			}
 		}
 
 		else if( !strcmp(keyword,"user_profile") ){
 			fscanf(HEADER_FILE,"%d",&NumUserProfiles);
 			if(NumUserProfiles>10 || NumUserProfiles<0){
-				fprintf(stderr,"FATAL ERROR - header file: number of user behaviors out of range 0-10 (%d).\n",number_of_blind_controls);exit(1);
+				sprintf(errmsg, "header file: number of user behaviors out of range 0-10 (%d)", number_of_blind_controls);
+				error(USER, errmsg);
 			}
 			frequency_sum=0;
 			for (i=0 ; i<NumUserProfiles ; i++){
@@ -1381,8 +1402,8 @@ void read_in_header( char *header_file )
 		else if( !strcmp(keyword,"DirectIrradianceGlareThreshold") ){ //Direct threshold level in W/m2 for blind control
 			fscanf(HEADER_FILE,"%f",&DirectIrradianceGlareThreshold);
 			if(DirectIrradianceGlareThreshold<0){
-				fprintf(stderr,"FATAL ERROR - header file - keyword DirectIrradianceGlareThreshold: The direct threshold level has to be positive (%f).\n",DirectIrradianceGlareThreshold);
-				exit(1);
+				sprintf(errmsg, "header file: keyword DirectIrradianceGlareThreshold: The direct threshold level has to be positive (%f)", DirectIrradianceGlareThreshold);
+				error(USER, errmsg);
 			}
 		}
 		else if( !strcmp(keyword,"wea_data_file")){
@@ -1504,23 +1525,15 @@ sprintf(Effective_DGP_file,"%s\\%s_effective.dgp",tmp_directory,project_name);
 			if ( TEST_FILE != NULL){
 				close_file(TEST_FILE);
 			}else{
-				printf("FATAL INPUT ERROR: Sensor file %s does not exist. Pro dir %s.",sensor_file,project_directory);
-				exit(1);
+				sprintf(errmsg, "sensor file %s does not exist in pro dir %s", sensor_file, project_directory);
+				error(USER, errmsg);
 			}
 		}
 	}
 	    number_of_sensors=number_of_lines_in_file(sensor_file);
-		if ((sensor_typ=(int*) malloc (sizeof(int)* number_of_sensors)) == NULL)
-		{
-			fprintf(stderr,"work plane sensor: Out of memory in function \'read_in_header\'\n");
-			exit(1);
-		}
-		if ((sensor_unit=(int*) malloc (sizeof(int)* number_of_sensors)) == NULL)
-		{
-			fprintf(stderr,"work plane sensor: Out of memory in function \'read_in_header\'\n");
-			exit(1);
-		}
-		for (i=0 ; i<( number_of_sensors) ; i++)
+		if ((sensor_typ = (int*)malloc(sizeof(int)* number_of_sensors)) == NULL) goto memerr;
+		if ((sensor_unit = (int*)malloc(sizeof(int)* number_of_sensors)) == NULL) goto memerr;
+		for (i=0 ; i< number_of_sensors; i++)
 		{
 			sensor_typ[i]=0; 	// array determines the sensor type
 			if(OutputUnits==1)
@@ -1534,20 +1547,20 @@ sprintf(Effective_DGP_file,"%s\\%s_effective.dgp",tmp_directory,project_name);
 
 
 		BlindGroup=(int**) malloc (sizeof(int*)* 10);
+		if (BlindGroup == NULL) goto memerr;
 		for (i=0 ; i<10 ; i++){
 			BlindGroup[i] =(int*) malloc (sizeof(int)* number_of_sensors);
-		}
-		for (i=0 ; i<10 ; i++){
+			if (BlindGroup[i] == NULL) goto memerr;
 			for (j=0 ; j< number_of_sensors ; j++){
 				BlindGroup[i][j]=0;
 			}
 		}
 
 		LightingGroup=(int**) malloc (sizeof(int*)* 11);
-		for (i=0 ; i<=10 ; i++){
+		if (LightingGroup == NULL) goto memerr;
+		for (i = 0; i < 11; i++){
 			LightingGroup[i] =(int*) malloc (sizeof(int)* number_of_sensors);
-		}
-		for (i=0 ; i<=10 ; i++){
+			if (LightingGroup[i] == NULL) goto memerr;
 			for (j=0 ; j< number_of_sensors ; j++){
 				LightingGroup[i][j]=0;
 			}
@@ -1556,9 +1569,11 @@ sprintf(Effective_DGP_file,"%s\\%s_effective.dgp",tmp_directory,project_name);
 
 
 		sensor_file_info=(char**) malloc (sizeof(char*)* number_of_sensors);
-		for (i=0 ; i<number_of_sensors ; i++){
+		if (sensor_file_info == NULL) goto memerr;
+		for (i = 0; i<number_of_sensors; i++){
 			sensor_file_info[i] =(char*) malloc (sizeof(float)* 100); // up to 100 characters in the string
-			sensor_file_info[i]="0";
+			if (sensor_file_info[i] == NULL) goto memerr;
+			sensor_file_info[i] = "0";
 		}
 
 
@@ -1583,8 +1598,8 @@ sprintf(Effective_DGP_file,"%s\\%s_effective.dgp",tmp_directory,project_name);
 			if ( TEST_FILE != NULL){
 				close_file(TEST_FILE);
 			} else {
-				printf("FATAL INPUT ERROR: Viewpoint file %s does not exist.",viewpoint_file);
-				exit(1);
+				sprintf(errmsg, "viewpoint file %s does not exist", viewpoint_file);
+				error(USER, errmsg);
 			}
 		}
 	    number_of_view_points=number_of_lines_in_file(viewpoint_file);
@@ -1801,8 +1816,8 @@ sprintf(Effective_DGP_file,"%s\\%s_effective.dgp",tmp_directory,project_name);
 									BlindGroup[0][i]=1;
 									//printf("Blind_Group[%d][%d] = %d\n",Blind_Group_index, i,BlindGroup[Blind_Group_index][i]);
 								}else{
-									fprintf(stdout,"FATAL ERROR reading Daysim header file - Blind Group Index (%d) out of range for sensor number %d. There are/is only %d blind group(s) specified under keuword 'shading'.\n",Blind_Group_index,i+1,NumberOfBlindGroups);
-									exit(0);
+									sprintf(errmsg, "Blind Group Index (%d) out of range for sensor number %d: There are/is only %d blind group(s) specified under keyword \'shading\'", Blind_Group_index, i + 1, NumberOfBlindGroups);
+									error(USER, errmsg);
 								}
 								//test if the sensor is an external blind sensor
 								if(sensor_file_info[i][j+1]=='_' && sensor_file_info[i][j+2]=='E'&& sensor_file_info[i][j+3]=='x'&& sensor_file_info[i][j+4]=='t') 
@@ -1841,8 +1856,8 @@ sprintf(Effective_DGP_file,"%s\\%s_effective.dgp",tmp_directory,project_name);
 									LightingGroup[Lighting_Group_index][i]=1;
 									LightingGroup[0][i]=1;
 								}else{
-									fprintf(stdout,"FATAL ERROR reading Daysim header file - Lighting Group Index (%d) out of range for sensor number %d: \'%s\'\n",Lighting_Group_index,i,sensor_file_info[i]);
-									exit(0);
+									sprintf(errmsg, "Lighting Group Index (%d) out of range for sensor number %d: \'%s\'", Lighting_Group_index, i, sensor_file_info[i]);
+									error(USER, errmsg);
 								}
 							}
 							j++;
@@ -1880,14 +1895,13 @@ sprintf(Effective_DGP_file,"%s\\%s_effective.dgp",tmp_directory,project_name);
 							sprintf(keyword,"%s%s",project_directory,DGP_Profiles_file[i]);
 							strcpy(DGP_Profiles_file[i],keyword);
 							if(!check_if_file_exists(DGP_Profiles_file[i])){
-								printf("FATAL INPUT ERROR - Read in header: DGP Profiles file %s does not exist.",DGP_Profiles_file[i]);
-								exit(1);
+								sprintf(errmsg, "DGP Profiles file %s does not exist", DGP_Profiles_file[i]);
+								error(USER, errmsg);
 							}
 						}
 					}
 				}else{
-					printf("FATAL INPUT ERROR - Read in header: No Daylight Glare Probability View Points provided of file is empty.");
-					exit(1);
+					error(USER, "no Daylight Glare Probability View Points provided of file is empty");
 				}
 		}
 
@@ -2001,7 +2015,7 @@ sprintf(Effective_DGP_file,"%s\\%s_effective.dgp",tmp_directory,project_name);
 //			NumberOfSettingsInBlindgroup[j]=MaxNumberOfSettingsInBlindgroup;
 	}
 
-
-
-	
+	return;
+memerr:
+	error(SYSTEM, "out of memory in function read_in_header");
 }

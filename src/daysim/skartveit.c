@@ -5,17 +5,15 @@
 
 #include "numerical.h"
 #include "skartveit.h"
+#include "ds_shortterm.h"
+#include "ds_constants.h"
 
 
-/* Defined in gen_reindl.c */
-extern int new;
-extern long random_seed;
-
-void skartveit(float *indices_glo, float index_beam, int sph, float previous_ligoh, float *indices_glo_st, float *actual_ligoh)
+void skartveit(double *indices_glo, double index_beam, int sph, double previous_ligoh, double *indices_glo_st, double *actual_ligoh)
 {
   int i, est_glo=1;
   int *glo_ranking;
-  float sigma_glo, sigma_beam, act_ligoh;
+  double sigma_glo, sigma_beam, act_ligoh;
 
   if ( (glo_ranking = malloc ((sph+1)*sizeof(int))) == NULL  )   { error(SYSTEM, "out of memory in skartveit"); }
 
@@ -34,7 +32,7 @@ void skartveit(float *indices_glo, float index_beam, int sph, float previous_lig
   free(glo_ranking);
 }
 
-void estimate_sigmas ( float *indices_glo, float index_beam, int sph, double *sigma_glo, float *sigma_beam )
+void estimate_sigmas(double *indices_glo, double index_beam, int sph, double *sigma_glo, double *sigma_beam)
 {
   double sig3, sigstar, fKb=1.0;
   double sigg5, delg;
@@ -82,18 +80,19 @@ void estimate_sigmas ( float *indices_glo, float index_beam, int sph, double *si
   if ( *sigma_beam < 0 )   *sigma_beam = 0.0001;
 }
 
-void estimate_indices_glo_st ( float index_glo, float index_beam, int sph, float sigma_glo, float previous_ligoh,\
-                               int *glo_ranking, float *indices_glo_st, float *actual_ligoh)
+void estimate_indices_glo_st(double index_glo, double index_beam, int sph, double sigma_glo, double previous_ligoh, \
+	int *glo_ranking, double *indices_glo_st, double *actual_ligoh)
 {
   int i, j;
   int steps_cdf = 40;          /*  the number of discretization steps was increased from 20 to 40  */
   int *indx, *irank;
   int ar_ok=0, rank_of_previous_ligoh, odd=1, count=0;
-  float rgmax, rgmin, tobs, sigt, attenuation_1=1.0, attenuation_2=1.0;
-  float t1, t2, w, tt11, tt22, ttt11, ttt22, sig11, sig22;
-  float a1, a2, b1, b2, help1, help2;
-  float cdf1, cdf2, p;
-  float time_step, auto_corr, tau, sdev, ran, ar1, *ar1_series1, *ar1_series2, *indices_glo_st_order;
+  double rgmax, rgmin, tobs, sigt, attenuation_1 = 1.0, attenuation_2 = 1.0;
+  double t1, t2, w, tt11, tt22, ttt11, ttt22, sig11, sig22;
+  double a1, a2, b1, b2, help1, help2;
+  double cdf1, cdf2, p;
+  double time_step, auto_corr, tau, sdev, ran, ar1;
+  float *ar1_series1, *ar1_series2, *indices_glo_st_order;
   float *t, *cdf;
   float *t_st;
 
@@ -269,4 +268,3 @@ void estimate_indices_glo_st ( float index_glo, float index_beam, int sph, float
 memerr:
   error(SYSTEM, "out of memory in estimate_indices_glo_st");
 }
-

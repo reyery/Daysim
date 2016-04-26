@@ -62,71 +62,6 @@ int linke_estimation=1;                   /*  flag that indicates if estimation 
 extern char  VersionID[];	/* Radiance version ID string */
 
 
-void solar_elev_azi_ecc(double latitude, double longitude, double time_zone, int jday, double time, int solar_time, double *solar_elevation, double *solar_azimuth, double *eccentricity_correction)
-
-/*  angles in degrees, times in hours  */
-{
-	double sol_time;
-	double solar_declination, jday_angle;
-
-	/*  solar elevation and azimuth formulae from sun.c  */
-	if (solar_time)   sol_time = time;
-	else   sol_time = time + 0.170 * sin((4 * PI / 373) * (jday - 80)) - 0.129 * sin((2 * PI / 355) * (jday - 8)) + 12 / 180.0 * (time_zone - longitude);
-
-	solar_declination = RTD * 0.4093 * sin((2 * PI / 368) * (jday - 81));
-	jday_angle = 2 * PI*(jday - 1) / 365;
-
-	*solar_elevation = RTD * asin(sin(latitude*DTR) * sin(solar_declination*DTR) - cos(latitude*DTR) * cos(solar_declination*DTR) * cos(sol_time*(PI / 12)));
-
-	*solar_azimuth = RTD * (-atan2(cos(solar_declination*DTR) * sin(sol_time*(PI / 12)),
-		-cos(latitude*DTR)*sin(solar_declination*DTR) -
-		sin(latitude*DTR)*cos(solar_declination*DTR)*cos(sol_time*(PI / 12))));
-
-	/*  eccentricity_correction formula used in genjdaylit.c */
-
-	*eccentricity_correction = 1.00011 + 0.034221*cos(jday_angle) + 0.00128*sin(jday_angle) + 0.000719*cos(2 * jday_angle) + 0.000077*sin(2 * jday_angle);
-}
-
-double diffuse_fraction(double irrad_glo, double solar_elevation, double eccentricity_correction)
-{
-	/*  estimation of the diffuse fraction according to Reindl et al., Solar Energy, Vol.45, pp.1-7, 1990  = [Rei90]  */
-	/*                        (reduced form without temperatures and humidities)                                                                          */
-
-	double irrad_ex;
-	double index_glo_ex;
-	double dif_frac;
-
-	if (solar_elevation > 0)  irrad_ex = SOLAR_CONSTANT_E * eccentricity_correction * sin(DTR*solar_elevation);
-	else irrad_ex = 0;
-
-	if (irrad_ex <= 0) return 0;
-	index_glo_ex = irrad_glo / irrad_ex;
-
-	if (index_glo_ex < 0)  { error(INTERNAL, "negative irrad_glo in diffuse_fraction_th"); }
-	if (index_glo_ex > 1)  { index_glo_ex = 1; }
-
-	if (index_glo_ex <= 0.3)
-	{
-		dif_frac = 1.02 - 0.254*index_glo_ex + 0.0123*sin(DTR*solar_elevation);
-		if (dif_frac > 1)  { dif_frac = 1; }
-	}
-	else if (index_glo_ex < 0.78)
-	{
-		dif_frac = 1.4 - 1.749*index_glo_ex + 0.177*sin(DTR*solar_elevation);
-		if (dif_frac > 0.97)  { dif_frac = 0.97; }
-		else if (dif_frac < 0.1)   { dif_frac = 0.1; }
-	}
-	else
-	{
-		dif_frac = 0.486*index_glo_ex - 0.182*sin(DTR*solar_elevation);
-		if (dif_frac < 0.1)  { dif_frac = 0.1; }
-	}
-
-	return dif_frac;
-}
-
-
-
 /*  main program  */
 int main(int argc, char *argv[])
 {
@@ -221,7 +156,7 @@ int main(int argc, char *argv[])
 		irrad_dif = diffuse_fraction(irrad_glo, solar_elevation, eccentricity_correction)*irrad_glo;
 		if (solar_elevation > 5.0)
 		{
-			irrad_beam_nor = (irrad_glo - irrad_dif)*1.0 / sin(DTR*solar_elevation);
+			irrad_beam_nor = (irrad_glo - irrad_dif) / sin(radians(solar_elevation));
 		}
 		else{
 			irrad_beam_nor = 0;
@@ -230,7 +165,7 @@ int main(int argc, char *argv[])
 		if (irrad_beam_nor > SOLAR_CONSTANT_E)
 		{
 			irrad_beam_nor = SOLAR_CONSTANT_E;
-			irrad_dif = irrad_glo - irrad_beam_nor*sin(DTR*solar_elevation);
+			irrad_dif = irrad_glo - irrad_beam_nor * sin(radians(solar_elevation));
 		}
 		fprintf(stdout, "%.0f %.0f\n", irrad_beam_nor, irrad_dif);
 
@@ -249,7 +184,7 @@ int main(int argc, char *argv[])
 			irrad_dif = diffuse_fraction(irrad_glo, solar_elevation, eccentricity_correction)*irrad_glo;
 			if (solar_elevation > 5.0)
 			{
-				irrad_beam_nor = (irrad_glo - irrad_dif)*1.0 / sin(DTR*solar_elevation);
+				irrad_beam_nor = (irrad_glo - irrad_dif) / sin(radians(solar_elevation));
 			}else{
 				irrad_beam_nor = 0;
 				irrad_dif = irrad_glo;
@@ -257,7 +192,7 @@ int main(int argc, char *argv[])
 			if (irrad_beam_nor > SOLAR_CONSTANT_E)
 			{
 				irrad_beam_nor = SOLAR_CONSTANT_E;
-				irrad_dif = irrad_glo - irrad_beam_nor*sin(DTR*solar_elevation);
+				irrad_dif = irrad_glo - irrad_beam_nor * sin(radians(solar_elevation));
 			}
 			fprintf(SHORT_TERM_DATA, "%d %d %.3f %.0f %.0f\n", month, day, time, irrad_beam_nor, irrad_dif);
 		}

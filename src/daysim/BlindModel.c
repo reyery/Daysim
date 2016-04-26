@@ -229,8 +229,8 @@ int getBlindSettings(int UserBehaviorBlinds)
 						}
 						sd=sdec(JulianDay);
 						solar_time=1.0*j*(time_step/60.0)+stadj(JulianDay);
-						alt = RTD * salt(sd, solar_time);
-						azi = RTD * sazi(sd, solar_time);
+						alt = degrees(salt(sd, solar_time));
+						azi = degrees(sazi(sd, solar_time));
 	
 						GlareCondition=0;
 						// Test for glare: The glare condition is that the sun is in a predetermined azimuth altitude 
