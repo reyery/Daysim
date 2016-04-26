@@ -12,6 +12,7 @@
 //#include <strings.h>
 
 /*  header files used  */
+#include "version.h"
 #include "rterror.h"
 #include "fropen.h"
 #include "read_in_header.h"
@@ -75,10 +76,6 @@ char header_line_3[300]="";
 char header_line_4[300]="";
 char header_line_5[300]="";
 char header_line_6[300]="";
-
-/*  versioning  */
-
-extern char  VersionID[];	/* Radiance version ID string */
 
 /*  main program  */
 

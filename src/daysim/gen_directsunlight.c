@@ -22,6 +22,12 @@
 //#include <strings.h>
 #include <errno.h>
 
+#include  "version.h"
+#include  "sun.h"
+#include  "fropen.h"
+#include  "read_in_header.h"
+#include  "check_direct_sunlight.c"
+
 float ***BlindGroupSensor;
 char dir_tmp_filename[500][1024];
 int NumberOfSensorsInBlindGroup[10];
@@ -39,11 +45,6 @@ char BlindRadianceFiles_Combined[1024]="";
 char buf[1024];
 char befehl[1024]="";
 		    
-#include  "sun.h"
-#include  "fropen.h"
-#include  "read_in_header.h"
-#include  "check_direct_sunlight.c"
-
 /* defines current time */
 double hour;
 int day, month;
@@ -144,12 +145,19 @@ int main(int argc, char **argv)
  
     FILE *WEA;
     FILE *POINTS;
-	progname = argv[0];
- 	if (argc == 2){
-		read_in_header( argv[1]);
-	}else{fprintf(stderr,"WARNING gen_directsunlight: input file missing\n");
-		fprintf(stderr,"start program with:  gen_directsunlight  <header file>\n ");exit(1);
+	progname = fixargv0(argv[0]);
+	if (argc != 2){
+		fprintf(stderr, "WARNING %s: input file missing\n", progname);
+		fprintf(stderr, "start program with:  %s  <header file>\n ", progname);
+		exit(1);
 	}
+
+	if (!strcmp(argv[1], "-version")) {
+		puts(VersionID);
+		exit(0);
+	}
+
+	read_in_header( argv[1]);
 
 	if(!strcmp(direct_sunlight_file,""))
 	{	fprintf(stderr,"WARNING gen_directsunlight: keyword \"direct_sunlight_file\" missing\n");

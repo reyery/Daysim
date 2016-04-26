@@ -13,6 +13,7 @@
 //#include <strings.h>
 #include <errno.h>
 
+#include "version.h"
 #include "paths.h"
 #include "fropen.h"
 #include "read_in_header.h"
@@ -653,8 +654,8 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
  *
  */
 void usage( char* command ) {
-	fprintf(stderr,"WARNING gen_dc: input file missing\n");
-	fprintf(stderr,"start program with:  gen_dc  <header file>\n ");
+	fprintf(stderr, "WARNING %s: input file missing\n", command);
+	fprintf(stderr, "start program with:  %s  <header file>\n ", command);
 	fprintf(stderr,"\t-dds use generalized daylight coefficient file format (dds)\n ");
 	fprintf(stderr,"\t-dir calculate direct daylight coefficients only\n ");
 	fprintf(stderr,"\t-dif calculate diffuse daylight coefficients only\n ");
@@ -674,7 +675,6 @@ int main( int argc, char **argv )
 	int  i;
 	int  ExtendedOutput=0;
 	int no_individual_tasks=1;
-	char keyword[1000];
 	char skyPatch[1024];
    	enum Task task= 0;
 	enum Illumination illumination;
@@ -687,69 +687,74 @@ int main( int argc, char **argv )
 
 
 	if (argc == 1){
-		usage( argv[0] );
+		usage(fixargv0(argv[0]));
 		exit(1);
-	} else {
-		read_in_header( argv[1] );
-		if (argc == 2){  // gen_dc file.hea
-			task= CalculateDirect | CalculateDiffuse | MergeFiles;
-			illumination= DirectIllumination | DiffuseIllumination;
+	}
+
+	if (!strcmp(argv[1], "-version")) {
+		puts(VersionID);
+		exit(0);
+	}
+
+	read_in_header( argv[1] );
+	if (argc == 2){  // gen_dc file.hea
+		task= CalculateDirect | CalculateDiffuse | MergeFiles;
+		illumination= DirectIllumination | DiffuseIllumination;
+	}
+	if( argc > 2 ) {
+		for( i= 2; i < argc; i++ ) {
+			if( !strcmp(argv[i],"-dds") ) {
+				dds_file_format = 1; // use dds file format for DCs
+				if(!strcmp(DDS_sensor_file,"")){
+					printf("FATAL ERROR - gen_DC: variable DDS_sensor_file not provided in header file.\n");
+					exit(0);
+				}
+				if(!strcmp(DDS_file,"")){
+					printf("FATAL ERROR - gen_DC: variable DDS_file not provided in header file.\n");
+					exit(0);
+				}
+			}
 		}
-		if( argc > 2 ) {
-			for( i= 2; i < argc; i++ ) {
-				if( !strcmp(argv[i],"-dds") ) {
-					dds_file_format = 1; // use dds file format for DCs
-					if(!strcmp(DDS_sensor_file,"")){
-						printf("FATAL ERROR - gen_DC: variable DDS_sensor_file not provided in header file.\n");
-						exit(0);
-					}
-					if(!strcmp(DDS_file,"")){
-						printf("FATAL ERROR - gen_DC: variable DDS_file not provided in header file.\n");
-						exit(0);
-					}
-				}
+		for( i= 2; i < argc; i++ ) {
+			if( !strcmp(argv[i],"-dir") ) {
+				task|= CalculateDirect;
+				illumination= DirectIllumination;
+				no_individual_tasks=0;
+			} else if( !strcmp(argv[i],"-dif") ) {
+				task|= CalculateDiffuse;
+				illumination= DiffuseIllumination;
+				no_individual_tasks=0;
+			} else if( !strcmp(argv[i],"-paste") ) {
+				task|= MergeFiles;
+				no_individual_tasks=0;
+			} else if( !strcmp(argv[i],"-substract" ) && dds_file_format) {
+				task|= SubstractDirectDirect;
+				no_individual_tasks=0;
+			} else if( !strcmp(argv[i],"-add" )&& dds_file_format ) {
+				task|= AddDirectDirect;
+				no_individual_tasks=0;
+			} else if( !strcmp(argv[i],"-h") ) {
+				ExtendedOutput= 1;
+			} else if( !strcmp(argv[i],"-f") ) {
+				strcpy(bin_dir,argv[++i]);
+			} else if( !strcmp(argv[i],"-ext") ){
+				// add extension to file names for *.pts, *dc, *.ill
+				strcpy(file_name_extension,argv[++i]);
 			}
-			for( i= 2; i < argc; i++ ) {
-				if( !strcmp(argv[i],"-dir") ) {
-					task|= CalculateDirect;
-					illumination= DirectIllumination;
-					no_individual_tasks=0;
-				} else if( !strcmp(argv[i],"-dif") ) {
-					task|= CalculateDiffuse;
-					illumination= DiffuseIllumination;
-					no_individual_tasks=0;
-				} else if( !strcmp(argv[i],"-paste") ) {
-					task|= MergeFiles;
-					no_individual_tasks=0;
-				} else if( !strcmp(argv[i],"-substract" ) && dds_file_format) {
-					task|= SubstractDirectDirect;
-					no_individual_tasks=0;
-				} else if( !strcmp(argv[i],"-add" )&& dds_file_format ) {
-					task|= AddDirectDirect;
-					no_individual_tasks=0;
-				} else if( !strcmp(argv[i],"-h") ) {
-					ExtendedOutput= 1;
-				} else if( !strcmp(argv[i],"-f") ) {
-					strcpy(bin_dir,argv[++i]);
-				} else if( !strcmp(argv[i],"-ext") ){
-					// add extension to file names for *.pts, *dc, *.ill
-					strcpy(file_name_extension,argv[++i]);
-				}
-			}
-			if( no_individual_tasks)
+		}
+		if( no_individual_tasks)
+		{
+			if(dds_file_format)
 			{
-				if(dds_file_format)
-				{
-					task= CalculateDirect | CalculateDiffuse | MergeFiles | SubstractDirectDirect | AddDirectDirect;
-					illumination= DirectIllumination | DiffuseIllumination  ;
-				}else{
-					task= CalculateDirect | CalculateDiffuse | MergeFiles ;
-					illumination= DirectIllumination | DiffuseIllumination  ;
-				}
+				task= CalculateDirect | CalculateDiffuse | MergeFiles | SubstractDirectDirect | AddDirectDirect;
+				illumination= DirectIllumination | DiffuseIllumination  ;
+			}else{
+				task= CalculateDirect | CalculateDiffuse | MergeFiles ;
+				illumination= DirectIllumination | DiffuseIllumination  ;
 			}
-
-
 		}
+
+
 	}
 
 	//========================================

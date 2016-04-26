@@ -12,6 +12,7 @@
 #include  <rterror.h>
 #include  <paths.h>
 
+#include "version.h"
 #include "fropen.h"
 #include "sun.h"
 #include "ds_constants.h"
@@ -56,10 +57,6 @@ int sph=60;                               /*  sph=steps per hour: if shortterm_t
 float horizon_azimuth_out[36];            /*  divide [-180°,180°] of the output horizon in 36 azimuth classes */
                                           /*  (south=0°, horizon heights in degrees)                          */
 int linke_estimation=1;                   /*  flag that indicates if estimation of the monthly linke factors is necessary  */
-
-/*  versioning  */
-
-extern char  VersionID[];	/* Radiance version ID string */
 
 
 /*  main program  */

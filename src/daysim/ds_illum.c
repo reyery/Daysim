@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include  "version.h"
 #include  "rterror.h"
 #include  "paths.h"
 
@@ -109,9 +110,6 @@ int number_of_blindGroup_combinations=0;
 /* */
 static struct dc_shading_coeff_s* dc_shading_coeff;
 static struct dc_shading_coeff_s* init_dc_shading_coeff( int, int );
-
-/* versioning */
-extern char  VersionID[];	/* Radiance version ID string */
 
 /*
  *

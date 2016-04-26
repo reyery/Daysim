@@ -19,6 +19,7 @@
 #include  <errno.h>
 #include  <paths.h>
 
+#include  "version.h"
 #include  "read_in_header.h"
 #include  "fropen.h"
 #include  "occ_func.h"
@@ -93,10 +94,6 @@ char histo_file[200]="";// plus line below
 
 float MeanLightingSystemEnergy=0;
 float MeanLightingSystemStDev=0;
-
-/*  versioning  */
-
-extern char  VersionID[];	/* Radiance version ID string */
 
 int main(int argc, char** argv )
 {	int  i,j,k,l;

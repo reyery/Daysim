@@ -12,6 +12,7 @@
 //#include <strings.h>
 #include <errno.h>
 
+#include  "version.h"
 #include  "paths.h"
 #include  "fropen.h"
 #include  "read_in_header.h"
@@ -516,27 +517,31 @@ int main(int argc, char **argv) {
 	int no_preprocessing;					
 	view_point* viewpoints;
 
-        only_preprocessing=0;
-        no_preprocessing=0;
-	progname = argv[0];
+    only_preprocessing=0;
+    no_preprocessing=0;
+	progname = fixargv0(argv[0]);
 
 	if (argc == 1){
-		fprintf(stderr,"WARNING gen_dgp_profile: input file missing\n");
+		fprintf(stderr, "WARNING %s: input file missing\n", progname);
 		fprintf(stderr,"start program with:  %s <header file>\n", progname );
 		fprintf(stderr,"\t-i calculate only vertical illuminance, no timestep dgp\n ");
 		fprintf(stderr,"\t-d calculate only timestep dgp, no vertical illuminance\n ");
 		exit(1);
-	} else {
-                header_filename= argv[1];
-		if( argc > 2 ) {
-			for( i= 2; i < argc; i++ ) {
-				if( !strcmp(argv[i],"-i") ) {
-					only_preprocessing=1;
-				} else if( !strcmp(argv[i],"-d") ) {
-					no_preprocessing=1;
-				} 
-			}
+	}
 
+	if (!strcmp(argv[1], "-version")) {
+		puts(VersionID);
+		exit(0);
+	}
+
+    header_filename= argv[1];
+	if( argc > 2 ) {
+		for( i= 2; i < argc; i++ ) {
+			if( !strcmp(argv[i],"-i") ) {
+				only_preprocessing=1;
+			} else if( !strcmp(argv[i],"-d") ) {
+				no_preprocessing=1;
+			} 
 		}
 	}
 

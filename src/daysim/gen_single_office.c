@@ -10,6 +10,8 @@
 #include <string.h>
 //#include <strings.h>
 #include <errno.h>
+
+#include "version.h"
 #include "paths.h"
 #include "gen_single_office.h"
 
@@ -18,16 +20,13 @@ int main( int argc, char  *argv[])
 	//int i=0, j=0,k=0;
 	//int ill_outside=0;
 
-	progname = argv[0];
+	progname = fixargv0(argv[0]);
 
-	if (argc > 1)
-	{
-	}//end if (argc >= 7)
-
-	else
+	if (argc == 1)
 	{
 		writeErrorMessage();
-	}//end else
+		exit(0);
+	}
 
 	/* get the arguments */
 	checkPassedArguements(argc, argv);
@@ -47,7 +46,7 @@ int main( int argc, char  *argv[])
 
 void writeErrorMessage()
 {
-	fprintf(stdout,"\ngen_single_office: \n");
+	fprintf(stdout, "\n%s: \n", progname);
 	printf("Program that generates a RADIANCE file of an open plan office \n");
 	printf("\n");
 
@@ -108,8 +107,6 @@ void writeErrorMessage()
 	printf("-G\t ground/street reflectance [%%] (default = 30%%)\n");
 	printf("-B\t street width [ft] (default= 60 ft)\n");
 	printf("-C\t continuous or discontinuous obstruction [0=continuous, 1=discontinuous] (default value = 0)\n");
-
-	exit(0);
 }
 
 //This method checks the arguements passed for gen_single_office lie within acceptable
@@ -118,13 +115,19 @@ void checkPassedArguements(int argc, char  *argv[])
 {
 	int i=0;
 	for (i = 1; i < argc; i++)
-	{	if (argv[i][0] == '-' )
+	{
+		if (argv[i][0] == '-') {
+
+			if (!strcmp(argv[i], "-version")) {
+				puts(VersionID);
+				exit(0);
+			}
 
 			switch (argv[i][1])
 			{
 
-				case 'b'://orientation
-				orientation=atof(argv[++i]);
+			case 'b'://orientation
+				orientation = atof(argv[++i]);
 				if (orientation == 0 || orientation == 90 || orientation == 180 || orientation == 270 || orientation == 360)
 				{
 					break;
@@ -136,303 +139,304 @@ void checkPassedArguements(int argc, char  *argv[])
 				}
 				break;
 
-				case 'a'://switch for ballustrade
-					ballustrade=atoi(argv[++i]);
-					break;
+			case 'a'://switch for ballustrade
+				ballustrade = atoi(argv[++i]);
+				break;
 
-				case 'c'://add white background and darken sidewalls
-					addWiteGroundPlate=1;
-					darkerwall*=0.6;
-					break;
+			case 'c'://add white background and darken sidewalls
+				addWiteGroundPlate = 1;
+				darkerwall *= 0.6;
+				break;
 
-				case 'd'://office depth
-					office_depth_ft=atof(argv[++i]);
-					office_depth=office_depth_ft*0.3048;
-					break;
+			case 'd'://office depth
+				office_depth_ft = atof(argv[++i]);
+				office_depth = office_depth_ft*0.3048;
+				break;
 
-				case 'e'://office depth
-					window_width=atof(argv[++i]);
-					if(window_width<0 || window_width>1)
+			case 'e'://office depth
+				window_width = atof(argv[++i]);
+				if (window_width < 0 || window_width>1)
+				{
+					fprintf(stdout, "Widnow Width (option \'e\' must be betwee 0 and 1\n");
+					exit(1);
+				}
+				break;
+
+
+			case 'f':
+				frame_width = atof(argv[++i]);
+				frame_width *= 0.0254;
+				break;
+
+			case 'h'://ceiling height
+				ceiling_height = atof(argv[++i]);
+				ceiling_height *= 0.3048;
+				floor_height = ceiling_height + 0.3048;
+				break;
+
+			case 'i'://input file for points
+				strcpy(pts_file, argv[++i]);
+				break;
+
+			case 'm':
+				ceiling_refl = atof(argv[++i]);
+				wall_refl = atof(argv[++i]);
+				floor_refl = atof(argv[++i]);
+				ceiling_refl *= 0.01;
+				wall_refl *= 0.01;
+				floor_refl *= 0.01;
+				break;
+
+			case 'o':
+				strcpy(rad_file, argv[++i]);
+				break;
+
+			case 'p':
+
+				seating_position = atoi(argv[++i]);
+				if (seating_position == 1 || seating_position == 2 || seating_position == 3)
+				{
+					seating_position *= 0.3048;
+					break;
+				}
+				else
+				{
+					fprintf(stdout, "This only seating position 1, 2 or 3!\n");
+					exit(1);
+				}
+				break;
+			case 's':
+				sill = atof(argv[++i]);
+				sill *= 0.0254;
+				break;
+			case 't':
+				visual_transmittance = 0.01*atof(argv[++i]);
+				break;
+			case 'x':
+				strcpy(bin_dir, argv[++i]);
+				break;
+
+			case 'w':
+				office_width_ft = atof(argv[++i]);
+				office_width = office_width_ft*0.3048;
+				break;
+
+			case 'z':
+				facade_type = atof(argv[++i]);
+				if (facade_type == 1 || facade_type == 2 || facade_type == 3)
+				{
+					break;
+				}
+				else
+				{
+					fprintf(stdout, "There is only facade 1, 2 or 3!\n");
+					exit(1);
+				}
+				break;
+
+			case 'l':
+				office_level = atof(argv[++i]);
+
+				if (office_level >= 0 || office_level < num_building_floors)
+				{
+					points_height = (office_level - 1)*floor_height + 0.85;
+					break;
+				}
+				else
+				{
+					fprintf(stdout, "The office cannot be located on a floor higher than the office building and cannot 0 or negative\n");
+					exit(1);
+				}
+
+				break;
+
+			case 'y':
+				num_building_floors = atof(argv[++i]);
+
+				if (num_building_floors >= 0)
+				{
+					if (office_level > num_building_floors)
 					{
-						fprintf(stdout, "Widnow Width (option \'e\' must be betwee 0 and 1\n");
+						fprintf(stdout, "The office building cannot be lower than the floor that the office is located on\n");
 						exit(1);
 					}
-					break;
-
-
-				case 'f':
-					frame_width=atof(argv[++i]);
-					frame_width*=0.0254;
-					break;
-
-				case 'h'://ceiling height
-					ceiling_height=atof(argv[++i]);
-					ceiling_height*=0.3048;
-					floor_height=ceiling_height+0.3048;
-					break;
-
-				case 'i'://input file for points
-					strcpy(pts_file, argv[++i]);
-					break;
-
-				case 'm':
-					ceiling_refl=atof(argv[++i]);
-					wall_refl=atof(argv[++i]);
-					floor_refl=atof(argv[++i]);
-					ceiling_refl*=0.01;
-					wall_refl*=0.01;
-					floor_refl*=0.01;
-					break;
-
-				case 'o':
-					strcpy(rad_file, argv[++i]);
-					break;
-
-				case 'p':
-
-					seating_position=atoi(argv[++i]);
-					if (seating_position == 1 || seating_position == 2 || seating_position == 3)
+					else
 					{
-						seating_position*=0.3048;
+						building_height = num_building_floors*(floor_height);
 						break;
 					}
-					else
-					{
-						fprintf(stdout, "This only seating position 1, 2 or 3!\n");
-						exit(1);
-					}
-					break;
-				case 's':
-					sill=atof(argv[++i]);
-					sill*=0.0254;
-					break;
-				case 't':
-					visual_transmittance=0.01*atof(argv[++i]);
-					break;
-				case 'x':
-					strcpy(bin_dir, argv[++i]);
-					break;
+				}
+				else
+				{
+					fprintf(stdout, "The building cannot have a negative height!\n");
+					exit(1);
+				}
 
-				case 'w':
-					office_width_ft=atof(argv[++i]);
-					office_width=office_width_ft*0.3048;
+				break;
+			case 'n':
+				building_width_ft == atof(argv[++i]);
+				if (building_width_ft >= office_width_ft)
+				{
+					building_width = building_width_ft*0.3048;
 					break;
-
-				case 'z':
-					facade_type=atof(argv[++i]);
-					if (facade_type == 1 || facade_type == 2 || facade_type == 3)
-					{
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "There is only facade 1, 2 or 3!\n");
-						exit(1);
-					}
+				}
+				else
+				{
+					fprintf(stdout, "The building not less wide than the office itself!\n");
+					exit(1);
+				}
+				break;
+			case 'k':
+				building_depth_ft == atof(argv[++i]);
+				if (building_depth_ft >= office_depth_ft)
+				{
+					building_depth = building_depth_ft*0.3048;
 					break;
+				}
+				else
+				{
+					fprintf(stdout, "The building cannot be less deep than the office itself!\n");
+					exit(1);
+				}
+				break;
 
-				case 'l':
-					office_level=atof(argv[++i]);
-
-					if (office_level >= 0 || office_level<num_building_floors)
-					{
-						points_height=(office_level-1)*floor_height+0.85;
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "The office cannot be located on a floor higher than the office building and cannot 0 or negative\n");
-						exit(1);
-					}
-
+			case 'j':
+				facade_refl = atof(argv[++i]);
+				if (facade_refl >= 0 || facade_refl <= 100)
+				{
+					facade_refl *= 0.01;
 					break;
+				}
+				else
+				{
+					fprintf(stdout, "The office buiding can only have a reflectance between 0 and 100%% (inclusive)!\n");
+					exit(1);
+				}
+				break;
 
-				case 'y':
-					num_building_floors=atof(argv[++i]);
-
-					if (num_building_floors >= 0)
-					{
-						if (office_level>num_building_floors)
-						{
-							fprintf(stdout, "The office building cannot be lower than the floor that the office is located on\n");
-							exit(1);
-						}
-						else
-						{
-							building_height=num_building_floors*(floor_height);
-							break;
-						}
-					}
-					else
-					{
-						fprintf(stdout, "The building cannot have a negative height!\n");
-						exit(1);
-					}
-
+			case 'U':
+				obstruction = atof(argv[++i]);
+				if (obstruction == 0 || obstruction == 1)
+				{
 					break;
-				case 'n':
-					building_width_ft==atof(argv[++i]);
-					if(building_width_ft>=office_width_ft)
-					{
-						building_width=building_width_ft*0.3048;
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "The building not less wide than the office itself!\n");
-						exit(1);
-					}
+				}
+				else
+				{
+					fprintf(stdout, "Obstruction must exist (1) or not exist (0)...only 0 or 1 can be passed as parameters!\n");
+					exit(1);
+				}
+				break;
+			case 'M':
+				building_refl = atof(argv[++i]);
+				if (building_refl >= 0 || building_refl <= 100)
+				{
+					building_refl *= 0.01;
 					break;
-				case 'k':
-					building_depth_ft==atof(argv[++i]);
-					if(building_depth_ft>=office_depth_ft)
-					{
-						building_depth=building_depth_ft*0.3048;
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "The building cannot be less deep than the office itself!\n");
-						exit(1);
-					}
+				}
+				else
+				{
+					fprintf(stdout, "Obstructing buildings must have a reflectance between 0 and 100 %% (inclusive)!\n");
+					exit(1);
+				}
+				break;
+
+			case 'W':
+				obstruction_building_width_ft = atof(argv[++i]);
+				if (obstruction_building_width_ft != building_width_ft)
+				{
+					fprintf(stdout, "Obstructing building and Office building must abide by same building standards...widths must be equal!\n");
+					exit(1);
+
+				}
+				else if (obstruction_building_width_ft > 0)
+				{
+					obstruction_building_width = obstruction_building_width_ft*0.3048;
 					break;
+				}
+				else
+				{
+					fprintf(stdout, "Obstructing building must have a positive width!\n");
+					exit(1);
+				}
+				break;
 
-				case 'j':
-					facade_refl=atof(argv[++i]);
-					if (facade_refl >= 0  || facade_refl <= 100)
-					{
-						facade_refl*=0.01;
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "The office buiding can only have a reflectance between 0 and 100%% (inclusive)!\n");
-						exit(1);
-					}
+			case 'D':
+				obstruction_building_depth_ft = atof(argv[++i]);
+				if (obstruction_building_depth_ft != building_depth_ft)
+				{
+					fprintf(stdout, "Obstructing building and Office building must abide by same building standards...depths must be equal!\n");
+					exit(1);
+				}
+
+				else if (obstruction_building_depth_ft > 0)
+				{
+					obstruction_building_depth = obstruction_building_depth_ft*0.3048;
 					break;
+				}
+				else
+				{
+					fprintf(stdout, "Obstructing building must have a positive depth!\n");
+					exit(1);
+				}
+				break;
 
-				case 'U':
-					obstruction=atof(argv[++i]);
-					if (obstruction == 0 || obstruction == 1)
-					{
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "Obstruction must exist (1) or not exist (0)...only 0 or 1 can be passed as parameters!\n");
-						exit(1);
-					}
+			case 'H':
+				obstruction_building_height_ft = atof(argv[++i]);
+				if (obstruction_building_height_ft > 0) /***/
+				{
+					obstruction_building_height = obstruction_building_height_ft*0.3048;
 					break;
-				case 'M':
-					building_refl=atof(argv[++i]);
-					if (building_refl >= 0 || building_refl <= 100)
-					{
-						building_refl*=0.01;
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "Obstructing buildings must have a reflectance between 0 and 100 %% (inclusive)!\n");
-						exit(1);
-					}
+				}
+				else
+				{
+					fprintf(stdout, "Obstructing building can only have a height greater than 0!\n");
+					exit(1);
+				}
+				break;
+
+			case 'A':
+				street_width_ft = atof(argv[++i]);
+				if (street_width_ft > 0)
+				{
+					street_width = street_width_ft*0.3048;
 					break;
+				}
+				else
+				{
+					fprintf(stdout, "Street width must be greater than 0!\n");
+					exit(1);
+				}
+				break;
 
-				case 'W':
-					obstruction_building_width_ft=atof(argv[++i]);
-					if (obstruction_building_width_ft!=building_width_ft)
-					{
-						fprintf(stdout, "Obstructing building and Office building must abide by same building standards...widths must be equal!\n");
-						exit(1);
-
-					}
-					else if(obstruction_building_width_ft > 0)
-					{
-						obstruction_building_width=obstruction_building_width_ft*0.3048;
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "Obstructing building must have a positive width!\n");
-						exit(1);
-					}
+			case 'G':
+				street_refl = atof(argv[++i]);
+				if (street_refl >= 0 || street_refl <= 100)
+				{
+					street_refl *= 0.01;
 					break;
+				}
+				else
+				{
+					fprintf(stdout, "Street reflectance must be between 0 and 100 %% (inclusive)!\n");
+					exit(1);
+				}
+				break;
 
-				case 'D':
-					obstruction_building_depth_ft=atof(argv[++i]);
-					if (obstruction_building_depth_ft!=building_depth_ft)
-					{
-						fprintf(stdout, "Obstructing building and Office building must abide by same building standards...depths must be equal!\n");
-						exit(1);
-					}
+			case 'C':
+				obstruction_type = atof(argv[++i]);
+				if (obstruction_type == 0 || obstruction_type == 1) { break; }
+				else
+				{
+					fprintf(stdout, "Obstruction can only be continuous (0) or discontinuous (1)\n");
+					exit(1);
+				}
 
-					else if(obstruction_building_depth_ft > 0)
-					{
-						obstruction_building_depth=obstruction_building_depth_ft*0.3048;
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "Obstructing building must have a positive depth!\n");
-						exit(1);
-					}
-					break;
-
-				case 'H':
-					obstruction_building_height_ft=atof(argv[++i]);
-					if (obstruction_building_height_ft > 0) /***/
-					{
-						obstruction_building_height=obstruction_building_height_ft*0.3048;
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "Obstructing building can only have a height greater than 0!\n");
-						exit(1);
-					}
-					break;
-
-				case 'A':
-					street_width_ft=atof(argv[++i]);
-					if (street_width_ft > 0)
-					{
-						street_width=street_width_ft*0.3048;
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "Street width must be greater than 0!\n");
-						exit(1);
-					}
-					break;
-
-				case 'G':
-					street_refl=atof(argv[++i]);
-					if (street_refl>=0 || street_refl<=100)
-					{
-						street_refl*=0.01;
-						break;
-					}
-					else
-					{
-						fprintf(stdout, "Street reflectance must be between 0 and 100 %% (inclusive)!\n");
-						exit(1);
-					}
-					break;
-
-				case 'C':
-					obstruction_type=atof(argv[++i]);
-					if (obstruction_type == 0 || obstruction_type == 1) {break;}
-					else
-					{	fprintf(stdout, "Obstruction can only be continuous (0) or discontinuous (1)\n");
-						exit(1);
-					}
-
-					break;
+				break;
 
 
 
 			}//end switch (argv[i][1])
-
+		}
 		else
 		{
 			fprintf(stdout,"gen_single_office: fatal error - %s bad option for input arguments\n", argv[i]);
