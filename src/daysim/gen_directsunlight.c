@@ -86,8 +86,8 @@ void  make_annual_point_file(  char long_sensor_file[1024],int BlindGroupIndex)
 	FILE *WEA;
 	FILE *POINTS;
 	int jd=0;
-	float sd=0;
-	float solar_time=0;
+	double sd=0;
+	double solar_time = 0;
 	char befehl[1024]="";
 
 
@@ -112,7 +112,7 @@ void  make_annual_point_file(  char long_sensor_file[1024],int BlindGroupIndex)
 		/* get sun position */
        	jd= jdate(month, day);
 		sd=sdec(jd);
-		solar_time=hour+stadj(jdate(month, day));
+		solar_time = hour + stadj(jd);
 		alt = salt( sd,solar_time);
 		azi = sazi(sd,solar_time);
   		if(alt > 0 && dir > DirectIrradianceGlareThreshold){
@@ -132,9 +132,9 @@ int main(int argc, char **argv)
 	int  i,j,k,m,shading;
 	int current_blind_group=0;
 	int jd=0;
-	float sd=0;
+	double sd=0;
 	float x_cor,y_cor,z_cor,x_dir,y_dir,z_dir;
-	float solar_time=0;
+	double solar_time = 0;
 	float r,g,b;
 	char temp_points[1024]="";
 	char  *progname;
@@ -151,6 +151,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "start program with:  %s  <header file>\n ", progname);
 		exit(1);
 	}
+
 
 	if (!strcmp(argv[1], "-version")) {
 		puts(VersionID);
@@ -371,7 +372,7 @@ while(fscanf(WEA,"%d %d %f %f %f",&month,&day,&hour,&dir,&dif) != EOF)
 	/* get sun position */
    	jd= jdate(month, day);
 	sd=sdec(jd);
-	solar_time=hour+stadj(jdate(month, day));
+	solar_time = hour + stadj(jd);
 	alt = salt( sd,solar_time);
 	azi = sazi(sd,solar_time);
 	if(alt > 0 && dir > DirectIrradianceGlareThreshold)

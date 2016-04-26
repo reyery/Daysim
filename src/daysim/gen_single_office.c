@@ -220,7 +220,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				break;
 
 			case 'z':
-				facade_type = atof(argv[++i]);
+				facade_type = atoi(argv[++i]);
 				if (facade_type == 1 || facade_type == 2 || facade_type == 3)
 				{
 					break;
@@ -233,7 +233,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				break;
 
 			case 'l':
-				office_level = atof(argv[++i]);
+				office_level = atoi(argv[++i]);
 
 				if (office_level >= 0 || office_level < num_building_floors)
 				{
@@ -249,7 +249,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				break;
 
 			case 'y':
-				num_building_floors = atof(argv[++i]);
+				num_building_floors = atoi(argv[++i]);
 
 				if (num_building_floors >= 0)
 				{
@@ -313,7 +313,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				break;
 
 			case 'U':
-				obstruction = atof(argv[++i]);
+				obstruction = atoi(argv[++i]);
 				if (obstruction == 0 || obstruction == 1)
 				{
 					break;
@@ -421,7 +421,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				break;
 
 			case 'C':
-				obstruction_type = atof(argv[++i]);
+				obstruction_type = atoi(argv[++i]);
 				if (obstruction_type == 0 || obstruction_type == 1) { break; }
 				else
 				{
@@ -459,13 +459,13 @@ void writeVFFile ()
 		for(j=1;j<((int)(office_width_ft));j++)
 		{
 
-			float x=j*0.3048;
-			float y=i*0.3048;
+			double x=j*0.3048;
+			double y = i*0.3048;
 			/*float points_height=((office_level-1)*floor_height)+0.85;*/
 
 
-			float x_new= (cos(orientation*(-3.14159/180.0))*x+sin(orientation*(-3.14159/180.0))*y);
-			float y_new=(-1.0)*sin(orientation*(-3.14159/180.0))*x+cos(orientation*(-3.14159/180.0))*y;
+			double x_new = (cos(orientation*(-3.14159 / 180.0))*x + sin(orientation*(-3.14159 / 180.0))*y);
+			double y_new = (-1.0)*sin(orientation*(-3.14159 / 180.0))*x + cos(orientation*(-3.14159 / 180.0))*y;
 			fprintf(VF_FILE1,"%.4f %.4f %.4f 0 0 1\n",x_new,y_new,points_height);
 
     		}//end for
@@ -1199,10 +1199,9 @@ void writeDiscontinuousObstBuildings()
 
 }
 
-float transmissivity(float visual_transmittance)
+double transmissivity(double visual_transmittance)
 {
-	double trans = 0;
-	trans= sqrt(0.8402528435+0.0072522239*visual_transmittance*visual_transmittance);
+	double trans = sqrt(0.8402528435 + 0.0072522239*visual_transmittance*visual_transmittance);
 	trans=(trans-0.9166530661)/0.0036261119/visual_transmittance;
 	return(trans);
 }

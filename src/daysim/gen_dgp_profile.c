@@ -467,21 +467,22 @@ void gen_dgp( char* header_filename, view_point* viewpoints ) {
 							while ( fgets( buf, sizeof buf, RAD) )
 								sprintf( buf, "%s", buf );
 							pclose(RAD);
-							dgp_f[view]= atof(buf);
+							dgp_f[view] = (float)atof(buf);
 						}else{
 							//illumiance at the viewpoint itself leads to DGP>=1
 							dgp_f[view]= 1.0;
-       							 if( dgp_profile_cut == 1 ) {
-									        dgp_f[view]=99.9;
-	  							   		 }
-					}
+       						if( dgp_profile_cut == 1 ) {
+								dgp_f[view]=99.9f;
+	  						}
+						}
 					}
 				} else { //dir_f[ts] <= 25.0
 					for( view= 0; view < number_of_views; view++ ) {
 
-						       if ( ill_f[view][ts]< 1000) {
-                                                        low_light_corr=1.0*exp(0.024*ill_f[view][ts]-4)/(1+exp(0.024*ill_f[view][ts]-4));} else {low_light_corr=1.0 ;}
-						dgp_f[view]= low_light_corr*(6.22e-5*ill_f[view][ts]+0.184);
+						if ( ill_f[view][ts]< 1000) {
+                            low_light_corr=exp(0.024*ill_f[view][ts]-4)/(1+exp(0.024*ill_f[view][ts]-4));
+						} else {low_light_corr=1.0 ;}
+						dgp_f[view] = (float)(low_light_corr*(6.22e-5*ill_f[view][ts] + 0.184));
 						
 						
 						if (dgp_f[view]>1)
@@ -494,9 +495,10 @@ void gen_dgp( char* header_filename, view_point* viewpoints ) {
 			} else {
 				for( view= 0; view < number_of_views; view++ ) 
 				{
-					 if ( ill_f[view][ts]< 1000) {
-                                                   low_light_corr=1.0*exp(0.024*ill_f[view][ts]-4)/(1+exp(0.024*ill_f[view][ts]-4));} else {low_light_corr=1.0 ;}
-					dgp_f[view]= low_light_corr*(6.22e-5*ill_f[view][ts]+0.184);
+					if ( ill_f[view][ts]< 1000) {
+                        low_light_corr=exp(0.024*ill_f[view][ts]-4)/(1+exp(0.024*ill_f[view][ts]-4));
+					} else {low_light_corr=1.0 ;}
+					dgp_f[view] = (float)(low_light_corr*(6.22e-5*ill_f[view][ts] + 0.184));
 					if (dgp_f[view]>1)
 						dgp_f[view]=1 ;
 				}
