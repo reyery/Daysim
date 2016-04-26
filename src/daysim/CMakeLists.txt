@@ -26,5 +26,8 @@ target_link_libraries(ds_shortterm rtrad daysim_common)
 add_executable(gen_dgp_profile gen_dgp_profile.c)
 target_link_libraries(gen_dgp_profile rtrad daysim_common)
 
+add_executable(gen_directsunlight gen_directsunlight.c)
+target_link_libraries(gen_directsunlight rtrad daysim_common)
+
 #install(TARGETS gen_reindl gencumsky ds_el_lighting ds_illum ds_shortterm RUNTIME DESTINATION bin)
 
