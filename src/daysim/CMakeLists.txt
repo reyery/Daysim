@@ -5,7 +5,7 @@ include_directories(${CMAKE_SOURCE_DIR}/common)
 
 add_library(daysim_common daylightfactor.c diverse_functions.c eputs.c fropen.c gethomedir.c getpath.c parse.c read_in_header.c words.c nrutil.c numerical.c sun.c "${VERSION_FILE}")
 
-add_executable(gen_reindl gen_reindl.c skartveit.c)
+add_executable(gen_reindl gen_reindl.c)
 target_link_libraries(gen_reindl rtrad daysim_common)
 
 add_executable(gencumsky gendiscretesky.cpp climateFile.cpp cPerezSkyModel.cpp cSkyVault.cpp cSun.cpp)
@@ -16,5 +16,8 @@ target_link_libraries(ds_el_lighting rtrad daysim_common)
 
 add_executable(ds_illum ds_illum.c calculate_Perez.c shadow_testing.c calculate_sky_patches.c check_direct_sunlight.c)
 target_link_libraries(ds_illum rtrad daysim_common)
+
+add_executable(gen_dc gen_dc.c write_dds_files.c calculate_sky_patches_gen_dc.c)
+target_link_libraries(gen_dc rtrad daysim_common)
 
 #install(TARGETS gen_reindl gencumsky ds_el_lighting ds_illum RUNTIME DESTINATION bin)
