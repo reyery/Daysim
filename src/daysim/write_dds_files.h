@@ -6,4 +6,4 @@
 
 
 extern void write_dds_sensor_file(char *DDS_sensor_file );
-extern void write_dds_file(char *DDS_file,int direct_direct_resolution,char Radiance_Parameters[99999]);
+extern void write_dds_file(char *DDS_file, int direct_direct_resolution, char *Radiance_Parameters);

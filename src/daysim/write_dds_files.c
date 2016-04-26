@@ -12,8 +12,6 @@
 #include "rterror.h"
 #include "fropen.h"
 #include "read_in_header.h"
-#include "sun.h"
-
 
 
 // Write out DDS sensor point file
@@ -81,7 +79,7 @@ memerr:
 	error(SYSTEM, "out of memory in \'write_dds_sensor_file\'");
 }
 
-void write_dds_file(char *DDS_file,int direct_direct_resolution, char Radiance_Parameters[99999])
+void write_dds_file(char *DDS_file, int direct_direct_resolution, char *Radiance_Parameters)
 {
 	FILE *DDS_FILE;
 
@@ -125,4 +123,5 @@ void write_dds_file(char *DDS_file,int direct_direct_resolution, char Radiance_P
 	fprintf(DDS_FILE,"</textfile>\n");
 	fprintf(DDS_FILE,"</sensors>\n\n");
 
+	close_file(DDS_FILE);
 }

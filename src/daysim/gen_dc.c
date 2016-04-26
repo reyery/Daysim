@@ -17,7 +17,6 @@
 #include "paths.h"
 #include "fropen.h"
 #include "read_in_header.h"
-#include "sun.h"
 #include "ds_constants.h"
 
 #include "calculate_sky_patches_gen_dc.h"
