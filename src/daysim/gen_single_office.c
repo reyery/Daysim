@@ -8,8 +8,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <strings.h>
+//#include <strings.h>
 #include <errno.h>
+#include "paths.h"
 #include "gen_single_office.h"
 
 int main( int argc, char  *argv[])

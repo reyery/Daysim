@@ -10,13 +10,14 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
-#include <strings.h>
+//#include <strings.h>
 #include <errno.h>
-#include <unistd.h>
 
+#include "paths.h"
 #include "fropen.h"
 #include "read_in_header.h"
 #include "sun.h"
+#include "ds_constants.h"
 
 #include "calculate_sky_patches_gen_dc.h"
 #include "write_dds_files.h"
@@ -87,7 +88,7 @@ static int rotateMeasuringPoints( char* sensorFile, int numberOfRotations,
 				}
 
 				/* rotation matrix(around x-axis) */
-				angle= angleInDegree[index]/180.0*M_PI;
+				angle= radians(angleInDegree[index]);
 				matrix[0][0]= 1.0; matrix[0][1]= 0.0;        matrix[0][2]= 0.0;
 				matrix[1][0]= 0.0; matrix[1][1]= cos(angle); matrix[1][2]= -sin(angle);
 				matrix[2][0]= 0.0; matrix[2][1]= sin(angle); matrix[2][2]= cos(angle);
@@ -143,7 +144,7 @@ static int mergeFiles( char* shadingFile, char directFilename[1024], char diffus
 	if(!dds_file_format){
 		fprintf( mergedFile, "# merged daylight coefficients from %s and %s.\n",
 				 diffuseFilename, directFilename );
-		fprintf( mergedFile, "# latitude: %.2f\n", s_latitude*180.0/M_PI );
+		fprintf( mergedFile, "# latitude: %.2f\n", degrees(s_latitude));
 	}
 
 	if(dds_file_format){
@@ -466,7 +467,10 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 		// tito will change this into -sen option instead
 		if( DifferentSensorUnitTest ) {
 			int sf_exists= 0;
-#ifdef __MINGW32__
+#if defined(_WIN32) || defined(_WIN64)
+			if (mktemp(sensorOptionFile) == NULL
+				&& !(sf_exists= (access( sensorOptionFile, F_OK ) == 0)) ) {
+#elif defined __MINGW32__
 			if( mkstemps( sensorOptionFile, 0 ) == -1
 				&& !(sf_exists= (access( sensorOptionFile, F_OK ) == 0)) ) {
 #else

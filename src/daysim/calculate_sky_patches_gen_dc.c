@@ -10,7 +10,7 @@
 #include "fropen.h"
 #include "read_in_header.h"
 #include "sun.h"
-
+#include "ds_constants.h"
 
 
 extern float diffuse_pts[145][3]; /* position of sky patches of diffuse daylight coefficients */
@@ -33,28 +33,28 @@ void assign_values(int month, int day )
 	  sunset=solar_sunset(month,day)-stadj(jdate(month, day));*/
 	sunset=solar_sunset(month,day);
 	sunrise=12+12-solar_sunset(month,day);
-	alt2_rise=f_salt(  sd, 2.0*(M_PI/180.0));
-	alt2_set=24-f_salt(  sd, 2.0*(M_PI/180.0));
+	alt2_rise = f_salt(sd, radians(2.0));
+	alt2_set = 24 - f_salt(sd, radians(2.0));
 	for(hour1=0; hour1< 24; hour1++){
 		st=hour1;
-		azimuth = (180/M_PI)*sazi(sd, st);
-		altitude = salt(sd,st)*(180/M_PI);
+		azimuth = degrees(sazi(sd, st));
+		altitude = degrees(salt(sd, st));
 		if( ( (hour1-0.5)<alt2_rise ) && (( hour1+0.5) > alt2_rise )){st=alt2_rise;}
 		if( ( (hour1-0.5)<alt2_set ) && (( hour1+0.5) > alt2_set )){st=alt2_set;}
 
-		if ( salt(sd,st)*(180/M_PI) >1.999   ){
+		if (degrees(salt(sd, st)) >1.999){
 			direct_pts[number_direct_coefficients][0]=st;
-			direct_pts[number_direct_coefficients][1]=salt(sd,st)*(180/M_PI);
+			direct_pts[number_direct_coefficients][1] = degrees(salt(sd, st));
 			if(direct_pts[number_direct_coefficients][1] <2.001){direct_pts[number_direct_coefficients][1]=2;}
-			direct_pts[number_direct_coefficients][2]=(180/M_PI)*sazi(sd, st);
+			direct_pts[number_direct_coefficients][2] = degrees(sazi(sd, st));
 			direct_calendar[month][hour1][0]=direct_pts[number_direct_coefficients][0];
 			direct_calendar[month][hour1][1]=direct_pts[number_direct_coefficients][1];
 			direct_calendar[month][hour1][2]=direct_pts[number_direct_coefficients][2];
 			number_direct_coefficients++;
 		}else{
 			direct_calendar[month][hour1][0]=st;
-			direct_calendar[month][hour1][1]=salt(sd,st)*(180/M_PI);
-			direct_calendar[month][hour1][2]=(180/M_PI)*sazi(sd, st);
+			direct_calendar[month][hour1][1] = degrees(salt(sd, st));
+			direct_calendar[month][hour1][2] = degrees(sazi(sd, st));
 		}
 	}
 }

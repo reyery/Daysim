@@ -19,7 +19,7 @@
 #include  <string.h>
 #include  <math.h>
 #include  <stdlib.h>
-#include <strings.h>
+//#include <strings.h>
 #include <errno.h>
 
 float ***BlindGroupSensor;

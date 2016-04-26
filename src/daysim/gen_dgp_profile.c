@@ -5,16 +5,17 @@
 
 #define _GNU_SOURCE
 
-#include  "fropen.h"
-#include  "read_in_header.h"
-
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
-#include <strings.h>
+//#include <strings.h>
 #include <errno.h>
 
+#include  "paths.h"
+#include  "fropen.h"
+#include  "read_in_header.h"
+#include  "ds_constants.h"
 
 
 #define CMD_GEN_DC		"gen_dc"
@@ -397,7 +398,7 @@ void gen_dgp( char* header_filename, view_point* viewpoints ) {
 				sprintf( cmd, "%s %d %d %.3f  -a %.3f -o %.3f -m %.3f  -W  %.3f  %.3f > %s\n",
 						 CMD_GENDAYLIT,
 						 month_f[ts], day_f[ts], hour_f[ts],
-						 s_latitude*180/M_PI, s_longitude*180/M_PI, s_meridian*180/M_PI,
+						 degrees(s_latitude), degrees(s_longitude), degrees(s_meridian),
 						 dir_f[ts], dif_f[ts], skyradfile );
 
 				RAD= popen(cmd,"r");
