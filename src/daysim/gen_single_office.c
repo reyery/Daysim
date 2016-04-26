@@ -13,6 +13,7 @@
 
 #include "version.h"
 #include "paths.h"
+#include "fropen.h"
 #include "gen_single_office.h"
 
 int main( int argc, char  *argv[])
@@ -36,9 +37,6 @@ int main( int argc, char  *argv[])
 
 	/*make Radiance header file*/
 	writeRadianceHeaderFile(argc, argv);
-
-	exit(0);
-
 }//end main
 
 //This method prints an error message to the screen if no enough parameters are entered by user
@@ -274,7 +272,7 @@ void checkPassedArguements(int argc, char  *argv[])
 
 				break;
 			case 'n':
-				building_width_ft == atof(argv[++i]);
+				building_width_ft = atof(argv[++i]);
 				if (building_width_ft >= office_width_ft)
 				{
 					building_width = building_width_ft*0.3048;
@@ -287,7 +285,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				}
 				break;
 			case 'k':
-				building_depth_ft == atof(argv[++i]);
+				building_depth_ft = atof(argv[++i]);
 				if (building_depth_ft >= office_depth_ft)
 				{
 					building_depth = building_depth_ft*0.3048;
@@ -1207,33 +1205,4 @@ float transmissivity(float visual_transmittance)
 	trans= sqrt(0.8402528435+0.0072522239*visual_transmittance*visual_transmittance);
 	trans=(trans-0.9166530661)/0.0036261119/visual_transmittance;
 	return(trans);
-}
-
-int close_file(FILE *f)	/*function that closes a file*/
-{	int s=0;
-	if (f==NULL) return 0;
-	errno =0;
-	s=fclose(f);
-	if (s==EOF) perror("Close failed");
-	return s;
-}
-
-FILE *open_output(char *filename)	/*open filename for writing*/
-{	FILE *Datei;
-	errno =0;
-	Datei = fopen(filename, "w");
-	if ( Datei == NULL) fprintf(stdout,
-		  "gen_office: fatal error - open of %s for output failed: %s\n",
-		  filename, strerror(errno));
-	return Datei;
-}
-
-FILE *open_input(char *filename)	/*open filename for reading*/
-{	FILE *Datei;
-	errno =0;
-	Datei = fopen(filename, "r");
-	if ( Datei == NULL) fprintf(stdout,
-		  "gen_office: fatal error - open of %s for input failed: %s\n",
-		  filename, strerror(errno));
-	return Datei;
 }
