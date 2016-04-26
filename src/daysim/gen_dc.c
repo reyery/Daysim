@@ -11,9 +11,9 @@
 #include <math.h>
 #include <stdlib.h>
 //#include <strings.h>
-#include <errno.h>
 
 #include "version.h"
+#include "rterror.h"
 #include "paths.h"
 #include "fropen.h"
 #include "read_in_header.h"
@@ -217,13 +217,11 @@ static int Substract_ab0( char* shadingFile, char* direct_ab0_Filename )
 	fscanf( direct_ab0_File, "%*[^\n]\n" );
 	fscanf( direct_ab0_File, "%*[^\n]\n" );
 
-	if(does_file_exist("merged file", shadingFile))
-		{
-			mergedFile= open_input( shadingFile );
-		}else{
-		printf("FATAL ERROR - gen_dc -substract: File %s does not exisit.\n",shadingFile);
-		exit(1);
+	if (!does_file_exist("merged file", shadingFile)) {
+		sprintf(errmsg, "file %s does not exist", shadingFile);
+		error(USER, errmsg);
 	}
+	mergedFile= open_input( shadingFile );
 
 	/* open output file */
 	sprintf(new_merged_Filename , "%s_tmp", direct_ab0_Filename );
@@ -706,12 +704,10 @@ int main( int argc, char **argv )
 			if( !strcmp(argv[i],"-dds") ) {
 				dds_file_format = 1; // use dds file format for DCs
 				if(!strcmp(DDS_sensor_file,"")){
-					printf("FATAL ERROR - gen_DC: variable DDS_sensor_file not provided in header file.\n");
-					exit(0);
+					error(USER, "variable DDS_sensor_file not provided in header file");
 				}
 				if(!strcmp(DDS_file,"")){
-					printf("FATAL ERROR - gen_DC: variable DDS_file not provided in header file.\n");
-					exit(0);
+					error(USER, "variable DDS_file not provided in header file");
 				}
 			}
 		}

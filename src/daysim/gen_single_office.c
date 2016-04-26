@@ -9,9 +9,9 @@
 #include <math.h>
 #include <string.h>
 //#include <strings.h>
-#include <errno.h>
 
 #include "version.h"
+#include "rterror.h"
 #include "paths.h"
 #include "fropen.h"
 #include "gen_single_office.h"
@@ -126,14 +126,9 @@ void checkPassedArguements(int argc, char  *argv[])
 
 			case 'b'://orientation
 				orientation = atof(argv[++i]);
-				if (orientation == 0 || orientation == 90 || orientation == 180 || orientation == 270 || orientation == 360)
+				if (!(orientation == 0 || orientation == 90 || orientation == 180 || orientation == 270 || orientation == 360))
 				{
-					break;
-				}
-				else
-				{
-					fprintf(stdout, "Orientation must be 0, 90, 180, 270 or 360!\n");
-					exit(1);
+					error(USER, "Orientation must be 0, 90, 180, 270 or 360!");
 				}
 				break;
 
@@ -155,8 +150,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				window_width = atof(argv[++i]);
 				if (window_width < 0 || window_width>1)
 				{
-					fprintf(stdout, "Widnow Width (option \'e\' must be betwee 0 and 1\n");
-					exit(1);
+					error(USER, "Widnow Width (option \'e\' must be betwee 0 and 1)");
 				}
 				break;
 
@@ -197,8 +191,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				}
 				else
 				{
-					fprintf(stdout, "This only seating position 1, 2 or 3!\n");
-					exit(1);
+					error(USER, "seating position must be 1, 2 or 3!");
 				}
 				break;
 			case 's':
@@ -218,29 +211,22 @@ void checkPassedArguements(int argc, char  *argv[])
 
 			case 'z':
 				facade_type = atoi(argv[++i]);
-				if (facade_type == 1 || facade_type == 2 || facade_type == 3)
+				if (!(facade_type == 1 || facade_type == 2 || facade_type == 3))
 				{
-					break;
-				}
-				else
-				{
-					fprintf(stdout, "There is only facade 1, 2 or 3!\n");
-					exit(1);
+					error(USER, "facade type must be 1, 2 or 3!");
 				}
 				break;
 
 			case 'l':
 				office_level = atoi(argv[++i]);
 
-				if (office_level >= 0 || office_level < num_building_floors)
+				if (office_level >= 0 || office_level < num_building_floors) //TODO is zero allowed?
 				{
 					points_height = (office_level - 1)*floor_height + 0.85;
-					break;
 				}
 				else
 				{
-					fprintf(stdout, "The office cannot be located on a floor higher than the office building and cannot 0 or negative\n");
-					exit(1);
+					error(USER, "The office cannot be located on a floor higher than the office building and cannot be 0 or negative");
 				}
 
 				break;
@@ -252,19 +238,16 @@ void checkPassedArguements(int argc, char  *argv[])
 				{
 					if (office_level > num_building_floors)
 					{
-						fprintf(stdout, "The office building cannot be lower than the floor that the office is located on\n");
-						exit(1);
+						error(USER, "The office building cannot be lower than the floor that the office is located on");
 					}
 					else
 					{
 						building_height = num_building_floors*(floor_height);
-						break;
 					}
 				}
 				else
 				{
-					fprintf(stdout, "The building cannot have a negative height!\n");
-					exit(1);
+					error(USER, "The building cannot have a negative height!");
 				}
 
 				break;
@@ -273,12 +256,10 @@ void checkPassedArguements(int argc, char  *argv[])
 				if (building_width_ft >= office_width_ft)
 				{
 					building_width = feet2meters(building_width_ft);
-					break;
 				}
 				else
 				{
-					fprintf(stdout, "The building not less wide than the office itself!\n");
-					exit(1);
+					error(USER, "The building not less wide than the office itself!");
 				}
 				break;
 			case 'k':
@@ -286,12 +267,10 @@ void checkPassedArguements(int argc, char  *argv[])
 				if (building_depth_ft >= office_depth_ft)
 				{
 					building_depth = feet2meters(building_depth_ft);
-					break;
 				}
 				else
 				{
-					fprintf(stdout, "The building cannot be less deep than the office itself!\n");
-					exit(1);
+					error(USER, "The building cannot be less deep than the office itself!");
 				}
 				break;
 
@@ -300,25 +279,18 @@ void checkPassedArguements(int argc, char  *argv[])
 				if (facade_refl >= 0 || facade_refl <= 100)
 				{
 					facade_refl *= 0.01;
-					break;
 				}
 				else
 				{
-					fprintf(stdout, "The office buiding can only have a reflectance between 0 and 100%% (inclusive)!\n");
-					exit(1);
+					error(USER, "The office buiding can only have a reflectance between 0 and 100%% (inclusive)!");
 				}
 				break;
 
 			case 'U':
 				obstruction = atoi(argv[++i]);
-				if (obstruction == 0 || obstruction == 1)
+				if (!(obstruction == 0 || obstruction == 1))
 				{
-					break;
-				}
-				else
-				{
-					fprintf(stdout, "Obstruction must exist (1) or not exist (0)...only 0 or 1 can be passed as parameters!\n");
-					exit(1);
+					error(USER, "Obstruction must exist (1) or not exist (0)...only 0 or 1 can be passed as parameters!");
 				}
 				break;
 			case 'M':
@@ -326,12 +298,10 @@ void checkPassedArguements(int argc, char  *argv[])
 				if (building_refl >= 0 || building_refl <= 100)
 				{
 					building_refl *= 0.01;
-					break;
 				}
 				else
 				{
-					fprintf(stdout, "Obstructing buildings must have a reflectance between 0 and 100 %% (inclusive)!\n");
-					exit(1);
+					error(USER, "Obstructing buildings must have a reflectance between 0 and 100 %% (inclusive)!");
 				}
 				break;
 
@@ -339,19 +309,15 @@ void checkPassedArguements(int argc, char  *argv[])
 				obstruction_building_width_ft = atof(argv[++i]);
 				if (obstruction_building_width_ft != building_width_ft)
 				{
-					fprintf(stdout, "Obstructing building and Office building must abide by same building standards...widths must be equal!\n");
-					exit(1);
-
+					error(USER, "Obstructing building and Office building must abide by same building standards...widths must be equal!");
 				}
 				else if (obstruction_building_width_ft > 0)
 				{
 					obstruction_building_width = feet2meters(obstruction_building_width_ft);
-					break;
 				}
 				else
 				{
-					fprintf(stdout, "Obstructing building must have a positive width!\n");
-					exit(1);
+					error(USER, "Obstructing building must have a positive width!");
 				}
 				break;
 
@@ -359,19 +325,15 @@ void checkPassedArguements(int argc, char  *argv[])
 				obstruction_building_depth_ft = atof(argv[++i]);
 				if (obstruction_building_depth_ft != building_depth_ft)
 				{
-					fprintf(stdout, "Obstructing building and Office building must abide by same building standards...depths must be equal!\n");
-					exit(1);
+					error(USER, "Obstructing building and Office building must abide by same building standards...depths must be equal!");
 				}
-
 				else if (obstruction_building_depth_ft > 0)
 				{
 					obstruction_building_depth = feet2meters(obstruction_building_depth_ft);
-					break;
 				}
 				else
 				{
-					fprintf(stdout, "Obstructing building must have a positive depth!\n");
-					exit(1);
+					error(USER, "Obstructing building must have a positive depth!");
 				}
 				break;
 
@@ -380,12 +342,10 @@ void checkPassedArguements(int argc, char  *argv[])
 				if (obstruction_building_height_ft > 0) /***/
 				{
 					obstruction_building_height = feet2meters(obstruction_building_height_ft);
-					break;
 				}
 				else
 				{
-					fprintf(stdout, "Obstructing building can only have a height greater than 0!\n");
-					exit(1);
+					error(USER, "Obstructing building can only have a height greater than 0!");
 				}
 				break;
 
@@ -394,12 +354,10 @@ void checkPassedArguements(int argc, char  *argv[])
 				if (street_width_ft > 0)
 				{
 					street_width = feet2meters(street_width_ft);
-					break;
 				}
 				else
 				{
-					fprintf(stdout, "Street width must be greater than 0!\n");
-					exit(1);
+					error(USER, "Street width must be greater than 0!");
 				}
 				break;
 
@@ -408,22 +366,18 @@ void checkPassedArguements(int argc, char  *argv[])
 				if (street_refl >= 0 || street_refl <= 100)
 				{
 					street_refl *= 0.01;
-					break;
 				}
 				else
 				{
-					fprintf(stdout, "Street reflectance must be between 0 and 100 %% (inclusive)!\n");
-					exit(1);
+					error(USER, "Street reflectance must be between 0 and 100 %% (inclusive)!");
 				}
 				break;
 
 			case 'C':
 				obstruction_type = atoi(argv[++i]);
-				if (obstruction_type == 0 || obstruction_type == 1) { break; }
-				else
+				if (!(obstruction_type == 0 || obstruction_type == 1))
 				{
-					fprintf(stdout, "Obstruction can only be continuous (0) or discontinuous (1)\n");
-					exit(1);
+					error(USER, "Obstruction can only be continuous (0) or discontinuous (1)");
 				}
 
 				break;
@@ -434,8 +388,8 @@ void checkPassedArguements(int argc, char  *argv[])
 		}
 		else
 		{
-			fprintf(stdout,"gen_single_office: fatal error - %s bad option for input arguments\n", argv[i]);
-			exit(0);
+			sprintf(errmsg, "bad option for input arguments: %s", argv[i]);
+			error(USER, errmsg);
 		}//end else
 	}
 }

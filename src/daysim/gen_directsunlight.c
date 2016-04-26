@@ -20,13 +20,14 @@
 #include  <math.h>
 #include  <stdlib.h>
 //#include <strings.h>
-#include <errno.h>
 
 #include  "version.h"
+#include  "rterror.h"
 #include  "sun.h"
+#include  "paths.h"
 #include  "fropen.h"
 #include  "read_in_header.h"
-#include  "check_direct_sunlight.c"
+
 
 float ***BlindGroupSensor;
 char dir_tmp_filename[500][1024];
@@ -48,6 +49,8 @@ char befehl[1024]="";
 /* defines current time */
 double hour;
 int day, month;
+double alt, azi;
+float dir, dif;
 
 
 void run_oconv_and_rtrace()
@@ -139,12 +142,13 @@ int main(int argc, char **argv)
 	char temp_points[1024]="";
 	char  *progname;
     FILE *DIR;
-	//FILE *DIR_TMP[500];
-    FILE** DIR_TMP = malloc(sizeof(FILE*) * (500));
-
- 
     FILE *WEA;
     FILE *POINTS;
+	//FILE *DIR_TMP[500];
+    FILE** DIR_TMP = malloc(sizeof(FILE*) * (500));
+	if (DIR_TMP == NULL) goto memerr;
+
+ 
 	progname = fixargv0(argv[0]);
 	if (argc != 2){
 		fprintf(stderr, "WARNING %s: input file missing\n", progname);
@@ -161,31 +165,27 @@ int main(int argc, char **argv)
 	read_in_header( argv[1]);
 
 	if(!strcmp(direct_sunlight_file,""))
-	{	fprintf(stderr,"WARNING gen_directsunlight: keyword \"direct_sunlight_file\" missing\n");
-		exit(1);
+	{
+		error(USER, "keyword \"direct_sunlight_file\" missing");
 	}
 
 	if(NumberOfBlindGroups==0)
 	{
-		printf("gen_directsunlight: No blind groups specified. Program will exit.\n");
-		exit(0);
+		error(USER, "no blind groups specified");
 	}
 
 	/* malloc BlindGroupSensor[NumberOfBlindGroups][6][number_of_sensors]*/
 	BlindGroupSensor=(float***) malloc (sizeof(float**)*(NumberOfBlindGroups+1));
+	if (BlindGroupSensor == NULL) goto memerr;
 	for (i=0 ; i<=NumberOfBlindGroups ; i++){
 		BlindGroupSensor[i] =(float**) malloc (sizeof(float*)* 6);
-	}
-	for (i=0 ; i<6 ; i++){
-		for (j=0 ; j<= NumberOfBlindGroups ; j++){
-			BlindGroupSensor[j][i]=(float*) malloc (sizeof(float)* number_of_sensors);
-		}
-	}
-	for (i=0 ; i<6 ; i++){
-		for (j=0 ; j<= NumberOfBlindGroups ; j++){
+		if (BlindGroupSensor[i] == NULL) goto memerr;
+		for (j=0 ; j<6 ; j++){
+			BlindGroupSensor[i][j]=(float*) malloc (sizeof(float)* number_of_sensors);
+			if (BlindGroupSensor[i][j] == NULL) goto memerr;
 			for (k=0 ; k< number_of_sensors ; k++)
 			{
-				BlindGroupSensor[j][i][k]=0;
+				BlindGroupSensor[i][j][k] = 0;
 			}
 		}
 	}
@@ -251,8 +251,8 @@ int main(int argc, char **argv)
 
 		if(check_if_file_exists(shading_rad_file[i]))
 		{
-			printf("FATAL ERROR - gen_directsunlight: File %s does not exist.\n",shading_rad_file[i]);
-			exit(1);
+			sprintf(errmsg, "file %s does not exist", shading_rad_file[i]);
+			error(USER, errmsg);
 		}
 	}
 
@@ -430,6 +430,8 @@ if ( DIR != NULL){
 }else{close_file(DIR);}
 
 	return 0;
+memerr:
+	error(SYSTEM, "out of memory in main");
 }
 
 

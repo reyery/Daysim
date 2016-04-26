@@ -10,9 +10,9 @@
 #include <math.h>
 #include <stdlib.h>
 //#include <strings.h>
-#include <errno.h>
 
 #include  "version.h"
+#include  "rterror.h"
 #include  "paths.h"
 #include  "fropen.h"
 #include  "read_in_header.h"
@@ -53,16 +53,16 @@ void preprocessing( char* header ) {
 	sprintf( cmd, "%s %s -dif -ext .tmp", CMD_GEN_DC, header );
 	fp1= popen( cmd, "r" );
 	if( fp1 == NULL ) {
-		fprintf( stderr, "'%s' failed\n", cmd );
-		exit(1);
+		sprintf(errmsg, "'%s' failed", cmd);
+		error(SYSTEM, errmsg);
 	}
 
 	sprintf( cmd, "%s %s -dir -ext .tmp", CMD_GEN_DC, header );
 	fp2= popen( cmd, "r" );
 	if( fp2 == NULL ) {
 		pclose( fp1 );
-		fprintf( stderr, "'%s' failed\n", cmd );
-		exit(1);
+		sprintf(errmsg, "'%s' failed", cmd);
+		error(SYSTEM, errmsg);
 	}
 
 	pclose( fp1 );
@@ -71,8 +71,8 @@ void preprocessing( char* header ) {
 	sprintf( cmd, "%s %s -paste -ext .tmp ", CMD_GEN_DC, header );
 	fp1= popen( cmd, "r" );
 	if( fp1 == NULL ) {
-		fprintf( stderr, "'%s' failed\n", cmd );
-		exit(1);
+		sprintf(errmsg, "'%s' failed", cmd);
+		error(SYSTEM, errmsg);
 	}
 	pclose( fp1 );
 
@@ -80,8 +80,8 @@ void preprocessing( char* header ) {
 	sprintf( cmd, "%s %s -ext .tmp ", CMD_DS_ILLUM, header );
 	fp1= popen( cmd, "r" );
 	if( fp1 == NULL ) {
-		fprintf( stderr, "'%s' failed\n", cmd );
-		exit(1);
+		sprintf(errmsg, "'%s' failed", cmd);
+		error(SYSTEM, errmsg);
 	}
 	pclose( fp1 );
 	
@@ -111,22 +111,20 @@ void write_sensor_file( char* viewpoint_file, struct view_point** vp,
 
 	FP= open_input(viewpoint_file);
 	if( FP == NULL ) {
-		printf("gen_dgp_profile: ERROR failed to open viewpoint file '%s'\n",
-			   viewpoint_file );
-		exit(1);
+		sprintf(errmsg, "failed to open viewpoint file '%s'", viewpoint_file);
+		error(SYSTEM, errmsg);
 	}
 
 	*vp=(view_point*)calloc ( number_of_views, sizeof(view_point) );
 	if( *vp == NULL ) {
-		printf("gen_dgp_profile: ERROR viewpoints ran out of memory!");
-		exit(1);
+		error(SYSTEM, "viewpoints ran out of memory");
 	}
 
 	char buf [4096];
 	
 	for ( i=0 ; i < number_of_views ; i++ ) {
 		if (!(fgets( buf, 4096, FP ))) {
-			fprintf(stderr, "error reading view\n");
+			error(WARNING, "error reading view");
 			break;
 		};
 		sscanf( strstr( buf, "-vp" ), "-vp %lf %lf %lf", &(*vp)[i].x, &(*vp)[i].y, &(*vp)[i].z );
@@ -136,9 +134,8 @@ void write_sensor_file( char* viewpoint_file, struct view_point** vp,
 
 	FP= open_output( sensor_file );
 	if( FP == NULL ) {
-		printf("gen_dgp_profile: ERROR failed to open sensor file '%s' for writing\n",
-			   sensor_file );
-		exit(1);
+		sprintf(errmsg, "failed to open sensor file '%s' for writing", sensor_file);
+		error(SYSTEM, errmsg);
 	}
 
 	for( i= 0; i < number_of_views; i++ ) {
@@ -157,21 +154,19 @@ void read_view_file( char* viewpoint_file, struct view_point** vp,
 
 	FP= open_input(viewpoint_file);
 	if( FP == NULL ) {
-		printf("gen_dgp_profile: ERROR failed to open viewpoint file '%s'\n",
-			   viewpoint_file );
-		exit(1);
+		sprintf(errmsg, "failed to open viewpoint file '%s'", viewpoint_file);
+		error(SYSTEM, errmsg);
 	}
 
 	*vp=(view_point*)calloc ( number_of_views, sizeof(view_point) );
 	if( *vp == NULL ) {
-		printf("gen_dgp_profile: ERROR viewpoints ran out of memory!");
-		exit(1);
+		error(SYSTEM, "viewpoints ran out of memory");
 	}
 
 	char buf [4096];
 	for ( i=0 ; i < number_of_views ; i++ ) {
 		if (!(fgets( buf, 4096, FP ))) {
-			fprintf(stderr, "error reading view\n");
+			error(WARNING, "error reading view");
 			break;
 		};
 		sscanf( strstr( buf, "-vp" ), "-vp %lf %lf %lf", &(*vp)[i].x, &(*vp)[i].y, &(*vp)[i].z );
@@ -232,6 +227,9 @@ void open_illuminance_file( char* filename, float** ill_f ) {
 	int day;
 	float hour;
 	float ill;
+
+	if (line == NULL)
+		error(SYSTEM, "out of memory in open_illuminance_file");
 
 	for( ts= 0; fgets(line, 4096, ILLU ) ; ts++ ) {
 		int j, n;
@@ -317,8 +315,8 @@ void gen_dgp( char* header_filename, view_point* viewpoints ) {
 	// check with weather file has a six lines header and substract lines from the number of lines
 	WEA= fopen( wea_data_short_file, "r" );
 	if( WEA == NULL ) {
-		fprintf( stderr, "'%s' failed\n", wea_data_short_file );
-		exit(1);
+		sprintf(errmsg, "'%s' failed", wea_data_short_file);
+		error(SYSTEM, errmsg);
 	}
 	fscanf(WEA,"%s", cmd);
  	if( !strcmp(cmd,"place") )
@@ -337,22 +335,13 @@ void gen_dgp( char* header_filename, view_point* viewpoints ) {
 	dgp_f= (float*) calloc ( number_of_views, sizeof(float) );
 
 	if( dir_f == NULL  ||  dif_f == NULL  ||  dgp_f == NULL
-		||  month_f == NULL  || day_f == NULL  ||  hour_f == NULL ) {
-		fprintf( stderr, "failed to allocate memory\n" );
-		exit(1);
-	}
+		|| month_f == NULL || day_f == NULL || hour_f == NULL) goto memerr;
 
 	ill_f= (float**) calloc ( number_of_views, sizeof(float*) );
-	if( ill_f == NULL ) {
-		fprintf( stderr, "failed to allocate memory for illuminance data\n" );
-		exit(1);
-	}
+	if (ill_f == NULL) goto memerr;
 	for( view= 0; view < number_of_views; view++ ) {
 		ill_f[view]= (float*)calloc( numberoftimesteps, sizeof(float) );
-		if( ill_f[view] == NULL ) {
-			fprintf( stderr, "failed to allocate memory for illuminance data\n" );
-			exit(1);
-		}
+		if (ill_f[view] == NULL) goto memerr;
 	}
 
 	open_wea_file( wea_data_short_file, dir_f, dif_f, month_f, day_f, hour_f );
@@ -510,6 +499,9 @@ void gen_dgp( char* header_filename, view_point* viewpoints ) {
 		}
 		close_file(DGP);
 	}
+	return;
+memerr:
+	error(SYSTEM, "out of memory in gen_dgp");
 }
 
 int main(int argc, char **argv) {
