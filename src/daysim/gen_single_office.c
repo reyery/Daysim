@@ -148,7 +148,7 @@ void checkPassedArguements(int argc, char  *argv[])
 
 			case 'd'://office depth
 				office_depth_ft = atof(argv[++i]);
-				office_depth = office_depth_ft*0.3048;
+				office_depth = feet2meters(office_depth_ft);
 				break;
 
 			case 'e'://office depth
@@ -162,14 +162,12 @@ void checkPassedArguements(int argc, char  *argv[])
 
 
 			case 'f':
-				frame_width = atof(argv[++i]);
-				frame_width *= 0.0254;
+				frame_width = inch2meters(atof(argv[++i]));
 				break;
 
 			case 'h'://ceiling height
-				ceiling_height = atof(argv[++i]);
-				ceiling_height *= 0.3048;
-				floor_height = ceiling_height + 0.3048;
+				ceiling_height = feet2meters(atof(argv[++i]));
+				floor_height = ceiling_height + feet2meters(1);
 				break;
 
 			case 'i'://input file for points
@@ -194,7 +192,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				seating_position = atoi(argv[++i]);
 				if (seating_position == 1 || seating_position == 2 || seating_position == 3)
 				{
-					seating_position *= 0.3048;
+					seating_position *= 0.3048; //TODO this sets them all to zero!!!
 					break;
 				}
 				else
@@ -204,8 +202,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				}
 				break;
 			case 's':
-				sill = atof(argv[++i]);
-				sill *= 0.0254;
+				sill = inch2meters(atof(argv[++i]));
 				break;
 			case 't':
 				visual_transmittance = 0.01*atof(argv[++i]);
@@ -216,7 +213,7 @@ void checkPassedArguements(int argc, char  *argv[])
 
 			case 'w':
 				office_width_ft = atof(argv[++i]);
-				office_width = office_width_ft*0.3048;
+				office_width = feet2meters(office_width_ft);
 				break;
 
 			case 'z':
@@ -275,7 +272,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				building_width_ft = atof(argv[++i]);
 				if (building_width_ft >= office_width_ft)
 				{
-					building_width = building_width_ft*0.3048;
+					building_width = feet2meters(building_width_ft);
 					break;
 				}
 				else
@@ -288,7 +285,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				building_depth_ft = atof(argv[++i]);
 				if (building_depth_ft >= office_depth_ft)
 				{
-					building_depth = building_depth_ft*0.3048;
+					building_depth = feet2meters(building_depth_ft);
 					break;
 				}
 				else
@@ -348,7 +345,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				}
 				else if (obstruction_building_width_ft > 0)
 				{
-					obstruction_building_width = obstruction_building_width_ft*0.3048;
+					obstruction_building_width = feet2meters(obstruction_building_width_ft);
 					break;
 				}
 				else
@@ -368,7 +365,7 @@ void checkPassedArguements(int argc, char  *argv[])
 
 				else if (obstruction_building_depth_ft > 0)
 				{
-					obstruction_building_depth = obstruction_building_depth_ft*0.3048;
+					obstruction_building_depth = feet2meters(obstruction_building_depth_ft);
 					break;
 				}
 				else
@@ -382,7 +379,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				obstruction_building_height_ft = atof(argv[++i]);
 				if (obstruction_building_height_ft > 0) /***/
 				{
-					obstruction_building_height = obstruction_building_height_ft*0.3048;
+					obstruction_building_height = feet2meters(obstruction_building_height_ft);
 					break;
 				}
 				else
@@ -396,7 +393,7 @@ void checkPassedArguements(int argc, char  *argv[])
 				street_width_ft = atof(argv[++i]);
 				if (street_width_ft > 0)
 				{
-					street_width = street_width_ft*0.3048;
+					street_width = feet2meters(street_width_ft);
 					break;
 				}
 				else
@@ -455,12 +452,12 @@ void writeVFFile ()
 	for(i=1;i<((int)(office_depth_ft));i++)
 	{
 		//for each row of grid, we have to create a point where the illuminance is measured at
+		double y = feet2meters(i);
 
 		for(j=1;j<((int)(office_width_ft));j++)
 		{
 
-			double x=j*0.3048;
-			double y = i*0.3048;
+			double x = feet2meters(j);
 			/*float points_height=((office_level-1)*floor_height)+0.85;*/
 
 
@@ -468,7 +465,7 @@ void writeVFFile ()
 			double y_new = (-1.0)*sin(orientation*(-3.14159 / 180.0))*x + cos(orientation*(-3.14159 / 180.0))*y;
 			fprintf(VF_FILE1,"%.4f %.4f %.4f 0 0 1\n",x_new,y_new,points_height);
 
-    		}//end for
+    	}//end for
 
 	}//end for
 
@@ -522,9 +519,9 @@ void writeCopyrightHeader()
 //This method writes general building parameters for the Radiance header file
 void writeGeneralOfficeParameters()
 {
-	fprintf(RAD_FILE,"# floor-ceiling height     =%4.4f (ft)\n", ceiling_height/0.3048);
-	fprintf(RAD_FILE,"# office width             =%4.4f (ft)\n", office_width/0.3048);
-	fprintf(RAD_FILE,"# office depth	     \t=%4.4f (ft)\n", office_depth/0.3048);
+	fprintf(RAD_FILE, "# floor-ceiling height     =%4.4f (ft)\n", meters2meet(ceiling_height));
+	fprintf(RAD_FILE, "# office width             =%4.4f (ft)\n", meters2meet(office_width));
+	fprintf(RAD_FILE, "# office depth	     \t=%4.4f (ft)\n", meters2meet(office_depth));
 	fprintf(RAD_FILE,"# ceiling reflection       =%4.4f (%%)\n", ceiling_refl*100);
 	fprintf(RAD_FILE,"# floor reflection         =%4.4f (%%)\n", floor_refl*100);
 	fprintf(RAD_FILE,"# window transmission      =%4.4f (%%)\n", visual_transmittance*100);

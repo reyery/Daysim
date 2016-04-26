@@ -1,3 +1,7 @@
+#define meters2meet(m)	((m) / 0.3048)
+#define feet2meters(ft)	((ft) * 0.3048)
+#define inch2meters(in)	((in) * 0.0254)
+
 char  *progname;
 int close_file(FILE *f);
 FILE *open_output(char *filename);
