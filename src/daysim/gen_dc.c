@@ -64,14 +64,16 @@ static int rotateMeasuringPoints( char* sensorFile, int numberOfRotations,
 	int    i, j, offset=0, index=0;
 
 	if( (infile= fopen( sensorFile, "r" )) == NULL ) {
-		fprintf( stderr, "cannot open file '%s' for reading.\n", sensorFile );
+		sprintf(errmsg, "cannot open file '%s' for reading.\n", sensorFile);
+		error(SYSTEM, errmsg);
 		return 0;
 	}
 
 	/* append ".rotate" to original sensor file name */
 	strcat( sensorFile, ".rotated" );
 	if( (outfile= fopen( sensorFile, "w" )) == NULL ) {
-		fprintf( stderr, "cannot open file '%s' for writing.\n", sensorFile );
+		sprintf(errmsg, "cannot open file '%s' for writing.\n", sensorFile);
+		error(SYSTEM, errmsg);
 		fclose( infile );
 		return 0;
 	}
@@ -846,8 +848,10 @@ int main( int argc, char **argv )
 
 				/* remove the octree file */
 				if( access( octree, F_OK ) == 0 ) {
-					if( remove( octree ) == -1 )
-					fprintf( stderr, "failed to remove temporary file '%s'\n", octree );
+					if (remove(octree) == -1) {
+						sprintf(errmsg, "failed to remove temporary file '%s'", octree);
+						error(WARNING, errmsg);
+					}
 				}
 
 			}
@@ -911,8 +915,10 @@ int main( int argc, char **argv )
 
 	/* remove the sensor file? may be it's better to keep the file for evaluation */
 	if( access( sensorOptionFile, F_OK ) == 0 ) {
-		if( remove( sensorOptionFile ) == -1 )
-			fprintf( stderr, "failed to remove temporary file '%s'\n", sensorOptionFile );
+		if (remove(sensorOptionFile) == -1) {
+			sprintf(errmsg, "failed to remove temporary file '%s'", sensorOptionFile);
+			error(WARNING, errmsg);
+		}
 	}
 
 	return 0;

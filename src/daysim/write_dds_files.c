@@ -9,6 +9,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "rterror.h"
 #include "fropen.h"
 #include "read_in_header.h"
 #include "sun.h"
@@ -31,20 +32,12 @@ void write_dds_sensor_file(char *DDS_sensor_file)
 	//generate SEN files
 	// read in sensor point coordinates from RADIANCE PTS file*/
 	SensorPoints=(float**) malloc (sizeof(float*)*number_of_sensors);
-	if( SensorPoints == NULL) {
-		fprintf( stderr, "SensorPoints: Out of memory in function \'write_dds_sensor_file\'\n");
-		exit(1);
-	}
+	if (SensorPoints == NULL) goto memerr;
 	for (i=0 ; i<(number_of_sensors) ; i++){
 		SensorPoints[i]=(float*)malloc (sizeof(float)*6);
-		if( SensorPoints[i] == NULL) {
-			fprintf( stderr, "SensorPoints[%d]: Out of memory in function \'write_dds_sensor_file\'\n", i );
-			exit(1);
-		}
-	}
-	for (k=0 ; k<(number_of_sensors) ; k++){
-		for (i=0 ; i<6 ; i++){
-			SensorPoints[k][i]=0.0;
+		if (SensorPoints[i] == NULL) goto memerr;
+		for (k=0 ; k<6 ; k++){
+			SensorPoints[i][k]=0.0;
 		}
 	}
 	SENSOR_FILE=open_input(sensor_file);
@@ -83,7 +76,9 @@ void write_dds_sensor_file(char *DDS_sensor_file)
 	}
 	close_file(DDS_SENSOR_FILE);
 
-
+	return;
+memerr:
+	error(SYSTEM, "out of memory in \'write_dds_sensor_file\'");
 }
 
 void write_dds_file(char *DDS_file,int direct_direct_resolution, char Radiance_Parameters[99999])
