@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 
 		while (EOF != fscanf(HOURLY_DATA, "%d %d %f %f", &month, &day, &time, &irrad_glo))
 		{
-			jday = month_and_day_to_julian_day(month, day);
+			jday = jdate(month, day);
 			if (irrad_glo < 0 || irrad_glo > SOLAR_CONSTANT_E)          /*  check irradiances and exit if necessary  */
 				irrad_glo = SOLAR_CONSTANT_E;
 

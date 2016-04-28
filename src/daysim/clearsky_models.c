@@ -1,3 +1,4 @@
+#include "rterror.h"
 #include "ds_shortterm.h"
 #include "numerical.h"
 #include "ds_constants.h"
@@ -210,11 +211,11 @@ void estimate_linke_factor_from_hourly_direct_irradiances()
 				status = fscanf(HOURLY_DATA,"%d %d %f %f %f", &month, &day, &time, &irrad_beam_hor, &irrad_dif);
 			if ( status <= 0 )  goto end;
 
+			jday = jdate(month, day);
 			if ( input_units_genshortterm == 2 )                             /*  calculate irrad_beam_nor  */
 				{
 					if ( irrad_beam_hor > 0 )
 						{
-							jday=month_and_day_to_julian_day(month,day);
 							sunrise_sunset_localtime ( latitude, longitude, time_zone, jday, &sunrise_localtime, &sunset_localtime );
 							centrum_time=time;
 							if ( fabs(time-sunrise_localtime) <= 0.5 )  centrum_time=sunrise_localtime+(time+0.5-sunrise_localtime)/2.0;
@@ -227,7 +228,6 @@ void estimate_linke_factor_from_hourly_direct_irradiances()
 					else irrad_beam_nor=0;
 				}
 
-			jday=month_and_day_to_julian_day(month,day);
 			solar_elev_azi_ecc(latitude,longitude,time_zone,jday,time,solar_time,&solar_elevation,&solar_azimuth,&eccentricity_correction);
 
 			if ( solar_elevation > 10 )
@@ -272,22 +272,24 @@ void estimate_linke_factor_from_hourly_direct_irradiances()
 		sort(30,&daily_linke_estimate[304]);
 		sort(31,&daily_linke_estimate[334]);
 
-		for (i=0;i<12;i++)   linke_turbidity_factor_am2[i]=0;
-
 		for (i=0;i<12;i++)     /*  estimate linke factor for every month as the mean of the npm=3 smallest values of the month    */
 			{                      /*  if there are less than npm values < 6.99 per month: set linke factor to the default value 3.0  */
+				linke_turbidity_factor_am2[i] = 0;
 				counts=0;
-				for (j=0;j<npm;j++)
-					if (daily_linke_estimate[jday_first_of_month(i+1)+j]>1 && daily_linke_estimate[jday_first_of_month(i+1)+j]<6.99)
-						{
-							linke_turbidity_factor_am2[i]+=daily_linke_estimate[jday_first_of_month(i+1)+j];
-							counts++;
-						}
+				for (j = 0; j < npm; j++) {
+					jday = jdate(i + 1, j + 1);
+					if (daily_linke_estimate[jday] > 1 && daily_linke_estimate[jday] < 6.99)
+					{
+						linke_turbidity_factor_am2[i] += daily_linke_estimate[jday];
+						counts++;
+					}
+				}
 
 				if (counts==npm)  linke_turbidity_factor_am2[i] = linke_turbidity_factor_am2[i]/npm;
 				else
 					{
-						printf("Warning - Linke Turbidity could not be estimated for month=%d due too cloudy weather conditions or insufficient data.\n",i+1);
+						sprintf(errmsg, "Linke Turbidity could not be estimated for month=%d due too cloudy weather conditions or insufficient data", i + 1);
+						error(WARNING, errmsg);
 						linke_turbidity_factor_am2[i] = 3.0;
 					}
 			}
@@ -305,7 +307,7 @@ void beam_nor_clearsky_irradiance_during_hour(int month, int day, double centrum
 	double irrad_glo_clear_i, irrad_beam_nor_clear_i, irrad_dif_clear_i;
 	double sum_irrad_beam_nor_clear = 0;
 
-	jday = month_and_day_to_julian_day ( month, day );
+	jday = jdate(month, day);
 
 	dt_k = 1.0/steps_k;
 

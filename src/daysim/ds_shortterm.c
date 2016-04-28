@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 						{
 							if ( irrad_beam_hor > 0 )
 								{
-									jday=month_and_day_to_julian_day(month,day);
+									jday = jdate(month, day);
 									sunrise_sunset_localtime ( latitude, longitude, time_zone, jday, &sunrise_localtime, &sunset_localtime );
 									centrum_time=time;
 									if ( fabs(time-sunrise_localtime) <= 0.5 )  centrum_time=sunrise_localtime+(time+0.5-sunrise_localtime)/2.0;
@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
 
 					nh++;
 
-					jday=month_and_day_to_julian_day(month,day);
+					jday = jdate(month, day);
 
 					if ( input_units_genshortterm == 1 )         /*  calculation of the global irradiance for the actual hour  */
 						{
@@ -456,7 +456,7 @@ int main(int argc, char *argv[])
 															fprintf ( SHORT_TERM_DATA,"%d %d %.3f %.0f %.0f\n", last_month, last_day, time_t, 0.0, 0.0 );
 														if ( output_units_genshortterm == 2 )
 															{
-																jday_hoy = month_and_day_to_julian_day(last_month,last_day);
+																jday_hoy = jdate(last_month, last_day);
 																solar_elev_azi_ecc (latitude, longitude, time_zone, jday_hoy, time_t, solar_time, &solar_elevation, &solar_azimuth, &eccentricity_correction);
 
 																fprintf ( SHORT_TERM_DATA,"%d %d %.3f %.0f %.0f\n", last_month, last_day, time_t, 0.0, 0.0 );

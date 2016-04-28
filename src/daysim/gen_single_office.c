@@ -39,7 +39,7 @@ int main( int argc, char  *argv[])
 	writeRadianceHeaderFile(argc, argv);
 }//end main
 
-//This method prints an error message to the screen if no enough parameters are entered by user
+//This method prints an error message to the screen if not enough parameters are entered by user
 //when calling the gen_single_office program
 
 void writeErrorMessage()
