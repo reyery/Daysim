@@ -1,15 +1,10 @@
 #include <cstdio>
 #include  <string.h>
 
-//#include "paths.h"
-#include "gencumsky.h"
+#include "version.h"
+#include "paths.h"
 #include "cSkyVault.h"
 
-extern "C" char *fixargv0(char *av0);
-
-/*  versioning  */
-
-extern "C" char  VersionID[];	/* Radiance version ID string */
 
 int main(int argc, char* argv[])
 {
@@ -60,8 +55,8 @@ int main(int argc, char* argv[])
 	// Set the default parameters
 	SunType=cSkyVault::NO_SUN;
 	DoDiffuse=true;
-	sky.SetLatitude(51.7*M_PI/180);
-	sky.SetLongitude(0*M_PI/180);
+	sky.SetLatitude(radians(51.7));
+	sky.SetLongitude(radians(0));
 	ClimateFileFormat=cClimateFile::GLOBAL_DIFFUSE;
 
 	while (counter<argc-1)
@@ -117,7 +112,7 @@ int main(int argc, char* argv[])
 		{
 			if ((argc-counter)>2)
 			{
-				sky.SetLatitude(atof(argv[counter+1])*M_PI/180.);
+				sky.SetLatitude(radians(atof(argv[counter + 1])));
 				counter+=2;
 			}
 			else
@@ -142,7 +137,7 @@ int main(int argc, char* argv[])
 		{
 			if ((argc-counter)>2)
 			{
-				sky.SetLongitude(atof(argv[counter+1])*M_PI/180.);
+				sky.SetLongitude(radians(atof(argv[counter + 1])));
 				counter+=2;
 			}
 			else
@@ -154,7 +149,7 @@ int main(int argc, char* argv[])
 		{
 			if ((argc-counter)>2)
 			{
-				sky.SetMeridian(atof(argv[counter+1])*M_PI/180.);
+				sky.SetMeridian(radians(atof(argv[counter + 1])));
 				counter+=2;
 			}
 			else

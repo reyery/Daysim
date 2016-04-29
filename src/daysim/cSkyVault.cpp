@@ -3,8 +3,6 @@
 #include <float.h>
 
 #include "cSkyVault.h"
-#define _USE_MATH_DEFINES
-#include "ds_constants.h"
 
 //////////////////////////
 // Sky Vault
@@ -59,10 +57,10 @@ cSkyVault::cSkyVault(double latitude, double longitude):
 		for (Az=0; Az <= 360-DeltaAz; Az+=DeltaAz)
 		{
 			// set each patch's position and size
-			m_ptPatchAlt[CurrentPatch]=Alt*M_PI/180;
-			m_ptPatchAz[CurrentPatch]=Az*M_PI/180;
-			m_ptPatchDeltaAlt[CurrentPatch]=DeltaAlt*M_PI/180;
-			m_ptPatchDeltaAz[CurrentPatch]=DeltaAz*M_PI/180;
+			m_ptPatchAlt[CurrentPatch] = radians(Alt);
+			m_ptPatchAz[CurrentPatch] = radians(Az);
+			m_ptPatchDeltaAlt[CurrentPatch] = radians(DeltaAlt);
+			m_ptPatchDeltaAz[CurrentPatch] = radians(DeltaAz);
 			m_ptPatchSolidAngle[CurrentPatch]=2*M_PI*(sin(m_ptPatchAlt[CurrentPatch]+m_ptPatchDeltaAlt[CurrentPatch]/2)-sin(m_ptPatchAlt[CurrentPatch]-m_ptPatchDeltaAlt[CurrentPatch]/2))/(2*M_PI/m_ptPatchDeltaAz[CurrentPatch]);
 			CurrentPatch++;
 		}
@@ -70,9 +68,9 @@ cSkyVault::cSkyVault(double latitude, double longitude):
 	}
 
 	// zenith patch (last patch is always top patch)
-	m_ptPatchAlt[CurrentPatch]=M_PI/2;
+	m_ptPatchAlt[CurrentPatch]=M_PI_2;
 	m_ptPatchAz[CurrentPatch]=0;
-	m_ptPatchDeltaAlt[CurrentPatch]=6*M_PI/180;
+	m_ptPatchDeltaAlt[CurrentPatch] = radians(6);
 	m_ptPatchDeltaAz[CurrentPatch]=2*M_PI;
 	m_ptPatchSolidAngle[CurrentPatch]=2*M_PI*(sin(m_ptPatchAlt[CurrentPatch])-sin(m_ptPatchAlt[CurrentPatch]-m_ptPatchDeltaAlt[CurrentPatch]))/(2*M_PI/m_ptPatchDeltaAz[CurrentPatch]);
 
@@ -113,7 +111,7 @@ bool cSkyVault::LoadClimateFile(char *filename, cClimateFile::eClimateFileFormat
 
 bool cSkyVault::SetLatitude(double latitude)
 {
-	if (latitude <= M_PI/2 && latitude >= -M_PI/2)
+	if (latitude <= M_PI_2 && latitude >= -M_PI_2)
 	{
 		m_latitude=latitude;
 		m_Sun.SetLatitude(m_latitude);
@@ -236,8 +234,8 @@ double temp=0;
 			Ibh=m_ClimateFile.GetDirectRad(hour,day);
 			
 			//Tito
-			//fprintf(stderr,"Report: %d %.1f dir %.0f dif %.0f, long %.0f mer %.0f",day,hour,Ibh,Idh,m_longitude*180/M_PI,m_meridian*180/M_PI);
-			//fprintf(stderr, "sun position %.2f %.2f hour ang %.2f time Diff  %f\n",SunAlt*180/M_PI,SunAz*180/M_PI,12/M_PI*hourangle,12/M_PI*m_Sun.TimeDiff(m_longitude,m_meridian));
+			//fprintf(stderr,"Report: %d %.1f dir %.0f dif %.0f, long %.0f mer %.0f",day,hour,Ibh,Idh,degrees(m_longitude),degrees(m_meridian));
+			//fprintf(stderr, "sun position %.2f %.2f hour ang %.2f time Diff  %f\n",degrees(SunAlt),degrees(SunAz),12/M_PI*hourangle,12/M_PI*m_Sun.TimeDiff(m_longitude,m_meridian));
 
 			if (Idh < 0) Idh=0;
 			if (Ibh < 0) Ibh=0;
@@ -312,10 +310,10 @@ double temp=0;
 			else if (Suns==MANY_SUNS && Ibn>0 && m_SkyModel.GetSkyClearness() > 1 )
 			{
 				// Work out solar radiance
-				SolarRadiance=NormFac/(2.0*M_PI*(1-cos(halfsolarangle*M_PI/180)));
+				SolarRadiance = NormFac / (2.0*M_PI*(1 - cos(radians(halfsolarangle))));
 
-				AltIndex=(int)(SunAlt/(BINSIZE*M_PI/180));
-				AzIndex=(int)(SunAz/(BINSIZE*M_PI/180));
+				AltIndex = (int)(SunAlt / radians(BINSIZE));
+				AzIndex = (int)(SunAz / radians(BINSIZE));
 
 				if (DoIlluminance)
 					NormFac=Ibh*m_SkyModel.GetBeamLumEffy(SunAlt,0.0);
@@ -376,13 +374,13 @@ NextHour:
 				m_Sun.GetPosition(SunAlt, SunAz);
 
 				// we impose a minimum on the solar altitude to avoid extremely bright low altitude suns
-				if (SunAlt < 3 * M_PI / 180 && SunAlt>0) // 6 degrees is minimum alt for circumsolar region in perez mod.
+				if (SunAlt < radians(3) && SunAlt>0) // 6 degrees is minimum alt for circumsolar region in perez mod.
 				{
-					SunAlt = 3 * M_PI / 180;
+					SunAlt = radians(3);
 				}
 
 				// Tito: commented statement out
-				//if (SunAlt < 49*M_PI/180)
+				//if (SunAlt < radians(49))
 				//	continue;
 
 				// get diffuse horizontal irradiation from climate file
@@ -425,9 +423,9 @@ NextHour:
 				}
 				if (SunAlt >= 0)
 				{
-					SolarRadiance = Ibn / (2.0*M_PI*(1 - cos(halfsolarangle*M_PI / 180))); // !!!!!!!!!!!!!!!!+m_CumSky[SunPatch];
+					SolarRadiance = Ibn / (2.0*M_PI*(1 - cos(radians(halfsolarangle)))); // !!!!!!!!!!!!!!!!+m_CumSky[SunPatch];
 
-					temp += SolarRadiance*(2.0*M_PI*(1 - cos(halfsolarangle*M_PI / 180)));
+					temp += SolarRadiance*(2.0*M_PI*(1 - cos(radians(halfsolarangle))));
 
 					// work out sun direction in x,y,z form
 					x = sin(SunAz)*cos(SunAlt);
