@@ -32,5 +32,8 @@ target_link_libraries(gen_directsunlight rtrad daysim_common)
 add_executable(gen_single_office gen_single_office.c)
 target_link_libraries(gen_single_office rtrad daysim_common)
 
+add_executable(radfiles2daysim radfiles2daysim.c)
+target_link_libraries(radfiles2daysim rtrad daysim_common)
+
 #install(TARGETS gen_reindl gencumsky ds_el_lighting ds_illum ds_shortterm RUNTIME DESTINATION bin)
 
