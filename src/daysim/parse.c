@@ -1,11 +1,12 @@
+#include <string.h>
+#include <stdlib.h>
+
+#include <fvect.h>
+#include "rterror.h"
+
 #include "parse.h"
 #include "fropen.h"
 #include "read_in_header.h"
-
-#include <fvect.h>
-
-#include <string.h>
-#include <stdlib.h>
 
 
 /*
@@ -59,10 +60,10 @@ int parse_cmode( char* key, char* data, void* var ) {
 	if( (ret= parse_string( key, data, mode_str )) == 0 ) {
 		if( strcmp( mode_str, "photonmap" ) == 0 )
 			*cm= RtracePhotonMap;
-		else if( strcmp( mode_str, "classic" ) )
-			fprintf( stderr,
-					 "wrong calculation mode: '%s'. valid options: 'classic', 'photonmap'\nusing 'classic'-mode.",
-					 mode_str );
+		else if (strcmp(mode_str, "classic")) {
+			sprintf(errmsg, "wrong calculation mode: '%s'. valid options: 'classic', 'photonmap'. using 'classic'-mode.", mode_str);
+			error(WARNING, errmsg);
+		}
 	}
 
 	return ret;
@@ -146,7 +147,8 @@ int parse( char* key, FILE* fp, struct parse_s* pd ) {
 			if( pd[i].func != NULL ) {
 				getWord( buf, fp, 1024, '\n' );
 				if( pd[i].func( key, buf, pd[i].data ) ) {
-					fprintf( stderr, "invalid parameter for keyword '%s': %s\n", key, buf );
+					sprintf(errmsg, "invalid parameter for keyword '%s': %s", key, buf);
+					error(WARNING, errmsg);
 					break;
 				}
 			}

@@ -3,13 +3,14 @@
  *  Fraunhofer Institute for Solar Energy Systems
  *  written by Christoph Reinhart
  */
-#include <paths.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
+
+#include <paths.h>
+#include "rterror.h"
 
 
 #ifndef PATH_SIZE
@@ -54,14 +55,14 @@ int getWord(char* word, FILE* f, const int max, char delim)
 	int my_letter = getc(f);
 
     if (f == NULL)
-    { printf("Null File"); return 0; }
+    {
+		error(WARNING, "null file");
+		return 0;
+	}
 
     untrimed_word=(char *)malloc(sizeof(char)*max);
-    if(untrimed_word == NULL )
-	   {
-           printf("get word: out of memory \n");
-           exit(1);
-       }
+	if (untrimed_word == NULL)
+		error(SYSTEM, "out of memory in getWord");
 
     strcpy(untrimed_word,"");
 
@@ -84,9 +85,9 @@ int getWord(char* word, FILE* f, const int max, char delim)
 	//printf("trim: \'%s\' \'%s\'\n", untrimed_word,word);
     if (size >= max-1)
 	{
-		fprintf(stderr,"\nWord may be too large, taking first 200 characters only\n");
+		error(WARNING, "word may be too large, taking first 200 characters only"); //TODO doesn't it take max characters?
 		while (!feof(f) && my_letter != delimiter && my_letter != new_line)
-		{my_letter = getc(f);}
+			my_letter = getc(f);
 	}
 
 	if (feof(f))
@@ -102,15 +103,17 @@ int close_file(FILE *f)	/*function that closes a file*/
 	errno =0;
 	s=fclose(f);
 	if (s==EOF) perror("Close failed");
-	return s;}
+	return s;
+}
 
 int check_if_file_exists(char *filename)
 {	FILE *Datei;
-	int i=0;
 	errno =0;
 	Datei = fopen(filename, "r");
-	if ( Datei == NULL) {i=0;close_file(Datei);}else{i=1;}
-	return(i);
+	if (Datei == NULL)
+		return 0;
+	close_file(Datei);
+	return 1;
 }
 
 
@@ -138,17 +141,23 @@ FILE *open_output(char *filename)	/*open filename for writing*/
 {	FILE *Datei;
 	errno =0;
 	Datei = fopen(filename, "w");
-	if ( Datei == NULL) fprintf(stderr,
-		  "open of '%s' for output failed: %s\n", filename, strerror(errno));
-	return Datei;}
+	if (Datei == NULL) {
+		sprintf(errmsg, "open of '%s' for output failed: %s", filename, strerror(errno));
+		error(WARNING, errmsg);
+	}
+	return Datei;
+}
 
 FILE *open_input(char *filename)	/*open file for reading*/
 {	FILE *Datei;
 	errno =0;
 	Datei = fopen(filename, "r");
-	if ( Datei == NULL) fprintf(stderr,
-		  "open of '%s' for input failed: %s\n",filename, strerror(errno));
-	return Datei;}
+	if (Datei == NULL) {
+		sprintf(errmsg, "open of '%s' for input failed: %s", filename, strerror(errno));
+		error(WARNING, errmsg);
+	}
+	return Datei;
+}
 
 
 int does_file_exist(char *keyword, char *filename)	/*test whether file exists*/
@@ -156,13 +165,13 @@ int does_file_exist(char *keyword, char *filename)	/*test whether file exists*/
 	errno =0;
 	Datei = fopen(filename, "r");
 	if ( Datei == NULL){
-		fprintf(stderr,"open of %s = %s for output failed: %s\n", keyword, filename, strerror(errno));
+		sprintf(errmsg, "open of %s = %s for output failed: %s", keyword, filename, strerror(errno));
+		error(WARNING, errmsg);
 		return 0;
-	}else{
-	        close_file(Datei);
-		return 1;
 	}
- }
+	close_file(Datei);
+	return 1;
+}
 
 int number_of_lines_in_file( char *filename)	/* returns the number of lines in file */
 {
@@ -171,16 +180,15 @@ int number_of_lines_in_file( char *filename)	/* returns the number of lines in f
 	errno =0;
 
 	if( (Datei = fopen(filename, "r")) == NULL ) {
-		fprintf( stderr, "in number_of_lines_in_file(): cannot open file %s.\n",
-				 filename );
+		sprintf(errmsg, "in number_of_lines_in_file(): cannot open file %s", filename);
+		error(WARNING, errmsg);
 		return 0;
-	} else {
-		while( EOF != fscanf(Datei,"%*[^\n]")){
-			lines++;
-			fscanf(Datei,"%*[\n\r]");
-		}
-		close_file(Datei);
 	}
+	while( EOF != fscanf(Datei,"%*[^\n]")){
+		lines++;
+		fscanf(Datei,"%*[\n\r]");
+	}
+	close_file(Datei);
 
 	return lines;
  }
@@ -197,31 +205,29 @@ int copy_file(char *original_file, char *copied_file)
 	errno =0;
 	ORIGINAL_FILE = fopen(original_file, "r");
 	if ( ORIGINAL_FILE == NULL){
-		fprintf(stderr,"FILE COPY ERROR: open of %s for output failed %s\n",original_file , strerror(errno));
+		sprintf(errmsg, "open of %s for output failed %s", original_file, strerror(errno));
+		error(WARNING, errmsg);
 		return 0;
-	}else{
-	COPIED_FILE = fopen(copied_file, "w");
-		if ( COPIED_FILE == NULL){
-			fprintf(stderr,"FILE COPY ERROR: open of %s for input failed %s\n",copied_file , strerror(errno));
-			return 0;
-		}else{
-			// copy content character by character
-		     while(1)
-    		{
-     			ch = getc(ORIGINAL_FILE);
-    			if(ch==EOF)
-     			{
-     				break;
-     			}
-     			else
-     			putc(ch,COPIED_FILE);
-     		}
-		    close_file(ORIGINAL_FILE);
-			close_file(COPIED_FILE);
-			return 1;
-		}
 	}
- }
+	COPIED_FILE = fopen(copied_file, "w");
+	if ( COPIED_FILE == NULL){
+		sprintf(errmsg, "open of %s for input failed %s", copied_file, strerror(errno));
+		error(WARNING, errmsg);
+		close_file(ORIGINAL_FILE);
+		return 0;
+	}
+	// copy content character by character
+	while(1)
+    {
+     	ch = getc(ORIGINAL_FILE);
+    	if(ch==EOF)
+     		break;
+     	putc(ch,COPIED_FILE);
+    }
+	close_file(ORIGINAL_FILE);
+	close_file(COPIED_FILE);
+	return 1;
+}
 
 
 /*
@@ -241,7 +247,7 @@ char* prepend_path( char* path, char* str ) {
 		return NULL;
 	path_l= strlen(path);
 	if( path_l >= PATH_SIZE - 1 ) {
-		fprintf( stderr, "file path to long" );
+		error(WARNING, "file path to long");
 		return NULL;
 	}
 	strncpy( p, path, PATH_SIZE );
@@ -285,7 +291,6 @@ char* prepend_path_m( char* path, char* str, int size ) {
 			memcpy( str, p, strlen(p) + 1 );
 		free(p);
 		return str;
-	} else {
-		return NULL;
 	}
+	return NULL;
 }
