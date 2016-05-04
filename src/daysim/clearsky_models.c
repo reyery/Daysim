@@ -1,6 +1,7 @@
 #include "rterror.h"
 #include "ds_shortterm.h"
 #include "numerical.h"
+#include "sun.h"
 #include "ds_constants.h"
 
 
@@ -8,7 +9,7 @@
  * forward declarations
  */
 void beam_nor_clearsky_irradiance_during_hour(int month, int day, double centrum_time, double T_lam2, double *irrad_beam_nor_clear);
-
+int day_to_month(int day);
 
 
 
@@ -327,3 +328,20 @@ void beam_nor_clearsky_irradiance_during_hour(int month, int day, double centrum
 	*irrad_beam_nor_clear = sum_irrad_beam_nor_clear / (float) steps_k;
 }
 
+int day_to_month(int day)                    /*  gives the month to which the day belongs ( year with 365 days )  */
+{
+	while (day < 1) day += 365;
+	day = (day - 1) % 365 + 1;
+	if (day <= 31)  return 1;
+	if (day <= 59)  return 2;
+	if (day <= 90)  return 3;
+	if (day <= 120)  return 4;
+	if (day <= 151)  return 5;
+	if (day <= 181)  return 6;
+	if (day <= 212)  return 7;
+	if (day <= 243)  return 8;
+	if (day <= 273)  return 9;
+	if (day <= 304)  return 10;
+	if (day <= 334)  return 11;
+	return 12;
+}

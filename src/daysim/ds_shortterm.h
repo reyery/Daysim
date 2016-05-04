@@ -5,8 +5,6 @@
 
 #include "read_in_header.h"
 
-#include "sun.h"
-
 
 
 extern char *header;
