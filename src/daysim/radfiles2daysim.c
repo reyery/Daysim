@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <strings.h>
+//#include <strings.h>
 #include <errno.h>
 #include  "fropen.h"
 #include  "read_in_header.h"

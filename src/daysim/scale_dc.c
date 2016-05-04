@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <strings.h>
+//#include <strings.h>
 #include <errno.h>
 
 

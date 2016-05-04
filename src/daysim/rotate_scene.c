@@ -9,12 +9,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 #include <string.h>
-#include <strings.h>
+//#include <strings.h>
 #include <errno.h>
+
+#include "paths.h"
 #include  "fropen.h"
 #include  "read_in_header.h"
+#include "ds_constants.h"
+
 
 char header_file[200]="";
 char  *progname;
@@ -66,8 +69,8 @@ int main( int argc, char  *argv[])
 		for (i=0 ; i<( number_of_sensors) ; i++)
 		{
 			fscanf(TEST_FILE,"%f %f %f %f %f %f",&x,&y,&z,&x_or,&y_or,&z_or);
-			x_rot=1.0*cos((M_PI/180.)*(-1.0)*rotation_angle)*x+1.0*sin((M_PI/180.)*(-1.0)*rotation_angle)*y;
-			y_rot=-1.0*sin((M_PI/180.)*(-1.0)*rotation_angle)*x + 1.0*cos((M_PI/180.)*(-1.0)*rotation_angle)*y;
+			x_rot = 1.0*cos(radians(-rotation_angle))*x + 1.0*sin(radians(-rotation_angle))*y;
+			y_rot = -1.0*sin(radians(-rotation_angle))*x + 1.0*cos(radians(-rotation_angle))*y;
 			fprintf(TEST_FILE2,"%f\t%f\t%f\t%f\t%f\t%f\n",x_rot,y_rot,z,x_or,y_or,z_or);
 		}
 		close_file(TEST_FILE);
