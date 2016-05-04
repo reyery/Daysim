@@ -11,7 +11,7 @@ cSun::cSun (double latitude, int day, double hourangle, double meridian)
       this->SetDay(0);
 
   if (!this->SetHourAngle(hourangle))
-      this->SetHourAngle(M_PI/2);
+      this->SetHourAngle(M_PI_2);
 }
 
 cSun::~cSun(void)
@@ -37,7 +37,7 @@ bool cSun::SetDay(int day)
 
 bool cSun::SetLatitude(double latitude)
 { 
-  if (latitude >= -M_PI/2 && latitude <=M_PI/2)
+  if (latitude >= -M_PI_2 && latitude <=M_PI_2)
   {
     _latitude = latitude; 
 	CalculateSunrise();

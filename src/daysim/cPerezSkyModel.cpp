@@ -85,7 +85,7 @@ bool cPerezSkyModel::SetSkyConditions(double Idh, double Ibh, cSun *Sun)
 	Sun->GetPosition(m_SolarAlt,m_SolarAz);
 	
 	// store solar zenith
-	SolarZenith = M_PI/2 - m_SolarAlt;
+	SolarZenith = M_PI_2 - m_SolarAlt;
 
 	// calculate clearness
 	if (m_SolarAlt > 0)
@@ -112,15 +112,15 @@ bool cPerezSkyModel::SetSkyConditions(double Idh, double Ibh, cSun *Sun)
 								+0.000719*cos(2*day_angle)+0.000077*sin(2*day_angle));
 
 	// air optical mass
-	if (m_SolarAlt >= 10 * M_PI/180)
+	if (m_SolarAlt >= radians(10))
 		AirMass=1/sin(m_SolarAlt);
 	else
-//		AirMass=1/(sin(m_SolarAlt) + 0.15*pow(m_SolarAlt*180/M_PI + 3.885,-1.253));
-		AirMass=1/(sin(m_SolarAlt) + 0.50572*pow(180*m_SolarAlt/M_PI+6.07995,-1.6364));
+//		AirMass=1/(sin(m_SolarAlt) + 0.15*pow(degrees(m_SolarAlt) + 3.885,-1.253));
+		AirMass = 1 / (sin(m_SolarAlt) + 0.50572*pow(degrees(m_SolarAlt) + 6.07995, -1.6364));
 
 	// fix in case a very negative solar altitude is input
-//	if (m_SolarAlt*180/M_PI + 3.885 >=0)
-	if (m_SolarAlt*180/M_PI + 6.07995 >=0)
+//	if (degrees(m_SolarAlt) + 3.885 >= 0)
+	if (degrees(m_SolarAlt) + 6.07995 >= 0)
 		PerezBrightness=AirMass*Idh/E0;
 	else
 	{
@@ -137,7 +137,7 @@ bool cPerezSkyModel::SetSkyConditions(double Idh, double Ibh, cSun *Sun)
 		}
 
 		// Idh is > 10 and sun altitude v. low, flag up an error and blunder on anyway
-		fprintf(stderr,"Error!  Solar altitude is %.0f < -6 degrees and Idh = %.0f > 10 W/m^2 on day %d !Ibn is %.0f.  Attempting to continue!\n",m_SolarAlt*180/M_PI,Idh,Sun->GetDay(),Ibn);
+		fprintf(stderr, "Error!  Solar altitude is %.0f < -6 degrees and Idh = %.0f > 10 W/m^2 on day %d !Ibn is %.0f.  Attempting to continue!\n", degrees(m_SolarAlt), Idh, Sun->GetDay(), Ibn);
 		PerezBrightness=0;
 	}
 
@@ -218,7 +218,7 @@ double cPerezSkyModel::GetDiffuseLumEffy(double SolarAlt, double Td)
 double cPerezSkyModel::GetBeamLumEffy(double SolarAlt, double Td)
 {
 	double W = 2.0;
-	double BeamLumEffy=m_BeamLumEffya[m_IntPerezClearness] + m_BeamLumEffyb[m_IntPerezClearness]*W + m_BeamLumEffyc[m_IntPerezClearness]*exp(5.73*(M_PI/2-SolarAlt)-5)
+	double BeamLumEffy=m_BeamLumEffya[m_IntPerezClearness] + m_BeamLumEffyb[m_IntPerezClearness]*W + m_BeamLumEffyc[m_IntPerezClearness]*exp(5.73*(M_PI_2-SolarAlt)-5)
 		+ m_BeamLumEffyd[m_IntPerezClearness]*m_PerezBrightness;
 
 	if (BeamLumEffy>0)
