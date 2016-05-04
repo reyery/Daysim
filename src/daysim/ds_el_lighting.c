@@ -23,7 +23,6 @@
 #include  "read_in_header.h"
 #include  "fropen.h"
 #include  "occ_func.h"
-#include  "daylightfactor.h"
 #include  "BlindModel.h"
 #include  "allocate_memory.h"
 #include  "get_illuminances.h"
