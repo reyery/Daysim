@@ -13,6 +13,7 @@
 //#include <strings.h>
 #include <errno.h>
 
+#include "version.h"
 #include "paths.h"
 #include  "fropen.h"
 #include  "read_in_header.h"
@@ -33,14 +34,20 @@ int main( int argc, char  *argv[])
 	FILE *TEST_FILE;
 	FILE  *TEST_FILE2;
 
-	progname = argv[0];
+	progname = fixargv0(argv[0]);
 
 	if (argc < 2){
-		fprintf(stderr,"rotate_scene: no input file specified\n");
+		fprintf(stderr, "%s: no input file specified\n", progname);
 		fprintf(stderr,"start program with\n");
-		fprintf(stderr,"rotate_scene <file>.hea \n\n");
+		fprintf(stderr, "%s <file>.hea \n\n", progname);
 		exit(1);
 	}
+
+	if (!strcmp(argv[1], "-version")) {
+		puts(VersionID);
+		exit(0);
+	}
+
 	strcpy(header_file,argv[1]);
 
 	for (i = 2; i < argc; i++)

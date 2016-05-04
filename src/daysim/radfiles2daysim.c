@@ -24,6 +24,9 @@
 #include <string.h>
 //#include <strings.h>
 #include <errno.h>
+
+#include "version.h"
+#include "paths.h"
 #include  "fropen.h"
 #include  "read_in_header.h"
 
@@ -144,19 +147,25 @@ int main( int argc, char  *argv[])
 	FILE* SOURCE_RAD_FILE;
 
 	srand(1);
-	progname = argv[0];
+	progname = fixargv0(argv[0]);
 
 	if (argc < 2){
-		fprintf(stderr,"radfiles2daysim: no input file specified\n");
+		fprintf(stderr, "%s: no input file specified\n", progname);
 		fprintf(stderr,"start program with\n");
-		fprintf(stderr,"radfiles2daysim <file>.hea\n\n");
+		fprintf(stderr, "%s <file>.hea\n\n", progname);
 		fprintf(stderr,"further options are:\n");
 		fprintf(stderr,"-g only geometry file is updated\n");
 		fprintf(stderr,"-m only material file is updated\n");
 		fprintf(stderr,"-d use material database\n");
 		exit(1);
 	}
-	strcpy(header_file,argv[1]);
+
+	if (!strcmp(argv[1], "-version")) {
+		puts(VersionID);
+		exit(0);
+	}
+
+	strcpy(header_file, argv[1]);
 
 	for (i = 2; i < argc; i++)
 		if (argv[i][0] == '-' )
@@ -195,7 +204,7 @@ int main( int argc, char  *argv[])
 		fprintf(MAT_FILE,"# Ont K1A 0R6, Canada                               \n");
 		fprintf(MAT_FILE,"#####################################################\n");
 		fprintf(MAT_FILE," \n");
-		fprintf(MAT_FILE,"# radfiles2daysima is a converter used by the DAYSIM GUI to\n");
+		fprintf(MAT_FILE,"# radfiles2daysim is a converter used by the DAYSIM GUI to\n");
 		fprintf(MAT_FILE,"# import regular RADIANCE scene and material into DAYSIM\n");
 		fprintf(MAT_FILE,"# format, i.e. only materials supported by Daysim are \n");
 		fprintf(MAT_FILE,"# admitted. Those admitted are turned monochrome.\n");

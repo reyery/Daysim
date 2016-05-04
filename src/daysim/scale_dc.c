@@ -10,8 +10,10 @@
 #include <math.h>
 #include <string.h>
 //#include <strings.h>
-#include <errno.h>
 
+#include "version.h"
+#include "rterror.h"
+#include "paths.h"
 #include "fropen.h"
 
 
@@ -45,15 +47,12 @@ FILE *DC_FILE_OUT;
 int main( int argc, char  *argv[])
 {
 	int i=0, j=0, k=0;
-	progname = argv[0];
+	progname = fixargv0(argv[0]);
 
 
-if (argc > 1)
+	if (argc == 1)
 	{
-	}
-else
-	{
-		fprintf(stdout,"\nscale_dc: \n");
+		fprintf(stdout, "\n%s: \n", progname);
 		printf("Program that scales all daylight coefficients in a dc-file with a constant factor\n");
 		printf("The following options are required\n");
 		printf("-i <file name> scaled dc input file \n");
@@ -65,62 +64,67 @@ else
 		exit(0);
 	}//end else
 
-		strcpy(dc_file_tmp,argv[2]);
-		strcat(dc_file_tmp,".tmp");
-
 /* get the arguments */
-	for (i = 1; i < argc; i++)
-		if (argv[i][0] == '-' )
-			switch (argv[i][1])
-			{
-				case 's'://scaling factor
-					scaling_factor=atof(argv[++i]);
-					break;
-				case 'c'://scaling factor
-					number_of_selected_sensors=atoi(argv[++i]);
-					selected_sensor=(int*) malloc (sizeof(int)*number_of_selected_sensors);
-					for (j=0 ; j< number_of_selected_sensors; j++)
-						selected_sensor[j]=atoi(argv[++i]);
-					break;
-				case 'i'://input file
-					strcpy(dc_file, argv[++i]);
-					strcpy(dc_file_tmp, argv[i]);
-					strcat(dc_file_tmp,".tmp");
-					break;
-				case 'o'://output file
-					strcpy(dc_file_out, argv[++i]);
-					break;
-				case 'l'://only consider the first num_of_lines
-					num_of_lines=atoi(argv[++i]);
-					if(num_of_lines==0){printf("dc_scale WARNING: number of lines to be considered=0\n");exit(1);}
-					break;
-				case 'm'://scales first n1 lines with s1 and the following n2 lines with s2
-					MultipleScaling=1;
-					SingleScalingFactor=0;
-					lines_in_1st_batch=atoi(argv[++i]);
-					scaling1=atof(argv[++i]);
-					lines_in_2nd_batch=atoi(argv[++i]);
-					scaling2=atof(argv[++i]);
-					num_of_lines= lines_in_1st_batch + lines_in_2nd_batch;
-					break;
-				case 'n'://scales first n1 columns with s1 and the following n2 columns with s2
-					MultipleColumnScaling=1;
-					SingleScalingFactor=0;
-					lines_in_1st_batch=atoi(argv[++i]);
-					scaling1=atof(argv[++i]);
-					lines_in_2nd_batch=atoi(argv[++i]);
-					scaling2=atof(argv[++i]);
-					num_of_columns_specified= lines_in_1st_batch + lines_in_2nd_batch;
-					break;
-
-
-
-			}//end switch (argv[i][1])
-		else
-		{
-			fprintf(stdout,"scale_dc: fatal error - %s bad option for input arguments\n", argv[i]);
+	for (i = 1; i < argc; i++) {
+		if (argv[i] == NULL || argv[i][0] != '-') {
+			sprintf(errmsg, "%s bad option for input arguments", argv[i]);
+			error(USER, errmsg);
+		}
+		if (!strcmp(argv[i], "-version")) {
+			puts(VersionID);
 			exit(0);
-		}//end else
+		}
+		switch (argv[i][1])
+		{
+		case 's'://scaling factor
+			scaling_factor = atof(argv[++i]);
+			break;
+		case 'c'://scaling factor
+			number_of_selected_sensors = atoi(argv[++i]);
+			selected_sensor = (int*)malloc(sizeof(int)*number_of_selected_sensors);
+			for (j = 0; j < number_of_selected_sensors; j++)
+				selected_sensor[j] = atoi(argv[++i]);
+			break;
+		case 'i'://input file
+			strcpy(dc_file, argv[++i]);
+			strcpy(dc_file_tmp, argv[i]);
+			strcat(dc_file_tmp, ".tmp");
+			break;
+		case 'o'://output file
+			strcpy(dc_file_out, argv[++i]);
+			break;
+		case 'l'://only consider the first num_of_lines
+			num_of_lines = atoi(argv[++i]);
+			if (num_of_lines == 0){ printf("dc_scale WARNING: number of lines to be considered=0\n"); exit(1); }
+			break;
+		case 'm'://scales first n1 lines with s1 and the following n2 lines with s2
+			MultipleScaling = 1;
+			SingleScalingFactor = 0;
+			lines_in_1st_batch = atoi(argv[++i]);
+			scaling1 = atof(argv[++i]);
+			lines_in_2nd_batch = atoi(argv[++i]);
+			scaling2 = atof(argv[++i]);
+			num_of_lines = lines_in_1st_batch + lines_in_2nd_batch;
+			break;
+		case 'n'://scales first n1 columns with s1 and the following n2 columns with s2
+			MultipleColumnScaling = 1;
+			SingleScalingFactor = 0;
+			lines_in_1st_batch = atoi(argv[++i]);
+			scaling1 = atof(argv[++i]);
+			lines_in_2nd_batch = atoi(argv[++i]);
+			scaling2 = atof(argv[++i]);
+			num_of_columns_specified = lines_in_1st_batch + lines_in_2nd_batch;
+			break;
+
+
+
+		}//end switch (argv[i][1])
+	}
+
+	if (dc_file_tmp[0] == '\0' && argc > 2) {
+		strcpy(dc_file_tmp, argv[2]);
+		strcat(dc_file_tmp, ".tmp");
+	}
 
 i=num_of_lines;
 num_of_lines=0;
