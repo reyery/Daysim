@@ -8,8 +8,8 @@ add_library(daysim_common fropen.c parse.c read_in_header.c nrutil.c numerical.c
 add_executable(gen_reindl gen_reindl.c)
 target_link_libraries(gen_reindl rtrad daysim_common)
 
-add_executable(gencumsky gendiscretesky.cpp climateFile.cpp cPerezSkyModel.cpp cSkyVault.cpp cSun.cpp)
-target_link_libraries(gencumsky rtrad daysim_common)
+add_executable(gencumulativesky gendiscretesky.cpp climateFile.cpp cPerezSkyModel.cpp cSkyVault.cpp cSun.cpp)
+target_link_libraries(gencumulativesky rtrad daysim_common)
 
 add_executable(ds_el_lighting ds_el_lighting.c allocate_memory.c analysis_data.c daylightfactor.c get_illuminances.c lightswitch.c simulation_assumptions.c BlindModel.c occ_func.c)
 target_link_libraries(ds_el_lighting rtrad daysim_common)
@@ -41,5 +41,5 @@ target_link_libraries(rotate_scene rtrad daysim_common)
 add_executable(scale_dc scale_dc.c)
 target_link_libraries(scale_dc rtrad daysim_common)
 
-#install(TARGETS gen_reindl gencumsky ds_el_lighting ds_illum ds_shortterm RUNTIME DESTINATION bin)
+#install(TARGETS gen_reindl gencumulativesky ds_el_lighting ds_illum ds_shortterm gen_dc gen_dgp_profile gen_directsunlight gen_single_office radfiles2daysim rotate_scene scale_dc RUNTIME DESTINATION bin)
 
