@@ -7,11 +7,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include <stdlib.h>
-//#include <strings.h>
 
-/*  header files used  */
 #include "version.h"
 #include "rterror.h"
 #include "fropen.h"

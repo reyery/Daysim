@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-//#include <strings.h>
 
 #include "version.h"
 #include "rterror.h"
