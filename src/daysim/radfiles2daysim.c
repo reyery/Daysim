@@ -35,9 +35,9 @@ char modifier_1[200]="";
 char modifier_2[200]="";
 char placeholder_1[200]="";
 char placeholder_2[200]="";
-float weight_r=0.3; // photometric units from RADIANCE source code
-float weight_g=0.59;
-float weight_b=0.11;
+double weight_r = 0.3; // photometric units from RADIANCE source code
+double weight_g = 0.59;
+double weight_b = 0.11;
 int my_letter ;
 int last_line_was_comment=0;
 int FileExists=0;

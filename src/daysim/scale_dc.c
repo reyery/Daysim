@@ -12,46 +12,9 @@
 //#include <strings.h>
 #include <errno.h>
 
-
-int close_file(FILE *f)	/*function that closes a file*/
-{	int s=0;
-	if (f==NULL) return 0;
-	errno =0;
-	s=fclose(f);
-	if (s==EOF) perror("Close failed");
-	return s;
-}
-
-FILE *open_output(char *filename)	/*open filename for writing*/
-{	FILE *Datei;
-	errno =0;
-	Datei = fopen(filename, "w");
-	if ( Datei == NULL) fprintf(stdout,
-		  "ds_scale: fatal error - open of %s for output failed: %s\n",
-		  filename, strerror(errno));
-	return Datei;
-}
-
-FILE *open_input(char *filename)	/*open filename for reading*/
-{	FILE *Datei;
-	errno =0;
-	Datei = fopen(filename, "r");
-	if ( Datei == NULL) fprintf(stdout,
-		  "ds_scale: fatal error - open of %s for input failed: %s\n",
-		  filename, strerror(errno));
-	return Datei;
-}
-
-float transmissivity(float visual_transmittance)
-{
-	double trans = 0;
-	trans= sqrt(0.8402528435+0.0072522239*visual_transmittance*visual_transmittance);
-	trans=(trans-0.9166530661)/0.0036261119/visual_transmittance;
-	return(trans);
-}
+#include "fropen.h"
 
 
-int month, day;
 int test_header=1;
 int num_of_lines=0,line;
 int lines_in_1st_batch=0, lines_in_2nd_batch=0;
@@ -73,9 +36,7 @@ char  befehl[200]="";
 float new_transmission;
 double scaling1=0, scaling2=0;
 char  line_string[1000000]="";
-float old_transmission=0.80;
-float hour;
-float illuminance;
+double illuminance;
 double scaling_factor=1.0;
 
 FILE *DC_FILE;

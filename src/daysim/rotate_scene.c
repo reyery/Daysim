@@ -26,7 +26,7 @@ char  *progname;
 int main( int argc, char  *argv[])
 {
 	int i;
-	float x,y,z,x_or,y_or,z_or,x_rot,y_rot;
+	double x,y,z,x_or,y_or,z_or,x_rot,y_rot;
 	char sensor_file_rotated[1024]="";
 	char befehl1[1024]="";
 	FILE *COMMAND;
