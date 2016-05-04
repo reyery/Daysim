@@ -37,7 +37,7 @@ Programs maintained on the main RADIANCE repository and included here:
 `cd Daysim`
 4. Check out the combined branch of the repository to make it current. The command is:
 `git checkout combined`
-5. Add an upstream reference to Radiance. The command is:
+5. Add an upstream reference to RADIANCE. The command is:
 `git remote add upstream https://github.com/NREL/Radiance.git`
 
 ### Create the DAYSIM project
@@ -75,9 +75,9 @@ Programs maintained on the main RADIANCE repository and included here:
 3. View any warnings or errors in the navigation panel on the left. Even if XCode indicates "Build Failed", errors that caused the failure may not have occurred in crucial programs.
 4. Check that the executables have been built to your bin folder. Mine are in _Users/myname/DS_Build/bin/Debug_.
 
-### Pull Updates from Radiance
+### Pull updates from RADIANCE
 
-1. Download updates from the upstream Radiance branch. The command is:
+1. Download updates from the upstream RADIANCE branch. The command is:
 `git fetch upstream`
 2. Merge the changes into your working set. The command is:
 `git merge upstream/combined`
@@ -137,7 +137,7 @@ If you have any questions concerning this license, contact Dr. Christoph Reinhar
 
 BY DOWNLOADING, INSTALLING, OR USING THE SOFTWARE YOU ARE INDICATING YOUR ACCEPTANCE OF THE TERMS AND CONDITIONS HEREIN.
 
-## RADIANCE 5.0
+### RADIANCE 5.0
 
 The Radiance Software License, Version 1.0
 
@@ -146,13 +146,16 @@ Copyright (c) 1990 - 2015 The Regents of the University of California, through L
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
 3. The end-user documentation included with the redistribution, if any, must include the following acknowledgment:
 
     "This product includes Radiance software (<http://radsite.lbl.gov/>) developed by the Lawrence Berkeley National Laboratory (<http://www.lbl.gov/>)."
         
     Alternately, this acknowledgment may appear in the software itself, if and wherever such third-party acknowledgments normally appear.
 4. The names "Radiance," "Lawrence Berkeley National Laboratory" and "The Regents of the University of California" must not be used to endorse or promote products derived from this software without prior written permission. For written permission, please contact radiance@radsite.lbl.gov.
+
 5. Products derived from this software may not be called "Radiance", nor may "Radiance" appear in their name, without prior written permission of Lawrence Berkeley National Laboratory.
 
 THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.   IN NO EVENT SHALL Lawrence Berkeley National Laboratory OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
