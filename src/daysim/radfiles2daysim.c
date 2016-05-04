@@ -23,9 +23,9 @@
 #include <math.h>
 #include <string.h>
 //#include <strings.h>
-#include <errno.h>
 
 #include "version.h"
+#include "rterror.h"
 #include "paths.h"
 #include  "fropen.h"
 #include  "read_in_header.h"
@@ -247,8 +247,9 @@ int main( int argc, char  *argv[])
 		for (i=0 ; i<(number_of_radiance_source_files) ; i++){
 
 			//check if files exist
-			if(!does_file_exist("file", radiance_source_files[i])){
-				fprintf(stderr,"FATAL ERROR: radfiles2hea \n");
+			if (!check_if_file_exists(radiance_source_files[i])){
+				sprintf(errmsg, "cannot find file %s", radiance_source_files[i]);
+				error(USER, errmsg);
 			}
 
 			SOURCE_RAD_FILE=open_input(radiance_source_files[i]);
@@ -677,12 +678,10 @@ int main( int argc, char  *argv[])
 					// the following materials are not supported as of yet:
 					//*****************************************************
 					// mist
-					else if( !strcmp(material_type,"mist")
-							   )
+					else if( !strcmp(material_type,"mist"))
 					{
-						fprintf(stderr,"FATAL ERROR: radfiles2daysim\n Material %s is currently not supported\n",material_type);
-						fprintf(stderr,"Please exchange the material with another material in the radianc source file %s",radiance_source_files[i]);
-						exit(1);
+						sprintf(errmsg, "material %s is currently not supported: please exchange the material with another material in the radiance source file %s", material_type, radiance_source_files[i]);
+						error(USER, errmsg);
 					}
 					else{ //the material does not correspond to any material identifier
 						    fgets(material_line,1000,SOURCE_RAD_FILE);

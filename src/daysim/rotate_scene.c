@@ -11,9 +11,9 @@
 #include <stdio.h>
 #include <string.h>
 //#include <strings.h>
-#include <errno.h>
 
 #include "version.h"
+#include "rterror.h"
 #include "paths.h"
 #include  "fropen.h"
 #include  "read_in_header.h"
@@ -28,9 +28,10 @@ int main( int argc, char  *argv[])
 {
 	int i;
 	double x,y,z,x_or,y_or,z_or,x_rot,y_rot;
+	double angle;
 	char sensor_file_rotated[1024]="";
 	char befehl1[1024]="";
-	FILE *COMMAND;
+	FILE *COMMAND_FILE;
 	FILE *TEST_FILE;
 	FILE  *TEST_FILE2;
 
@@ -50,18 +51,11 @@ int main( int argc, char  *argv[])
 
 	strcpy(header_file,argv[1]);
 
-	for (i = 2; i < argc; i++)
-		if (argv[i][0] == '-' )
-			switch (argv[i][1])
-			{
-			case 'x':
-					break;
-			}//end switch (argv[i][1])
-
 //===================================
 // read in DAYSIM project header file
 //===================================
 	read_in_header(header_file);
+	angle = radians(-rotation_angle);
 
 //==============================================================
 // if rotation angle not zero, generate a new sensor point file
@@ -76,8 +70,8 @@ int main( int argc, char  *argv[])
 		for (i=0 ; i<( number_of_sensors) ; i++)
 		{
 			fscanf(TEST_FILE,"%f %f %f %f %f %f",&x,&y,&z,&x_or,&y_or,&z_or);
-			x_rot = 1.0*cos(radians(-rotation_angle))*x + 1.0*sin(radians(-rotation_angle))*y;
-			y_rot = -1.0*sin(radians(-rotation_angle))*x + 1.0*cos(radians(-rotation_angle))*y;
+			x_rot = cos(angle)*x + sin(angle)*y;
+			y_rot = -sin(angle)*x + cos(angle)*y;
 			fprintf(TEST_FILE2,"%f\t%f\t%f\t%f\t%f\t%f\n",x_rot,y_rot,z,x_or,y_or,z_or);
 		}
 		close_file(TEST_FILE);
@@ -91,8 +85,9 @@ int main( int argc, char  *argv[])
 		for (i=0 ; i<(number_of_radiance_source_files) ; i++){
 
 			//check if files exist
-			if(!does_file_exist("file", radiance_source_files[i])){
-				fprintf(stderr,"FATAL ERROR: radfiles2hea \n");
+			if (!check_if_file_exists(radiance_source_files[i])){
+				sprintf(errmsg, "cannot find file %s", radiance_source_files[i]);
+				error(USER, errmsg);
 			}
 
 			//if rotation_angle set, rotate scene
@@ -100,8 +95,8 @@ int main( int argc, char  *argv[])
 			{
 				sprintf(befehl1,"%sxform -rz %f %s > %s.rotated.rad",bin_dir,rotation_angle,radiance_source_files[i],radiance_source_files[i]);
 				printf("%s\n",befehl1);
-				COMMAND=popen(befehl1,"r");
-				pclose(COMMAND);
+				COMMAND_FILE = popen(befehl1, "r");
+				pclose(COMMAND_FILE);
 			}
 		}
 

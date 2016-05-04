@@ -17,6 +17,7 @@
 */
 
 #include <stdlib.h>
+#include <string.h>
 #include "rterror.h"
 #include "fropen.h"
 #include "read_in_header.h"

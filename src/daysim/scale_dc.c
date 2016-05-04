@@ -82,6 +82,8 @@ int main( int argc, char  *argv[])
 		case 'c'://scaling factor
 			number_of_selected_sensors = atoi(argv[++i]);
 			selected_sensor = (int*)malloc(sizeof(int)*number_of_selected_sensors);
+			if (selected_sensor == NULL)
+				error(SYSTEM, "out of memory in main");
 			for (j = 0; j < number_of_selected_sensors; j++)
 				selected_sensor[j] = atoi(argv[++i]);
 			break;
@@ -95,7 +97,8 @@ int main( int argc, char  *argv[])
 			break;
 		case 'l'://only consider the first num_of_lines
 			num_of_lines = atoi(argv[++i]);
-			if (num_of_lines == 0){ printf("dc_scale WARNING: number of lines to be considered=0\n"); exit(1); }
+			if (num_of_lines == 0)
+				error(USER, "number of lines to be considered=0");
 			break;
 		case 'm'://scales first n1 lines with s1 and the following n2 lines with s2
 			MultipleScaling = 1;
@@ -134,11 +137,11 @@ num_of_lines=0;
 			fscanf(DC_FILE,"%*[\n\r]");
 		}
 	close_file(DC_FILE);
-if(i!=0 && i>num_of_lines)
-{
-		fprintf(stdout,"scale_dc: fatal error - number of lines specified (%d) larger than number of lines in file (%d)\n",i,num_of_lines);
-		exit(0);
-}
+	if(i!=0 && i>num_of_lines)
+	{
+		sprintf(errmsg, "number of lines specified (%d) larger than number of lines in file (%d)", i, num_of_lines);
+		error(USER, errmsg);
+	}
 if(i>0)
 	num_of_lines=i;
 
@@ -181,11 +184,11 @@ for (i=0;i<1000000;i++){
 
 }
 
-if(num_of_columns_specified > number_of_elements)
-{
-		fprintf(stdout,"scale_dc: fatal error - number of columns specified (%d) larger than number of elements per line in file (%d)\n",num_of_columns_specified,number_of_elements);
-		exit(0);
-}
+	if(num_of_columns_specified > number_of_elements)
+	{
+		sprintf(errmsg, "number of columns specified (%d) larger than number of elements per line in file (%d)", num_of_columns_specified, number_of_elements);
+		error(USER, errmsg);
+	}
 
 
 fprintf(stderr,"number of  header lines: %d\nnumber of data lines: %d\nnumber of elements in each line: %d\n",num_header_lines,num_of_lines,number_of_elements);
