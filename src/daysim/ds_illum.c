@@ -253,12 +253,12 @@ int main( int argc, char **argv )
 			fscanf(INPUT_FILE,"%s",direct_points_file);dir_pts=1;
 		}
 		if( !strcmp(keyword,"solar_pen") ){
-			fscanf(INPUT_FILE,"%f %f %f %f %f",&lower_lat,&upper_lat,&lower_azi,&upper_azi, &reduction_diffuse);
+			fscanf(INPUT_FILE,"%lf %lf %lf %lf %lf",&lower_lat,&upper_lat,&lower_azi,&upper_azi, &reduction_diffuse);
 			solar_pen=1;
-			lower_lat*=0.01745329;
-			upper_lat*=0.01745329;
-			lower_azi*=0.01745329;
-			upper_azi*=0.01745329;
+			lower_lat = radians(lower_lat);
+			upper_lat = radians(upper_lat);
+			lower_azi = radians(lower_azi);
+			upper_azi = radians(upper_azi);
 		}
 		if( !strcmp(keyword,"diffuse_points") ){
 			fscanf(INPUT_FILE,"%s", diffuse_points_file); dif_pts=1;
@@ -800,7 +800,7 @@ void pre_process_dds_shadowtesting()
 			}
 
 			//read in header file
-			fscanf(WEA,"%d %d %f %f %f",&month,&day,&hour,&dir,&dif);
+			fscanf(WEA,"%d %d %lf %f %f",&month,&day,&hour,&dir,&dif);
 
  			//calculate center of time interval
 			jd = jdate(month, day);

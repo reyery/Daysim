@@ -156,25 +156,25 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 		header_implemented_in_wea = 1;
 		fscanf(INPUT_DATAFILE,"%*[^\n]");fscanf(INPUT_DATAFILE,"%*[\n\r]");
 		//latitude
-		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_latitude);
+		fscanf(INPUT_DATAFILE,"%s %lf", keyword, &header_latitude);
 		header_latitude = radians(header_latitude);
 		if ((header_latitude - s_latitude) > tollerance || (header_latitude - s_latitude) < -tollerance){
 			error(WARNING, "latitude in climate file header (wea) and latitude on project file (hea) differ by more than 5 DEG");
 		}
 		//longitude
-		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_longitude);
+		fscanf(INPUT_DATAFILE,"%s %lf", keyword, &header_longitude);
 		header_longitude = radians(header_longitude);
 		if ((header_longitude - s_longitude) > tollerance || (header_longitude - s_longitude) < -tollerance){
 			error(WARNING, "longitude in climate file header (wea) and longitude on project file (hea) differ by more than 5 DEG");
 		}
 		//time_zone
-		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_time_zone);
+		fscanf(INPUT_DATAFILE,"%s %lf", keyword, &header_time_zone);
 		header_time_zone = radians(header_time_zone);
 		if ((header_time_zone - s_meridian) > tollerance || (header_time_zone - s_meridian) < -tollerance){
 			error(WARNING, "time zone in climate file header (wea) and time zone on project file (hea) differ by more than 5 DEG");
 		}
 		//site_elevation
-		fscanf(INPUT_DATAFILE,"%s %f", keyword, &header_site_elevation);
+		fscanf(INPUT_DATAFILE,"%s %lf", keyword, &header_site_elevation);
 		//weather_data_file_units
 		fscanf(INPUT_DATAFILE,"%s %d", keyword, &header_weather_data_short_file_units);
 		if(header_weather_data_short_file_units !=wea_data_short_file_units){

@@ -531,7 +531,7 @@ void read_in_header( char *header_file )
 		}
 
 		else if( !strcmp(keyword,"time_zone") ){
-			fscanf(HEADER_FILE,"%f",&s_meridian);
+			fscanf(HEADER_FILE,"%lf",&s_meridian);
 			if ((s_meridian > 180.0) || (s_meridian < -180.0)) {
 				sprintf(errmsg, "time_zone lies out of range (%.2f)!", s_meridian);
 				error(WARNING, errmsg);
@@ -547,7 +547,7 @@ void read_in_header( char *header_file )
 			time_steps_in_year = HOURS_PER_YEAR * 60 / time_step;
 		}
 		else if( !strcmp(keyword,"longitude") ){
-			fscanf(HEADER_FILE,"%f",&s_longitude);
+			fscanf(HEADER_FILE,"%lf",&s_longitude);
 			if (s_longitude >180 || s_longitude < -180) {
 				sprintf(errmsg, "longitude lies out of range (%.2f)!", s_longitude);
 				error(WARNING, errmsg);
@@ -561,7 +561,7 @@ void read_in_header( char *header_file )
 			fscanf(HEADER_FILE,"%f",&gprefl);/*ground reflectance */
 		}
 		else if( !strcmp(keyword,"latitude")  ){
-			fscanf(HEADER_FILE,"%f",&s_latitude);
+			fscanf(HEADER_FILE,"%lf",&s_latitude);
 			if (s_latitude >90 || s_latitude < -90) {
 				sprintf(errmsg, "longitude lies out of range (%.2f)!", s_latitude);
 				error(WARNING, errmsg);

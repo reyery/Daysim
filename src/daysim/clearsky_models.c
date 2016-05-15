@@ -207,9 +207,9 @@ void estimate_linke_factor_from_hourly_direct_irradiances()
 	while ( status > 0 )                       /*  as long as EOF is not reached  */
 		{
 			if ( input_units_genshortterm == 1 )
-				status = fscanf(HOURLY_DATA,"%d %d %f %f %f", &month, &day, &time, &irrad_beam_nor, &irrad_dif);
+				status = fscanf(HOURLY_DATA,"%d %d %lf %lf %lf", &month, &day, &time, &irrad_beam_nor, &irrad_dif);
 			if ( input_units_genshortterm == 2 )
-				status = fscanf(HOURLY_DATA,"%d %d %f %f %f", &month, &day, &time, &irrad_beam_hor, &irrad_dif);
+				status = fscanf(HOURLY_DATA,"%d %d %lf %lf %lf", &month, &day, &time, &irrad_beam_hor, &irrad_dif);
 			if ( status <= 0 )  goto end;
 
 			jday = jdate(month, day);

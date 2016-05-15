@@ -145,8 +145,8 @@ int main(int argc, char *argv[])
 		fgets(header_line_5,300,HOURLY_DATA);
 		fgets(header_line_6,300,HOURLY_DATA);
 		// get time step of input file
-		fscanf(HOURLY_DATA,"%d %d %f", &month, &day, &centrum_time);fscanf(HOURLY_DATA,"%*[^\n]");fscanf(HOURLY_DATA,"%*[\n\r]");
-		fscanf(HOURLY_DATA,"%d %d %f", &month, &day, &time);fscanf(HOURLY_DATA,"%*[^\n]");fscanf(HOURLY_DATA,"%*[\n\r]");
+		fscanf(HOURLY_DATA,"%d %d %lf", &month, &day, &centrum_time);fscanf(HOURLY_DATA,"%*[^\n]");fscanf(HOURLY_DATA,"%*[\n\r]");
+		fscanf(HOURLY_DATA,"%d %d %lf", &month, &day, &time);fscanf(HOURLY_DATA,"%*[^\n]");fscanf(HOURLY_DATA,"%*[\n\r]");
 		test_input_time_step=(int)(60.0*fabs(time-centrum_time));
 		//printf("The time step of the input file (%s) is %d minutes\n",input_weather_data, test_input_time_step);
 		if(test_input_time_step != shortterm_timestep && test_input_time_step != 60 ){
@@ -162,8 +162,8 @@ int main(int argc, char *argv[])
 	}else{	// input file has no header
 		rewind(HOURLY_DATA);
 		// get time step of input file
-		fscanf(HOURLY_DATA,"%d %d %f", &month, &day, &centrum_time);fscanf(HOURLY_DATA,"%*[^\n]");fscanf(HOURLY_DATA,"%*[\n\r]");
-		fscanf(HOURLY_DATA,"%d %d %f", &month, &day, &time);fscanf(HOURLY_DATA,"%*[^\n]");fscanf(HOURLY_DATA,"%*[\n\r]");
+		fscanf(HOURLY_DATA,"%d %d %lf", &month, &day, &centrum_time);fscanf(HOURLY_DATA,"%*[^\n]");fscanf(HOURLY_DATA,"%*[\n\r]");
+		fscanf(HOURLY_DATA,"%d %d %lf", &month, &day, &time);fscanf(HOURLY_DATA,"%*[^\n]");fscanf(HOURLY_DATA,"%*[\n\r]");
 		test_input_time_step=(int)(60.0*fabs(time-centrum_time));
 		fprintf(stderr,"The time step of the inpt file (%s) is %d minutes\n",input_weather_data, test_input_time_step);
 		if(test_input_time_step != shortterm_timestep && test_input_time_step != 60 ){
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 				{
 					if ( input_units_genshortterm == 1 )
 					{
-						status = fscanf(HOURLY_DATA,"%d %d %f %f %f", &month, &day, &time, &irrad_beam_nor, &irrad_dif);
+						status = fscanf(HOURLY_DATA,"%d %d %lf %lf %lf", &month, &day, &time, &irrad_beam_nor, &irrad_dif);
 						if(irrad_beam_nor<0|| irrad_dif<0)
 							{
 								status=-1;
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 					}
 					if ( input_units_genshortterm == 2 )
 					{
-						status = fscanf(HOURLY_DATA,"%d %d %f %f %f", &month, &day, &time, &irrad_beam_hor, &irrad_dif);
+						status = fscanf(HOURLY_DATA,"%d %d %lf %lf %lf", &month, &day, &time, &irrad_beam_hor, &irrad_dif);
 						if(irrad_beam_hor<0|| irrad_dif<0)
 							{
 								status=-1;
@@ -302,9 +302,9 @@ int main(int argc, char *argv[])
 			while ( status > 0 )               /*  read data from the input weather file as long as EOF is not reached  */
 				{
 					if ( input_units_genshortterm == 1 )
-						status = fscanf(HOURLY_DATA,"%d %d %f %f %f", &month, &day, &time, &irrad_beam_nor, &irrad_dif);
+						status = fscanf(HOURLY_DATA,"%d %d %lf %lf %lf", &month, &day, &time, &irrad_beam_nor, &irrad_dif);
 					if ( input_units_genshortterm == 2 )
-						status = fscanf(HOURLY_DATA,"%d %d %f %f %f", &month, &day, &time, &irrad_beam_hor, &irrad_dif);
+						status = fscanf(HOURLY_DATA,"%d %d %lf %lf %lf", &month, &day, &time, &irrad_beam_hor, &irrad_dif);
 					if ( status <= 0 )  goto process_last_day;
 
 					nh++;

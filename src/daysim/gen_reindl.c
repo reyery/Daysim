@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 		HOURLY_DATA = open_input(input_weather_data);
 		SHORT_TERM_DATA = open_output(input_weather_data_shortterm);
 
-		while (EOF != fscanf(HOURLY_DATA, "%d %d %f %f", &month, &day, &time, &irrad_glo))
+		while (EOF != fscanf(HOURLY_DATA, "%d %d %lf %lf", &month, &day, &time, &irrad_glo))
 		{
 			jday = jdate(month, day);
 			if (irrad_glo < 0 || irrad_glo > SOLAR_CONSTANT_E)          /*  check irradiances and exit if necessary  */

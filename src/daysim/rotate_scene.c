@@ -68,7 +68,7 @@ int main( int argc, char  *argv[])
 		TEST_FILE2=open_output(sensor_file_rotated);
 		for (i=0 ; i<( number_of_sensors) ; i++)
 		{
-			fscanf(TEST_FILE,"%f %f %f %f %f %f",&x,&y,&z,&x_or,&y_or,&z_or);
+			fscanf(TEST_FILE,"%lf %lf %lf %lf %lf %lf",&x,&y,&z,&x_or,&y_or,&z_or);
 			x_rot = cos(angle)*x + sin(angle)*y;
 			y_rot = -sin(angle)*x + cos(angle)*y;
 			fprintf(TEST_FILE2,"%f\t%f\t%f\t%f\t%f\t%f\n",x_rot,y_rot,z,x_or,y_or,z_or);
