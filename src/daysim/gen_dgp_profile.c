@@ -438,7 +438,7 @@ void gen_dgp( char* header_filename, view_point* viewpoints ) {
 
 														 CMD_EVALGLARE, ill_f[view][ts] );*/
 							if (checkfile==1){
-								sprintf(dgp_check_option, " -c %s.%i.pic ",dgp_check_file,ts);
+								sprintf(dgp_check_option, " -c %s.%i.%i.pic ",dgp_check_file,view,ts);
 							}
 
 							sprintf( cmd,
@@ -447,8 +447,8 @@ void gen_dgp( char* header_filename, view_point* viewpoints ) {
 									"%s -b 8000 -i %.2f -D -y -1 %s"		/* evalglare */
 									,
 									CMD_RPICT, rpictoptions,
-									viewpoints->x, viewpoints->y, viewpoints->z,
-									viewpoints->xdir, viewpoints->ydir, viewpoints->zdir,
+									viewpoints[view].x, viewpoints[view].y, viewpoints[view].z,
+									viewpoints[view].xdir, viewpoints[view].ydir, viewpoints[view].zdir,
 									octree,
 									CMD_EVALGLARE, ill_f[view][ts],dgp_check_option );
 
