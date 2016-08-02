@@ -1,7 +1,7 @@
 if(UNIX)
   find_library(LIB_M m DOC "Path to libm")
   if(NOT LIB_M)
-    message(FATAL_ERROR "Cannot build radiance without libm.  Please set LIB_M")
+    message(FATAL_ERROR "Cannot build daysim without libm.  Please set LIB_M")
   endif()
 else()
   set(LIB_M )
