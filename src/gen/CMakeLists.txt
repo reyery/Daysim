@@ -11,7 +11,7 @@ target_link_libraries(genmarble ${LIB_M})
 add_executable(gensky gensky.c sun.c)
 target_link_libraries(gensky ${LIB_M})
 
-add_executable(gendaylit gendaylit.c sun.c)
+add_executable(gendaylit gendaylit.c sun.c ../daysim/spa.c)
 target_link_libraries(gendaylit rtrad ${LIB_M})
 
 add_executable(gendaymtx gendaymtx.c sun.c)

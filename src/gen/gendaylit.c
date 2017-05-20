@@ -14,6 +14,7 @@
 
 #include  "color.h"
 #include  "sun.h"
+#include  "../daysim/spa.h"
 #include  "paths.h"
 
 #define  DOT(v1,v2)	(v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
@@ -102,6 +103,9 @@ double  solar_sunset(int month, int day);
 double  solar_sunrise(int month, int day);
 double  stadj();
 int     jdate(int month, int day);
+double sdec(int  jd);
+double salt(double sd, double st);
+double sazi(double sd, double st);
 
 const double	AU = 149597890E3;
 const double 	solar_constant_e = 1367;    /* solar constant W/m^2 */
@@ -122,6 +126,7 @@ int  	month, day;				/* date */
 double  hour;					/* time */
 int  	tsolar;					/* 0=standard, 1=solar */
 double  altitude, azimuth;			/* or solar angles */
+spa_data spa;  //declare the SPA structure
 
 
 
@@ -285,6 +290,36 @@ int main(int argc, char** argv)
 	if ( (c_perez = calloc(5, sizeof(double))) == NULL )
 	{ fprintf(stderr,"Out of memory error in function main"); return 1; }
 
+
+
+
+	spa.year = 2016;
+	spa.month = month;
+	spa.day = day;
+	spa.hour = hour;
+	spa.minute = (hour - spa.hour) * 60;
+	spa.second = ((hour - spa.hour) * 60 - spa.minute) * 60;
+	spa.timezone = s_meridian / (-15 * (M_PI / 180));
+	spa.delta_ut1 = 0;
+	spa.delta_t = 0;
+	spa.longitude = -s_longitude / (M_PI / 180);
+	spa.latitude = s_latitude / (M_PI / 180);
+	spa.elevation = 0;
+	spa.pressure = 820;
+	spa.temperature = 11;
+	spa.slope = 0;
+	spa.azm_rotation = 0;
+	spa.atmos_refract = 0.5667;
+	spa.function = SPA_ALL;
+
+
+	i = spa_calculate(&spa);
+	if (i) {
+		fprintf(stderr, "SPA error %i", i);
+		exit(1);
+	}
+
+
 	
 	printhead(argc, argv);
 	computesky();
@@ -365,7 +400,7 @@ void computesky()
 		altitude = salt(sd, st);
 		azimuth = sazi(sd, st);
 		
-		daynumber = (double)jdate(month, day);
+//		daynumber = (double)jdate(month, day);
 		
 	}
 	
@@ -633,10 +668,11 @@ return;
 
 double solar_sunset(int month,int day)
 {
-     float W;
-     extern double s_latitude;
-     W=-1*(tan(s_latitude)*tan(sdec(jdate(month, day))));
-     return(12+(M_PI/2 - atan2(W,sqrt(1-W*W)))*180/(M_PI*15));
+//     float W;
+//     extern double s_latitude;
+//     W=-1*(tan(s_latitude)*tan(sdec(jdate(month, day))));
+//     return(12+(M_PI/2 - atan2(W,sqrt(1-W*W)))*180/(M_PI*15));
+	return spa.sunset;
 }
 
 
@@ -644,10 +680,11 @@ double solar_sunset(int month,int day)
 
 double solar_sunrise(int month,int day)
 {
-     float W;
-     extern double s_latitude;
-     W=-1*(tan(s_latitude)*tan(sdec(jdate(month, day))));
-     return(12-(M_PI/2 - atan2(W,sqrt(1-W*W)))*180/(M_PI*15));
+//     float W;
+//     extern double s_latitude;
+//     W=-1*(tan(s_latitude)*tan(sdec(jdate(month, day))));
+//     return(12-(M_PI/2 - atan2(W,sqrt(1-W*W)))*180/(M_PI*15));
+	return spa.sunrise;
 }
 
 
@@ -699,6 +736,15 @@ void print_error_sky()
 
 	printf("# Local solar time: %.2f\n", st);
 	printf("# Solar altitude and azimuth: %.1f %.1f\n", altitude*180/M_PI, azimuth*180/M_PI);
+
+	if (dosun) {
+		printf("\nvoid light solar\n");
+		printf("0\n0\n");
+		printf("3 0.0 0.0 0.0\n");
+		printf("\nsolar source sun\n");
+		printf("0\n0\n");
+		printf("4 %f %f %f %f\n", sundir[0], sundir[1], sundir[2], 2 * half_sun_angle);
+	}
 
 	printf("\nvoid brightfunc skyfunc\n");
 	printf("2 skybright perezlum.cal\n");
@@ -1411,18 +1457,24 @@ double integ_lv(float *lv,float *theta)
 
 
 
-/* enter day number(double), return E0 = square(R0/R):  eccentricity correction factor  */
+double  stadj() { return 0.0; }
+int     jdate(int month, int day) { return (int)spa.jd; }
+double sdec(int  jd) { return spa.delta; }
+double salt(double sd, double st) { return spa.e * (M_PI / 180); }
+double sazi(double sd, double st) { return fmod(spa.azimuth + 180, 360) * (M_PI / 180); }
 
+/* enter day number(double), return E0 = square(R0/R):  eccentricity correction factor  */
 double get_eccentricity()
 {
-	double day_angle;
-	double E0;
-
-	day_angle  = 2*M_PI*(daynumber - 1)/365;
-	E0         = 1.00011+0.034221*cos(day_angle)+0.00128*sin(day_angle)+
-	    0.000719*cos(2*day_angle)+0.000077*sin(2*day_angle);
-
-	return (E0);
+//	double day_angle;
+//	double E0;
+//
+//	day_angle  = 2*M_PI*(daynumber - 1)/365;
+//	E0         = 1.00011+0.034221*cos(day_angle)+0.00128*sin(day_angle)+
+//	    0.000719*cos(2*day_angle)+0.000077*sin(2*day_angle);
+//
+//	return (E0);
+	return 1.0 / (spa.r * spa.r);
 }
 
 

@@ -14,11 +14,11 @@ extern double  s_latitude;
 extern double  s_longitude;
 extern double  s_meridian;
 
-extern int jdate(int month, int day);
-extern double stadj(int  jd);
-extern double sdec(int  jd);
-extern double salt(double sd, double st);
-extern double sazi(double sd, double st);
+//extern int jdate(int month, int day);
+//extern double stadj(int  jd);
+//extern double sdec(int  jd);
+//extern double salt(double sd, double st);
+//extern double sazi(double sd, double st);
 
 #ifdef __cplusplus
 }

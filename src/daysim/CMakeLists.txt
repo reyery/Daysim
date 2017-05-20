@@ -3,7 +3,7 @@ create_version_file("${VERSION_FILE}")
 
 include_directories(${CMAKE_SOURCE_DIR}/common)
 
-add_library(daysim_common fropen.c parse.c read_in_header.c nrutil.c numerical.c sun.c "${VERSION_FILE}")
+add_library(daysim_common fropen.c parse.c read_in_header.c nrutil.c numerical.c sun.c spa.c "${VERSION_FILE}")
 
 add_executable(gen_reindl gen_reindl.c)
 target_link_libraries(gen_reindl rtrad daysim_common)
@@ -40,6 +40,8 @@ target_link_libraries(rotate_scene rtrad daysim_common)
 
 add_executable(scale_dc scale_dc.c)
 target_link_libraries(scale_dc rtrad daysim_common)
+
+add_executable(spa_tester spa_tester.c spa.c)
 
 #install(TARGETS gen_reindl gencumulativesky ds_el_lighting ds_illum ds_shortterm gen_dc gen_dgp_profile gen_directsunlight gen_single_office radfiles2daysim rotate_scene scale_dc RUNTIME DESTINATION bin)
 

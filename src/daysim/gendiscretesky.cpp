@@ -15,6 +15,10 @@ int main(int argc, char* argv[])
 	double *CumSky;
 	double ScalingFactor=1.0;
 
+#ifdef GENDATFILE
+	int cols = 30;
+	int bands = 7;
+#endif
 	double rowdeltaaz[7]={12,12,15,15,20,30,60};
 	int rowdeltaalt=12;
 
@@ -100,12 +104,12 @@ int main(int argc, char* argv[])
 		}
 		else if (argv[counter][0]=='-' && argv[counter][1]=='r' )
 		{
-			ScalingFactor=1.0/179000;;
+			ScalingFactor=1.0/179000;
 			counter++;
 		}
 		else if (argv[counter][0]=='-' && argv[counter][1]=='p' )
 		{
-			ScalingFactor=1.0/1000;;
+			ScalingFactor=1.0/1000;
 			counter++;
 		}
 		else if (argv[counter][0]=='-' && argv[counter][1]=='a')
@@ -219,7 +223,60 @@ int main(int argc, char* argv[])
 
 
 
-	fprintf(stdout, "{ This .cal file was generated automatically by %s }\n", progname);
+#ifdef GENDATFILE
+	/*
+	*	The file has the following format:
+	*
+	*		N
+	*		beg0	end0	n0
+	*		beg1	end1	n1
+	*		. . .
+	*		begN	endN	nN
+	*		data, later dimensions changing faster
+	*		. . .
+	*
+	*	For irregularly spaced points, the following can be
+	*  substituted for begi endi ni:
+	*
+	*		0 0 ni p0i p1i .. pni
+	*/
+	/*
+	fprintf(output, "2\n"); // Always 2 dimensinons
+	fprintf(output, "0\t360\t%i\n", cols);
+	fprintf(output, "%i\t90\t%i\n\n", (int)(-45 / (bands + 0.5)), bands + 1);
+
+	for (i = cols; i--; )
+	{
+		counter = (i + cols - cols / 4) % cols; // Rotate to start from north
+		fprintf(output, "\t%f", CumSky[210] * ScalingFactor);
+		for (j = cols * (bands - 1) + counter; j >= 0; j -= cols)
+		{
+			fprintf(output, "\t%f", CumSky[j] * ScalingFactor);
+		}
+		fprintf(output, "\n");
+	}
+	*/
+	fprintf(stdout, "2\n"); // Always 2 dimensinons
+	fprintf(stdout, "0\t360\t%i\n", cols + 1);
+	fprintf(stdout, "0\t%i\t%i\n\n", 90 + (int)(45 / (bands + 0.5)), bands + 2);
+
+	for (i = cols; i--; )
+	{
+		fprintf(stdout, "\t%f", CumSky[210] * ScalingFactor);
+		for (j = cols * (bands - 1) + i; j >= 0; j -= cols)
+		{
+			fprintf(stdout, "\t%f", CumSky[j] * ScalingFactor);
+		}
+		fprintf(stdout, "\t%f\n", CumSky[j + cols] * ScalingFactor);
+	}
+	fprintf(stdout, "\t%f", CumSky[210] * ScalingFactor);
+	for (j = cols * bands - 1; j >= 0; j -= cols)
+	{
+		fprintf(stdout, "\t%f", CumSky[j] * ScalingFactor);
+	}
+	fprintf(stdout, "\t%f\n", CumSky[j + cols] * ScalingFactor);
+#else /* GENDATFILE */
+	fprintf(stdout, "{ This .cal file was generated automatically by GenCumulativeSky }\n");
 	fprintf(stdout, "{ ");
 	for (j=0; j<argc; j++)
 		fprintf(stdout, "%s ", argv[j]);
@@ -250,6 +307,7 @@ int main(int argc, char* argv[])
 
 	fprintf(stdout, "az=if(azi,azi,azi+360);\n");
 	fprintf(stdout, "azi=atan2(Dx,Dy)*180/PI;\n\n");
+#endif /* GENDATFILE */
 
 	return 0;
 

@@ -17,6 +17,8 @@
 #include "sun.h"
 #include "ds_constants.h"
 
+#include "spa.h"
+
 
 char *header;
 FILE *HEADER;               /*  header file  */
@@ -72,6 +74,8 @@ int main(int argc, char *argv[])
 	double irrad_glo, irrad_beam_nor, irrad_dif;     /* in W/m² */
 	double solar_elevation, solar_azimuth, eccentricity_correction;
 
+	spa_data spa;  //declare the SPA structure
+	int result; /* SPA error code */
 
 
 	/* get the arguments */
@@ -172,26 +176,62 @@ int main(int argc, char *argv[])
 
 		while (EOF != fscanf(HOURLY_DATA, "%d %d %lf %lf", &month, &day, &time, &irrad_glo))
 		{
-			jday = jdate(month, day);
+
+
+			//enter required input values into SPA structure
+
+			spa.year = 2016;
+			spa.month = month;
+			spa.day = day;
+			spa.hour = time;
+			spa.minute = (time - spa.hour) * 60;
+			spa.second = ((time - spa.hour) * 60 - spa.minute) * 60;
+			spa.timezone = time_zone / -15;
+			spa.delta_ut1 = 0;
+			spa.delta_t = 0;
+			spa.longitude = -longitude;
+			spa.latitude = latitude;
+			spa.elevation = 0;
+			spa.pressure = 820;
+			spa.temperature = 11;
+			spa.slope = 0;
+			spa.azm_rotation = 0;
+			spa.atmos_refract = 0.5667;
+			spa.function = SPA_ZA_INC;
+
+			//call the SPA calculate function and pass the SPA structure
+
+			result = spa_calculate(&spa);
+			if (result) {
+				sprintf(errmsg, "SPA error %i", result);
+				error(USER, errmsg);
+			}
+
+//			jday = jdate(month, day);
 			if (irrad_glo < 0 || irrad_glo > SOLAR_CONSTANT_E)          /*  check irradiances and exit if necessary  */
 				irrad_glo = SOLAR_CONSTANT_E;
 
-			solar_elev_azi_ecc(latitude, longitude, time_zone, jday, time, 0, &solar_elevation, &solar_azimuth, &eccentricity_correction);
+//			solar_elev_azi_ecc(latitude, longitude, time_zone, jday, time, 0, &solar_elevation, &solar_azimuth, &eccentricity_correction);
 
-			irrad_dif = diffuse_fraction(irrad_glo, solar_elevation, eccentricity_correction)*irrad_glo;
-			if (solar_elevation > 5.0)
+//			irrad_dif = diffuse_fraction(irrad_glo, spa.e, 1.0 / (spa.r * spa.r))*irrad_glo;
+			irrad_dif = diffuse_fraction(irrad_glo, 90 - spa.incidence, 1.0 / (spa.r * spa.r))*irrad_glo;
+			if (spa.e > 5.0)
 			{
-				irrad_beam_nor = (irrad_glo - irrad_dif) / sin(radians(solar_elevation));
-			}else{
+//				irrad_beam_nor = (irrad_glo - irrad_dif) / sin(radians(spa.e));
+				irrad_beam_nor = (irrad_glo - irrad_dif) / cos(radians(spa.incidence));
+			}
+			else{
 				irrad_beam_nor = 0;
 				irrad_dif = irrad_glo;
 			}
 			if (irrad_beam_nor > SOLAR_CONSTANT_E)
 			{
 				irrad_beam_nor = SOLAR_CONSTANT_E;
-				irrad_dif = irrad_glo - irrad_beam_nor * sin(radians(solar_elevation));
+//				irrad_dif = irrad_glo - irrad_beam_nor * sin(radians(spa.e));
+				irrad_dif = irrad_glo - irrad_beam_nor * cos(radians(spa.incidence));
 			}
-			fprintf(SHORT_TERM_DATA, "%d %d %.3f %.0f %.0f\n", month, day, time, irrad_beam_nor, irrad_dif);
+//			fprintf(SHORT_TERM_DATA, "%d %d %.3f %.0f %.0f\n", month, day, time, irrad_beam_nor, irrad_dif);
+			fprintf(SHORT_TERM_DATA, "%d %d %.3f %.0f %.0f %.3f %.3f %.3f %.3f\n", month, day, time, irrad_beam_nor, irrad_dif, spa.e, spa.azimuth, spa.incidence, 1.0 / (spa.r * spa.r));
 		}
 		close_file(HOURLY_DATA);
 		close_file(SHORT_TERM_DATA);

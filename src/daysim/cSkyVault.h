@@ -7,6 +7,12 @@
 #if (!defined(CSKYVAULT_H))
 #define CSKYVAULT_H
 
+#define GENDATFILE
+#ifdef GENDATFILE
+#undef SKY_PATCHES
+#define SKY_PATCHES	211
+#endif
+
 class cSkyVault
 {
 public:

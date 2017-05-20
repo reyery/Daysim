@@ -11,7 +11,11 @@
 cSkyVault::cSkyVault(double latitude, double longitude):
 						m_latitude(latitude), m_longitude(longitude), m_SkyCalculated(false)
 {
+#ifdef GENDATFILE
+	double defaultvalues[7] = { 12, 12, 12, 12, 12, 12, 12 };
+#else
 	double defaultvalues[7]={12,12,15,15,20,30,60};
+#endif
 //	double defaultvalues[14]={6,6,6,6,7.5,7.5,7.5,7.5,10,10,15,15,30,30};
 	double Az, Alt, DeltaAz, DeltaAlt;
 

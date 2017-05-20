@@ -7,9 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include <stdlib.h>
-//#include <strings.h>
 
 #include  "version.h"
 #include  "rterror.h"
@@ -50,14 +48,14 @@ void preprocessing( char* header ) {
 	FILE* fp1;
 	FILE* fp2;
 
-	sprintf( cmd, "%s %s -dif -ext .tmp", CMD_GEN_DC, header );
+	sprintf( cmd, "%s \"%s\" -dif -ext .tmp", CMD_GEN_DC, header );
 	fp1= popen( cmd, "r" );
 	if( fp1 == NULL ) {
 		sprintf(errmsg, "'%s' failed", cmd);
 		error(SYSTEM, errmsg);
 	}
 
-	sprintf( cmd, "%s %s -dir -ext .tmp", CMD_GEN_DC, header );
+	sprintf( cmd, "%s \"%s\" -dir -ext .tmp", CMD_GEN_DC, header );
 	fp2= popen( cmd, "r" );
 	if( fp2 == NULL ) {
 		pclose( fp1 );
@@ -68,7 +66,7 @@ void preprocessing( char* header ) {
 	pclose( fp1 );
 	pclose( fp2 );
 
-	sprintf( cmd, "%s %s -paste -ext .tmp ", CMD_GEN_DC, header );
+	sprintf( cmd, "%s \"%s\" -paste -ext .tmp ", CMD_GEN_DC, header );
 	fp1= popen( cmd, "r" );
 	if( fp1 == NULL ) {
 		sprintf(errmsg, "'%s' failed", cmd);
@@ -77,7 +75,7 @@ void preprocessing( char* header ) {
 	pclose( fp1 );
 
 	
-	sprintf( cmd, "%s %s -ext .tmp ", CMD_DS_ILLUM, header );
+	sprintf( cmd, "%s \"%s\" -ext .tmp ", CMD_DS_ILLUM, header );
 	fp1= popen( cmd, "r" );
 	if( fp1 == NULL ) {
 		sprintf(errmsg, "'%s' failed", cmd);
@@ -384,7 +382,7 @@ void gen_dgp( char* header_filename, view_point* viewpoints ) {
 
 			if ( dir_f[ts] > 25.0  ) 
 			{
-				sprintf( skyradfile, "%sgen_dgp_sky.rad", tmp_directory);
+				sprintf( skyradfile, "\"%sgen_dgp_sky.rad\"", tmp_directory);
 				sprintf( cmd, "%s %d %d %.3f  -a %.3f -o %.3f -m %.3f  -W  %.3f  %.3f > %s\n",
 						 CMD_GENDAYLIT,
 						 month_f[ts], day_f[ts], hour_f[ts],
