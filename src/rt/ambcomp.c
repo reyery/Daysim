@@ -54,6 +54,43 @@ typedef struct {
 
 
 static int
+ambcollision(				/* proposed direciton collides? */
+	AMBHEMI	*hp,
+	int	i,
+	int	j,
+	FVECT	dv
+)
+{
+	double	cos_thresh;
+	int	ii, jj;
+					/* min. spacing = 1/4th division */
+	cos_thresh = (PI/4.)/(double)hp->ns;
+	cos_thresh = 1. - .5*cos_thresh*cos_thresh;
+					/* check existing neighbors */
+	for (ii = i-1; ii <= i+1; ii++) {
+		if (ii < 0) continue;
+		if (ii >= hp->ns) break;
+		for (jj = j-1; jj <= j+1; jj++) {
+			AMBSAMP	*ap;
+			FVECT	avec;
+			double	dprod;
+			if (jj < 0) continue;
+			if (jj >= hp->ns) break;
+			if ((ii==i) & (jj==j)) continue;
+			ap = &ambsam(hp,ii,jj);
+			if (ap->d <= .5/FHUGE)
+				continue;	/* no one home */
+			VSUB(avec, ap->p, hp->rp->rop);
+			dprod = DOT(avec, dv);
+			if (dprod >= cos_thresh*VLEN(avec))
+				return(1);	/* collision */
+		}
+	}
+	return(0);			/* nothing to worry about */
+}
+
+
+static int
 ambsample(				/* initial ambient division sample */
 	AMBHEMI	*hp,
 	int	i,
@@ -81,14 +118,7 @@ ambsample(				/* initial ambient division sample */
 	hlist[1] = j;
 	hlist[2] = i;
 	multisamp(spt, 2, urand(ilhash(hlist,3)+n));
-					/* avoid coincident samples */
-	if (!n && (0 < i) & (i < hp->ns-1) &&
-			(0 < j) & (j < hp->ns-1)) {
-		if ((spt[0] < 0.1) | (spt[0] >= 0.9))
-			spt[0] = 0.1 + 0.8*frandom();
-		if ((spt[1] < 0.1) | (spt[1] >= 0.9))
-			spt[1] = 0.1 + 0.8*frandom();
-	}
+resample:
 	SDsquare2disk(spt, (j+spt[1])/hp->ns, (i+spt[0])/hp->ns);
 	zd = sqrt(1. - spt[0]*spt[0] - spt[1]*spt[1]);
 	for (ii = 3; ii--; )
@@ -96,6 +126,11 @@ ambsample(				/* initial ambient division sample */
 				spt[1]*hp->uy[ii] +
 				zd*hp->rp->ron[ii];
 	checknorm(ar.rdir);
+					/* avoid coincident samples */
+	if (!n && ambcollision(hp, i, j, ar.rdir)) {
+		spt[0] = frandom(); spt[1] = frandom();
+		goto resample;		/* reject this sample */
+	}
 	dimlist[ndims++] = AI(hp,i,j) + 90171;
 	rayvalue(&ar);			/* evaluate ray */
 	ndims--;
@@ -105,8 +140,8 @@ ambsample(				/* initial ambient division sample */
 	if (ar.rt*ap->d < 1.0)		/* new/closer distance? */
 		ap->d = 1.0/ar.rt;
 	if (!n) {			/* record first vertex & value */
-		if (ar.rt > 10.0*thescene.cusize)
-			ar.rt = 10.0*thescene.cusize;
+		if (ar.rt > 10.0*thescene.cusize + 1000.)
+			ar.rt = 10.0*thescene.cusize + 1000.;
 		VSUM(ap->p, ar.rorg, ar.rdir, ar.rt);
 		copycolor(ap->v, ar.rcol);
 #ifdef DAYSIM
@@ -138,6 +173,7 @@ ambsample(				/* initial ambient division sample */
 static float *
 getambdiffs(AMBHEMI *hp)
 {
+	const double	normf = 1./bright(hp->acoef);
 	float	*earr = (float *)calloc(hp->ns*hp->ns, sizeof(float));
 	float	*ep;
 	AMBSAMP	*ap;
@@ -151,20 +187,20 @@ getambdiffs(AMBHEMI *hp)
 	    for (j = 0; j < hp->ns; j++, ap++, ep++) {
 		b = bright(ap[0].v);
 		if (i) {		/* from above */
-			d2 = b - bright(ap[-hp->ns].v);
+			d2 = normf*(b - bright(ap[-hp->ns].v));
 			d2 *= d2;
 			ep[0] += d2;
 			ep[-hp->ns] += d2;
 		}
 		if (!j) continue;
 					/* from behind */
-		d2 = b - bright(ap[-1].v);
+		d2 = normf*(b - bright(ap[-1].v));
 		d2 *= d2;
 		ep[0] += d2;
 		ep[-1] += d2;
 		if (!i) continue;
 					/* diagonal */
-		d2 = b - bright(ap[-hp->ns-1].v);
+		d2 = normf*(b - bright(ap[-hp->ns-1].v));
 		d2 *= d2;
 		ep[0] += d2;
 		ep[-hp->ns-1] += d2;
@@ -208,7 +244,7 @@ ambsupersamp(AMBHEMI *hp, int cnt)
 			goto done;	/* nothing left to do */
 		nss = *ep/e2rem*cnt + frandom();
 		for (n = 1; n <= nss && ambsample(hp,i,j,n); n++)
-			--cnt;
+			if (!--cnt) goto done;
 		e2rem -= *ep++;		/* update remainder */
 	}
 done:
@@ -229,6 +265,9 @@ samp_hemi(				/* sample indirect hemisphere */
 	AMBHEMI	*hp;
 	double	d;
 	int	n, i, j;
+					/* insignificance check */
+	if (bright(rcol) <= FTINY)
+		return(NULL);
 					/* set number of divisions */
 	if (ambacc <= FTINY &&
 			wt > (d = 0.8*intens(rcol)*r->rweight/(ambdiv*minweight)))

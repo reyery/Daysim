@@ -138,6 +138,10 @@ oconv_command(int ac, char *av[])
 	
 	if (ac-- <= 0)
 		return(NULL);
+	if (verbose < 0) {	/* turn off warnings */
+		strcpy(cp, "-w- ");
+		cp += 4;
+	}
 	while (ac-- > 0) {
 		strcpy(cp, *av++);
 		while (*cp) cp++;
@@ -379,7 +383,7 @@ finish_receiver(void)
 			curparams.vup[1] = 1;
 	}
 					/* determine sample type/bin */
-	if (tolower(curparams.hemis[0]) == 'u' | curparams.hemis[0] == '1') {
+	if ((tolower(curparams.hemis[0]) == 'u') | (curparams.hemis[0] == '1')) {
 		sprintf(sbuf, "if(-Dx*%g-Dy*%g-Dz*%g,0,-1)",
 			curparams.nrm[0], curparams.nrm[1], curparams.nrm[2]);
 		binv = savqstr(sbuf);
@@ -756,11 +760,13 @@ sample_reinhart(PARAMS *p, int b, FILE *fp)
 	}
 	while (n--) {			/* stratified sampling */
 		SDmultiSamp(samp3, 3, (n+frandom())/sampcnt);
+		if (row >= RowMax-1)	/* avoid crowding at zenith */
+			samp3[1] *= samp3[1];
 		alt = (row+samp3[1])*RAH;
 		azi = (2.*PI)*(col+samp3[2]-.5)/rnaz(row);
 		duvw[2] = cos(alt);	/* measured from horizon */
 		duvw[0] = tsin(azi)*duvw[2];
-		duvw[1] = tcos(azi)*duvw[2];
+		duvw[1] = -tcos(azi)*duvw[2];
 		duvw[2] = sqrt(1. - duvw[2]*duvw[2]);
 		for (i = 3; i--; )
 			orig_dir[1][i] = -duvw[0]*p->udir[i] -
@@ -867,7 +873,7 @@ prepare_sampler(void)
 		curparams.udir[1] *= -1.;
 		curparams.udir[2] *= -1.;
 	}
-	if (tolower(curparams.hemis[0]) == 'u' | curparams.hemis[0] == '1')
+	if ((tolower(curparams.hemis[0]) == 'u') | (curparams.hemis[0] == '1'))
 		curparams.sample_basis = sample_uniform;
 	else if (tolower(curparams.hemis[0]) == 's' &&
 				tolower(curparams.hemis[1]) == 'c')
@@ -1305,7 +1311,11 @@ main(int argc, char *argv[])
 			fputs(": -i, -I supported for pass-through only\n", stderr);
 			return(1);
 		}
-		fmtopt[2] = (sizeof(RREAL)==sizeof(double)) ? 'd' : 'f';
+#ifdef SMLFLT
+		fmtopt[2] = 'f';
+#else
+		fmtopt[2] = 'd';
+#endif
 		if (sampcnt <= 0) sampcnt = 10000;
 	}
 	sprintf(sampcntbuf, "%d", sampcnt);

@@ -106,7 +106,7 @@
 	#define CURDIR		'.'
     #define DEFAULT_TEMPDIRS	{"/var/tmp", "/usr/tmp", "/tmp", ".", NULL}
     #define TEMPLATE		"/tmp/rtXXXXXX"
-    #define TEMPLEN		17
+    #define TEMPLEN		13
     #define ULIBVAR		"RAYPATH"
     #ifndef DEFPATH
       #define DEFPATH		":/usr/local/lib/ray"
@@ -133,7 +133,7 @@ extern "C" {
 #if defined(_WIN32) || defined(_WIN64)
   extern FILE *win_popen(char *command, char *type);
   extern int win_pclose(FILE *p);
-  extern char  *fixargv0(char *av0);
+  extern char  *fixargv0(char *arg0);
 #endif
 
 /* Check if any of the characters in str2 are found in str1 */

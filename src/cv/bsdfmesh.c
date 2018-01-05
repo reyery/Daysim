@@ -63,7 +63,7 @@ eval_DSFsurround(const RBFNODE *rbf, const FVECT outvec, const double rad)
 static double
 est_DSFrad(const RBFNODE *rbf, const FVECT outvec)
 {
-	const double	rad_epsilon = 0.03;
+	const double	rad_epsilon = 0.01;
 	const double	DSFtarget = 0.60653066 * eval_rbfrep(rbf,outvec) *
 							COSF(outvec[2]);
 	double		inside_rad = rad_epsilon;
@@ -76,10 +76,8 @@ est_DSFrad(const RBFNODE *rbf, const FVECT outvec)
 	do {
 		double	test_rad = interp_rad;
 		double	DSFtest;
-		if (test_rad >= outside_rad)
-			return(test_rad);
-		if (test_rad <= inside_rad)
-			return(test_rad*(test_rad>0));
+		if ((test_rad >= outside_rad) | (test_rad <= inside_rad))
+			test_rad = .5*(inside_rad + outside_rad);
 		DSFtest = eval_DSFsurround(rbf, outvec, test_rad);
 		if (DSFtest > DSFtarget) {
 			inside_rad = test_rad;
@@ -88,10 +86,9 @@ est_DSFrad(const RBFNODE *rbf, const FVECT outvec)
 			outside_rad = test_rad;
 			DSFoutside = DSFtest;
 		}
-		if (DSFoutside >= DSFinside)
-			return(test_rad);
 	} while (outside_rad-inside_rad > rad_epsilon);
-	return(interp_rad);
+
+	return(.5*(inside_rad + outside_rad));
 #undef interp_rad
 }
 
@@ -491,7 +488,7 @@ check_normal_incidence(void)
 		default:
 			return;			/* else we can interpolate */
 		}
-		for (rbf = near_rbf->next; rbf != NULL; rbf = rbf->next) {
+		for (rbf = dsf_list; rbf != NULL; rbf = rbf->next) {
 			const double	d = input_orient*rbf->invec[2];
 			if (d >= 1.-2.*FTINY)
 				return;		/* seems we have normal */

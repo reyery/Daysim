@@ -183,9 +183,7 @@ setambient(void)				/* initialize calculation */
 					(flen - lastpos)/AMBVALSIZ);
 			error(WARNING, errmsg);
 			fseek(ambfp, lastpos, SEEK_SET);
-#ifndef _WIN32 /* XXX we need a replacement for that one */
 			ftruncate(fileno(ambfp), (off_t)lastpos);
-#endif
 		}
 	} else if ((ambfp = fopen(ambfile, "w+")) != NULL) {
 		initambfile(1);			/* else create new file */
@@ -289,7 +287,7 @@ multambient(		/* compute ambient component & multiply by coef. */
 {
 	static int  rdepth = 0;			/* ambient recursion */
 	COLOR	acol, caustic;
-	int	ok;
+	int	i, ok;
 	double	d, l;
 #ifdef DAYSIM
 	DaysimCoef dcAcol;
@@ -318,11 +316,16 @@ multambient(		/* compute ambient component & multiply by coef. */
 		goto dumbamb;
 
 	if (ambacc <= FTINY) {			/* no ambient storage */
+		FVECT	uvd[2];
+		float	dgrad[2], *dgp = NULL;
+
+		if (nrm != r->ron && DOT(nrm,r->ron) < 0.9999)
+			dgp = dgrad;		/* compute rotational grad. */
 		copycolor(acol, aval);
 		rdepth++;
 #ifndef DAYSIM
 		ok = doambient(acol, r, r->rweight,
-				NULL, NULL, NULL, NULL, NULL);
+				uvd, NULL, NULL, dgp, NULL);
 #else
 		ok = doambient(acol, r, r->rweight,
 			NULL, NULL, NULL, NULL, NULL, dcAcol);
@@ -330,6 +333,15 @@ multambient(		/* compute ambient component & multiply by coef. */
 		rdepth--;
 		if (!ok)
 			goto dumbamb;
+		if ((ok > 0) & (dgp != NULL)) {	/* apply texture */
+			FVECT	v1;
+			VCROSS(v1, r->ron, nrm);
+			d = 1.0;
+			for (i = 3; i--; )
+				d += v1[i] * (dgp[0]*uvd[0][i] + dgp[1]*uvd[1][i]);
+			if (d >= 0.05)
+				scalecolor(acol, d);
+		}
 		copycolor(aval, acol);
 #ifdef DAYSIM
 		daysimCopy(daylightCoef, dcAcol);
@@ -397,7 +409,7 @@ dumbamb:					/* return global value */
 		return;
 	}
 	
-	l = bright(ambval);			/* average in computations */
+	l = bright(ambval);			/* average in computations */	
 	if (l > FTINY) {
 		d = (log(l)*(double)ambvwt + avsum) /
 				(double)(ambvwt + navsum);
@@ -827,7 +839,7 @@ multambient(		/* compute ambient component & multiply by coef. */
 #endif
 
 		/* PMAP: add in caustic */
-		addcolor(aval, caustic);
+		addcolor(aval, caustic);	
 		return;
 	}
 	
@@ -846,7 +858,7 @@ multambient(		/* compute ambient component & multiply by coef. */
 #endif
 
 		/* PMAP: add in caustic */
-		addcolor(aval, caustic);
+		addcolor(aval, caustic);			
 		return;
 	}
 	
@@ -858,7 +870,7 @@ dumbamb:					/* return global value */
 #endif
 
 		/* PMAP: add in caustic */
-		addcolor(aval, caustic);
+		addcolor(aval, caustic);	
 		return;
 	}
 	
@@ -1491,10 +1503,10 @@ ambsync(void)			/* synchronize ambient file */
 	if ((flen = lseek(fileno(ambfp), (off_t)0, SEEK_END)) < 0)
 		goto seekerr;
 	if ((n = flen - lastpos) > 0) {		/* file has grown */
-		if (ambinp == NULL) {		/* use duplicate filedes */
-			ambinp = fdopen(dup(fileno(ambfp)), "r");
+		if (ambinp == NULL) {		/* get new file pointer */
+			ambinp = fopen(ambfile, "rb");
 			if (ambinp == NULL)
-				error(SYSTEM, "fdopen failed in ambsync");
+				error(SYSTEM, "fopen failed in ambsync");
 		}
 		if (fseek(ambinp, lastpos, SEEK_SET) < 0)
 			goto seekerr;
@@ -1509,24 +1521,18 @@ ambsync(void)			/* synchronize ambient file */
 			avstore(&avs);
 			n -= AMBVALSIZ;
 		}
-		lastpos = flen - n;
-		/*** seek always as safety measure
-		if (n) ***/			/* alignment */
-			if (lseek(fileno(ambfp), (off_t)lastpos, SEEK_SET) < 0)
-				goto seekerr;
+		lastpos = flen - n;		/* check alignment */
+		if (n && lseek(fileno(ambfp), (off_t)lastpos, SEEK_SET) < 0)
+			goto seekerr;
 	}
 	n = fflush(ambfp);			/* calls write() at last */
-	if (n != EOF)
-		lastpos += (long)nunflshed*AMBVALSIZ;
-	else if ((lastpos = lseek(fileno(ambfp), (off_t)0, SEEK_CUR)) < 0)
-		goto seekerr;
-		
+	lastpos += (long)nunflshed*AMBVALSIZ;
 	aflock(F_UNLCK);			/* release file */
 	nunflshed = 0;
 	return(n);
 seekerr:
 	error(SYSTEM, "seek failed in ambsync");
-	return -1; /* pro forma return */
+	return(EOF);	/* pro forma return */
 }
 
 #else	/* ! F_SETLKW */

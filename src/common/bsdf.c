@@ -496,7 +496,7 @@ SDsampComponent(SDValue *sv, FVECT ioVec, double randX, SDComponent *sdc)
 		sv->cieY = cd->cTotal;
 	if (sv->cieY <= 1e-6) {		/* nothing to sample? */
 		sv->spec = c_dfcolor;
-		memset(ioVec, 0, 3*sizeof(double));
+		memset(ioVec, 0, sizeof(FVECT));
 		return SDEnone;
 	}
 					/* compute sample direction */
@@ -646,10 +646,10 @@ SDevalBSDF(SDValue *sv, const FVECT outVec, const FVECT inVec, const SDData *sd)
 	} else if (!(inFront | outFront)) {
 		*sv = sd->rLambBack;
 		sdf = sd->rb;
-	} else if (inFront) {
+	} else if (outFront) {
 		*sv = sd->tLamb;
 		sdf = (sd->tf != NULL) ? sd->tf : sd->tb;
-	} else /* inBack */ {
+	} else /* inFront & !outFront */ {
 		*sv = sd->tLamb;
 		sdf = (sd->tb != NULL) ? sd->tb : sd->tf;
 	}
@@ -770,7 +770,7 @@ SDsampBSDF(SDValue *sv, FVECT ioVec, double randX, int sflags, const SDData *sd)
 	}
 	if (sv->cieY <= 1e-6) {		/* anything to sample? */
 		sv->cieY = .0;
-		memset(ioVec, 0, 3*sizeof(double));
+		memset(ioVec, 0, sizeof(FVECT));
 		return SDEnone;
 	}
 					/* scale random variable */

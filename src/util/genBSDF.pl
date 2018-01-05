@@ -9,7 +9,7 @@ use strict;
 my $windoz = ($^O eq "MSWin32" or $^O eq "MSWin64");
 use File::Temp qw/ :mktemp  /;
 sub userror {
-	print STDERR "Usage: genBSDF [-n Nproc][-c Nsamp][-W][-t{3|4} Nlog2][-r \"ropts\"][-s \"x=string;y=string\"][-dim xmin xmax ymin ymax zmin zmax][{+|-}C][{+|-}f][{+|-}b][{+|-}mgf][{+|-}geom units] [input ..]\n";
+	print STDERR "Usage: genBSDF [-n Nproc][-c Nsamp][-W][-t{3|4} Nlog2][-r \"ropts\"][-s \"x=string;y=string\"][-dim xmin xmax ymin ymax zmin zmax][{+|-}C][{+|-}a][{+|-}f][{+|-}b][{+|-}mgf][{+|-}geom units] [input ..]\n";
 	exit 1;
 }
 my ($td,$radscn,$mgfscn,$octree,$fsender,$bsender,$receivers,$facedat,$behinddat,$rmtmp);
@@ -84,10 +84,11 @@ if ($windoz) {
 	$rmtmp = "rm -rf $td";
 }
 my @savedARGV = @ARGV;
-my $rfluxmtx = "rfluxmtx -ab 5 -ad 700 -lw 3e-6";
+my $rfluxmtx = "rfluxmtx -ab 5 -ad 700 -lw 3e-6 -w-";
 my $wrapper = "wrapBSDF";
 my $tensortree = 0;
 my $ttlog2 = 4;
+my $dorecip = 1;
 my $nsamp = 2000;
 my $mgfin = 0;
 my $geout = 1;
@@ -115,6 +116,8 @@ while ($#ARGV >= 0) {
 		shift @ARGV;
 	} elsif ("$ARGV[0]" =~ /^[-+]C/) {
 		$docolor = ("$ARGV[0]" =~ /^\+/);
+	} elsif ("$ARGV[0]" =~ /^[-+]a/) {
+		$dorecip = ("$ARGV[0]" =~ /^\+/);
 	} elsif ("$ARGV[0]" =~ /^[-+]f/) {
 		$doforw = ("$ARGV[0]" =~ /^\+/);
 	} elsif ("$ARGV[0]" =~ /^[-+]b/) {
@@ -170,7 +173,7 @@ if ( !defined $recovery ) {
 	}
 }
 if ( $#dim != 5 ) {
-	@dim = split ' ', `getbbox -h $radscn`;
+	@dim = split ' ', `getbbox -h -w $radscn`;
 }
 die "Device entirely inside room!\n" if ( $dim[4] >= 0 );
 if ( $dim[5] > 1e-5 ) {
@@ -201,7 +204,7 @@ if ( !defined $recovery ) {
 	}
 	close MYAVH;
 	# Generate octree
-	system "oconv -w $radscn > $octree";
+	system "oconv -w -f $radscn > $octree";
 	die "Could not compile scene\n" if ( $? );
 	# Add MGF description if requested
 	if ( $geout ) {
@@ -249,13 +252,6 @@ if ( !defined $recovery ) {
 	}
 	print STDERR "Recover using: $0 -recover $td\n";
 }
-# Open unbuffered progress file
-open(MYPH, ">> $td/phase.txt");
-{
-	my $ofh = select MYPH;
-	$| = 1;
-	select $ofh;
-}
 $curphase = 0;
 # Create data segments (all the work happens here)
 if ( $tensortree ) {
@@ -279,7 +275,9 @@ sub do_phase {
 		if ( $recovery > $curphase ) { return 0; }
 		if ( $recovery == $curphase ) { return -1; }
 	}
+	open(MYPH, ">> $td/phase.txt");
 	print MYPH "$curphase\n";
+	close MYPH;
 	return 1;
 }
 
@@ -333,13 +331,13 @@ sub do_ttree_dir {
 				"| $rfluxmtx$r -fa -y $ns2 - $receivers -i $octree";
 		} else {
 			$cmd = "cnt $ns2 $ny $nx " .
-				qq{| rcalc -e "r1=rand(.8681*recno-.673892)" } .
-				qq{-e "r2=rand(-5.37138*recno+67.1737811)" } .
-				qq{-e "r3=rand(+3.17603772*recno+83.766771)" } .
-				qq{-e "Dx=1-2*(\$1+r1)/$ns;Dy:0;Dz=sqrt(1-Dx*Dx)" } .
-				qq{-e "xp=(\$3+r2)*(($dim[1]-$dim[0])/$nx)+$dim[0]" } .
-				qq{-e "yp=(\$2+r3)*(($dim[3]-$dim[2])/$ny)+$dim[2]" } .
-				qq{-e "zp=$dim[5-$forw]" -e "myDz=Dz*($forw*2-1)" } .
+				qq{| rcalc -e 'r1=rand(.8681*recno-.673892)' } .
+				qq{-e 'r2=rand(-5.37138*recno+67.1737811)' } .
+				qq{-e 'r3=rand(+3.17603772*recno+83.766771)' } .
+				qq{-e 'Dx=1-2*(\$1+r1)/$ns;Dy:0;Dz=sqrt(1-Dx*Dx)' } .
+				qq{-e 'xp=(\$3+r2)*(($dim[1]-$dim[0])/$nx)+$dim[0]' } .
+				qq{-e 'yp=(\$2+r3)*(($dim[3]-$dim[2])/$ny)+$dim[2]' } .
+				qq{-e 'zp=$dim[5-$forw]' -e 'myDz=Dz*($forw*2-1)' } .
 				qq{-e '\$1=xp-Dx;\$2=yp-Dy;\$3=zp-myDz' } .
 				qq{-e '\$4=Dx;\$5=Dy;\$6=myDz' -of } .
 				"| $rfluxmtx$r -h -ff -y $ns2 - $receivers -i $octree";
@@ -429,7 +427,7 @@ sub ttree_comp {
 		}
 	}
 	if ($pctcull >= 0) {
-		my $avg = ( "$typ" =~ /^r[fb]/ ) ? " -a" : "";
+		my $avg = ( $dorecip && "$typ" =~ /^r[fb]/ ) ? " -a" : "";
 		my $pcull = ("$spec" eq "Visible") ? $pctcull :
 						     (100 - (100-$pctcull)*.25) ;
 		if ($windoz) {
@@ -535,7 +533,7 @@ sub matrix_comp {
 	} elsif ("$spec" eq "CIE-Z") {
 		$cmd .= " -c 0.0241 0.1229 0.8530";
 	}
-	$cmd .= " $src | rcollate -ho -oc 145";
+	$cmd .= " $src | getinfo -";
 	run_check "$cmd > $dest";
 	if ( "$spec" ne "$curspec" ) {
 		$wrapper .= " -s $spec";

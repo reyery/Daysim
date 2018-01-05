@@ -2,7 +2,7 @@
 .\" Print using the -ms macro package
 .DA 07/10/2016
 .LP
-.tl """Copyright \(co 2016 Regents, University of California
+.tl """Copyright \(co 2017 Regents, University of California
 .sp 2
 .TL
 The
@@ -961,8 +961,10 @@ N mod1 mod2 .. modN
 The first modifier will also be used to shade the area leaving the
 antimatter volume and entering the regular volume.
 If mod1 is void, the antimatter volume is completely invisible.
-Antimatter does not work properly with the material type "trans",
-and multiple antimatter surfaces should be disjoint.
+If shading is desired at antimatter surfaces, it is important
+that the related volumes are closed with outward-facing normals.
+Antimatter surfaces should not intersect with other antimatter boundaries,
+and it is unwise to use the same modifier in nested antimatter volumes.
 The viewpoint must be outside all volumes concerned for a correct
 rendering.
 .NH 3
@@ -1567,6 +1569,12 @@ the Ecole Polytechnique Federale de Lausanne (EPFL University)
 in Lausanne, Switzerland.
 .NH 1
 References
+.LP
+Lee, Eleanor S., David Geisler-Moroder, Gregory Ward,
+``Modeling the direct sun component in buildings using matrix
+algebraic approaches: Methods and validation,''
+.I Solar Energy,
+vol. 160, 15 January 2018, pp 380-395.
 .LP
 Ward, G., M. Kurt & N. Bonneel,
 ``Reducing Anisotropic BSDF Measurement to Common Practice,''

@@ -41,7 +41,7 @@ static int		do_prog = 79;
 static char		*wrapBSDF[MAXCARG] = {"wrapBSDF", "-W", "-UU"};
 static int		wbsdfac = 3;
 
-/* Add argument to wrapBSDF, allocating space if isstatic */
+/* Add argument to wrapBSDF, allocating space if !isstatic */
 static void
 add_wbsdf(const char *arg, int isstatic)
 {
@@ -202,7 +202,6 @@ eval_bsdf(const char *fname)
 				goto err;
 			sum += sdv.cieY;
 			if (rbf_colorimetry == RBCtristimulus) {
-				c_ccvt(&sdv.spec, C_CSXY);
 				xsum += sdv.cieY * sdv.spec.cx;
 				ysum += sdv.cieY * sdv.spec.cy;
 			}
@@ -252,7 +251,6 @@ eval_bsdf(const char *fname)
 				goto err;
 			sum += sdv.cieY;
 			if (rbf_colorimetry == RBCtristimulus) {
-				c_ccvt(&sdv.spec, C_CSXY);
 				xsum += sdv.cieY * sdv.spec.cx;
 				ysum += sdv.cieY * sdv.spec.cy;
 			}
@@ -301,7 +299,6 @@ eval_bsdf(const char *fname)
 				goto err;
 			sum += sdv.cieY;
 			if (rbf_colorimetry == RBCtristimulus) {
-				c_ccvt(&sdv.spec, C_CSXY);
 				xsum += sdv.cieY * sdv.spec.cx;
 				ysum += sdv.cieY * sdv.spec.cy;
 			}
@@ -351,7 +348,6 @@ eval_bsdf(const char *fname)
 				goto err;
 			sum += sdv.cieY;
 			if (rbf_colorimetry == RBCtristimulus) {
-				c_ccvt(&sdv.spec, C_CSXY);
 				xsum += sdv.cieY * sdv.spec.cx;
 				ysum += sdv.cieY * sdv.spec.cy;
 			}
@@ -470,15 +466,14 @@ eval_rbf(void)
 
 		    eval_rbfcol(&sdv, rbf, vout);
 		    sum += sdv.cieY;
-		    if (XZarr != NULL) {
-			c_ccvt(&sdv.spec, C_CSXY);
+		    if (rbf_colorimetry == RBCtristimulus) {
 			xsum += sdv.cieY * sdv.spec.cx;
 			ysum += sdv.cieY * sdv.spec.cy;
 		    }
 		}
 		n = j*abp->nangles + i;
 		bsdfarr[n] = sum / npsamps;
-		if (XZarr != NULL) {
+		if (rbf_colorimetry == RBCtristimulus) {
 		    XZarr[n][0] = xsum*sum/(npsamps*ysum);
 		    XZarr[n][1] = (sum - xsum - ysum)*sum/(npsamps*ysum);
 		}
