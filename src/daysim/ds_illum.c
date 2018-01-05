@@ -32,6 +32,7 @@
 #include  "read_in_header.h"
 
 #define BUF_SIZE	1024
+#define DC_BUF_SIZE	200000
 
 /* information from input file */
 /*site information */
@@ -305,25 +306,25 @@ int main( int argc, char **argv )
 
 	/* calculate diffuse sky patch directions Dx_dif_patch... */
 	for (j = 0; j<SKY_PATCHES; j++){
-		Dx_dif_patch[j] = (float)(cos(radians(diffuse_pts[j][1]))*cos(radians(90 - diffuse_pts[j][0])));
-		Dy_dif_patch[j] = (float)(sin(radians(diffuse_pts[j][1]))*cos(radians(90 - diffuse_pts[j][0])));
-		Dz_dif_patch[j] = (float)(sin(radians(90 - diffuse_pts[j][0])));
+		Dx_dif_patch[j] = (float)(cos(radians(diffuse_pts[j][1]))*cos(radians(90.0f - diffuse_pts[j][0])));
+		Dy_dif_patch[j] = (float)(sin(radians(diffuse_pts[j][1]))*cos(radians(90.0f - diffuse_pts[j][0])));
+		Dz_dif_patch[j] = (float)(sin(radians(90.0f - diffuse_pts[j][0])));
 	}
 	if(dds_file_format) // new dds file format chosen
 	{
 		Dx_dif_patch[SKY_PATCHES] = 0.9397f;
-		Dy_dif_patch[SKY_PATCHES] = 0.0;
+		Dy_dif_patch[SKY_PATCHES] = 0.0f;
 		Dz_dif_patch[SKY_PATCHES] = -0.342f;
 	}else{
 		Dx_dif_patch[SKY_PATCHES] = 0.9961946f;
-		Dy_dif_patch[SKY_PATCHES] = 0.0;
+		Dy_dif_patch[SKY_PATCHES] = 0.0f;
 		Dz_dif_patch[SKY_PATCHES] = -0.087156f;
 		Dx_dif_patch[SKY_PATCHES + 1] = 0.9397f;
-		Dy_dif_patch[SKY_PATCHES + 1] = 0.0;
+		Dy_dif_patch[SKY_PATCHES + 1] = 0.0f;
 		Dz_dif_patch[SKY_PATCHES + 1] = -0.342f;
-		Dx_dif_patch[SKY_PATCHES + 2] = 0.0;
-		Dy_dif_patch[SKY_PATCHES + 2] = 0.0;
-		Dz_dif_patch[SKY_PATCHES + 2] = -1.0;
+		Dx_dif_patch[SKY_PATCHES + 2] = 0.0f;
+		Dy_dif_patch[SKY_PATCHES + 2] = 0.0f;
+		Dz_dif_patch[SKY_PATCHES + 2] = -1.0f;
 	}
 
 	/* calculate Perez if chosen */
@@ -357,8 +358,8 @@ void process_dc_shading(int number_direct_coefficients)
 	int number_of_DC_lines;
 	int last_element_was_seperator;
 	int number_of_diffuse_and_ground_DC = DAYLIGHT_COEFFICIENTS;
-	char line_string[2000000]="";
-	char CurrentDC_FileName[2000]="";
+	char line_string[DC_BUF_SIZE] = "";
+	//char CurrentDC_FileName[2000]="";
 //#ifndef PROCESS_ROW
 	int i_last;
 //#endif
@@ -435,14 +436,11 @@ void process_dc_shading(int number_direct_coefficients)
 	// read in daylight coefficients
 	//==============================
 	for (k=0 ; k < TotalNumberOfDCFiles; k++) {
+		//sprintf(CurrentDC_FileName,"%s",shading_dc_file[k]);
+		if( ( DC_FILE= open_input(shading_dc_file[k]) ) == NULL )
 		{
-			sprintf(CurrentDC_FileName,"%s",shading_dc_file[k]);
-			if( ( DC_FILE= open_input(shading_dc_file[k]) ) == NULL )
-			{
-				sprintf(errmsg, "cannot open DC file %s", shading_dc_file[k]);
-				error(SYSTEM, errmsg);
-			}
-
+			sprintf(errmsg, "cannot open DC file %s", shading_dc_file[k]);
+			error(SYSTEM, errmsg);
 		}
 
 
@@ -462,7 +460,7 @@ void process_dc_shading(int number_direct_coefficients)
 
 		if(number_of_DC_lines==0) {
 			fprintf(stderr,"IN CASE YOU ARE USING DAYSIM UNDER WINDOWS, THE \"RAPYPATH\" VARIALBE MIGHT NOT HAVE BEEN SET CORRECTLY. TO TEST THIS, OPEN A DOS PROMPT AND TYPE \'set\'. AMONG THE VARIALBLES DISPLAYED SHOULD BE \'Raypath c:\\Daysim\\lib\'.\nPLEASE REFER TO THE DAYSIM TUTORIAL FOR MORE INFORMATION...");
-			sprintf(errmsg, "file %s does not contain any uncommented lines", CurrentDC_FileName);
+			sprintf(errmsg, "file %s does not contain any uncommented lines", shading_dc_file[k]);
 			error(USER, errmsg);
 		}
 		rewind(DC_FILE);
@@ -471,7 +469,7 @@ void process_dc_shading(int number_direct_coefficients)
 		while( (c= fgetc( DC_FILE )) != EOF ) {
 			ungetc( c, DC_FILE );
 			if( c != '#' && !iscntrl(c) ) {
-				fgets(line_string,200000,DC_FILE); // TODO: does not work for lines longer then 200000
+				fgets(line_string, DC_BUF_SIZE, DC_FILE); // TODO: does not work for lines longer then 200000
 				break;
 			} else {
 				fscanf( DC_FILE, "%*[^\n]\n" );
@@ -484,7 +482,7 @@ void process_dc_shading(int number_direct_coefficients)
 		// Now we count the number of DC for the last sensor.
 		number_of_elements_in_DC_file=1; /*get number of daylight coefficients */
 		last_element_was_seperator=1;
-		for (i=0;i<200000;i++) {
+		for (i = 0; i < DC_BUF_SIZE; i++) {
 			//make sure you don't exceed the bounds of the array
 			if (line_string[i] == '\n')
 				break; //exits the loop without completing the current iteration
@@ -712,7 +710,7 @@ void pre_process_dds_shadowtesting()
 		}else{
 			rewind(WEA);
 		}
-  	while(fscanf(WEA,"%d %d %f %f %f",&month,&day,&hour,&dir,&dif) != EOF)
+  	while(fscanf(WEA,"%d %d %lf %f %f",&month,&day,&hour,&dir,&dif) != EOF)
   	{
 		NumberofEntriesInWeaFile++;
 

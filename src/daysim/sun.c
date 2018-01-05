@@ -22,8 +22,8 @@ int jdate( int month, int day)		/* Julian date (days into year) */
 
 double stadj( int jd)		/* float f_E(int day)-12 * (s_meridian - s_longitude) / PI ) solar time adjustment from Julian date */
 {
-    extern float s_meridian;
-    extern float s_longitude;
+	extern double s_meridian;
+	extern double s_longitude;
     return( 0.170 * sin( (4*PI/373) * (jd - 80) ) -
            0.129 * sin( (2*PI/355) * (jd - 8) ) +
            12 * (s_meridian - s_longitude) / PI );
@@ -39,27 +39,28 @@ double sdec( int jd)		/*  solar declination angle from Julian date */
 
 double solar_sunset(int month, int day)
 {
-    extern float s_latitude;
+	extern double s_latitude;
 	double W = -1 * (tan(s_latitude)*tan(sdec(jdate(month, day))));
     return(degrees(PI/2 - atan2(W,sqrt(1-W*W)))/15+12);
 }
 double sazi( double sd,  double st)	/* solar azimuth from solar declination and solar time */
-{	extern float s_latitude;
+{
+	extern double s_latitude;
     return( -atan2( cos(sd)*sin(st*(PI/12)),
                    -cos(s_latitude)*sin(sd) -
                    sin(s_latitude)*cos(sd)*cos(st*(PI/12)) ) );
 }
 double salt( double sd, double st)	/* solar altitude from solar declination and solar time */
 {
-    extern float s_latitude;
+	extern double s_latitude;
     
     return( asin( sin(s_latitude) * sin(sd) -
                  cos(s_latitude) * cos(sd) * cos(st*(PI/12)) ) );
 }
 
-double f_salt( double sd, double alt)	/* solar altitude from solar declination and solar time */
+double f_salt( double sd, double alt)	/* solar time from solar declination and solar altitude */
 {
-    extern float s_latitude;
+	extern double s_latitude;
     double E,F;
     E= sin(s_latitude) * sin(sd);
     F=cos(s_latitude) * cos(sd);

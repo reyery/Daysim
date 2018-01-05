@@ -124,6 +124,7 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 	int i=0,j=0,k=0,m=0,number_data_values=0;
 	char keyword[200]="";
 	double centrum_hour;
+	double solar_altitude;
 
 	if( *shadow_testing_on){
 		shadow_testing(number_direct_coefficients);
@@ -200,11 +201,12 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 
 	for (m = 0; m<number_data_values; m++){
 
-		fscanf(INPUT_DATAFILE, "%d %d %f %f %f", &month, &day, &hour, &dir1, &dif1);
+		fscanf(INPUT_DATAFILE, "%d %d %lf %lf %lf", &month, &day, &hour, &dir1, &dif1);
 		jd = jdate(month, day);
 		dir = dir1;
 		dif = dif1;
 		centrum_hour = hour;
+		solar_altitude = salt(sdec(jd), hour + stadj(jd));
 		sunrise = 12 + 12 - stadj(jd) - solar_sunset(month, day);
 		sunset = solar_sunset(month, day) - stadj(jd);
 		if ((hour - (0.5*time_step / 60.0) <= sunrise) && (hour + (0.5*time_step / 60.0)> sunrise)){
@@ -222,16 +224,13 @@ void calculate_perez(int *shadow_testing_on, int number_direct_coefficients)
 			current_shadow_testing_value = shadow_testing_results[shadow_testing_counter++];
 
 
-		if ((dif<dif_threshold)
-			|| (salt(sdec(jd), hour + stadj(jd)) <0)) {
+		if ((dif<dif_threshold) || (solar_altitude < 0)) {
 			for (k = 0; k < TotalNumberOfDCFiles; k++){
 				for (j = 0; j<number_of_sensors; j++)
 					fprintf(SHADING_ILLUMINANCE_FILE[k], " %.0f", 0.0);
 			}
-			if ((dif>dif_threshold)
-				&& (salt(sdec(jd), hour + stadj(jd)) <0)
-				&& all_warnings) {
-				sprintf(errmsg, "sun below horizon at %d %d %.3f (solar altitude: %.3f)", month, day, hour, 57.38*salt(sdec(jd), hour + stadj(jd)));
+			if ((dif>dif_threshold) && (solar_altitude < 0) && all_warnings) {
+				sprintf(errmsg, "sun below horizon at %d %d %.3f (solar altitude: %.3f)", month, day, hour, degrees(solar_altitude));
 				error(WARNING, errmsg);
 			}
 		}

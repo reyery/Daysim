@@ -204,7 +204,7 @@ for (i=0;i<num_of_lines;i++)
 		{
 			for(j=0;j<number_of_elements;j++)
 			{
-				fscanf(DC_FILE,"%f",&illuminance);
+				fscanf(DC_FILE,"%lf",&illuminance);
 				if(i<lines_in_1st_batch)
 				{
 					fprintf(DC_FILE_OUT,"%e\t", illuminance*scaling1);
@@ -218,7 +218,7 @@ for (i=0;i<num_of_lines;i++)
 		{
 			for(j=0;j<number_of_elements;j++)
 			{
-				fscanf(DC_FILE,"%f",&illuminance);
+				fscanf(DC_FILE,"%lf",&illuminance);
 				if(j<lines_in_1st_batch)
 				{
 					fprintf(DC_FILE_OUT,"%e\t", illuminance*scaling1);
@@ -233,7 +233,7 @@ for (i=0;i<num_of_lines;i++)
 		{ //Single Scaling Factor
 			for(j=0;j<number_of_elements;j++)
 			{
-				fscanf(DC_FILE,"%f",&illuminance);
+				fscanf(DC_FILE,"%lf",&illuminance);
 				if (number_of_selected_sensors==0)
 				{
 			 		fprintf(DC_FILE_OUT,"%e\t", illuminance*scaling_factor);

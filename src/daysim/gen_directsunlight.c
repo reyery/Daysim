@@ -108,7 +108,7 @@ void  make_annual_point_file(  char long_sensor_file[1024],int BlindGroupIndex)
 		}
 
 	POINTS=open_output(long_sensor_file);
-  	while(fscanf(WEA,"%d %d %f %f %f",&month,&day,&hour,&dir,&dif) != EOF)
+  	while(fscanf(WEA,"%d %d %lf %f %f",&month,&day,&hour,&dir,&dif) != EOF)
   	{
 
 		/* get sun position */
@@ -365,7 +365,7 @@ for (j=0 ; j<NumberOfBlindGroupCombinations ; j++)
 	DIR_TMP[j]=open_input(dir_tmp_filename[j]);
 
 DIR=open_output(direct_sunlight_file);
-while(fscanf(WEA,"%d %d %f %f %f",&month,&day,&hour,&dir,&dif) != EOF)
+while(fscanf(WEA,"%d %d %lf %f %f",&month,&day,&hour,&dir,&dif) != EOF)
 {
 	fprintf(DIR,"%d %d %.3f %.0f %.0f ",month,day,hour,dir,dif );
 	/* get sun position */

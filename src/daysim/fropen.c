@@ -122,11 +122,8 @@ int length_of_file(char *filename)
 	int		end=0;
 	errno =0;
 	Datei = fopen(filename, "r");
-	if ( Datei == NULL)
+	if ( Datei )
 	{
-		close_file(Datei);
-	}else{
-
 		fseek (Datei, 0, SEEK_END);
 		end = ftell (Datei);
 		close_file(Datei);
@@ -143,7 +140,7 @@ FILE *open_output(char *filename)	/*open filename for writing*/
 	Datei = fopen(filename, "w");
 	if (Datei == NULL) {
 		sprintf(errmsg, "open of '%s' for output failed: %s", filename, strerror(errno));
-		error(WARNING, errmsg);
+		error(USER, errmsg);
 	}
 	return Datei;
 }
@@ -154,7 +151,7 @@ FILE *open_input(char *filename)	/*open file for reading*/
 	Datei = fopen(filename, "r");
 	if (Datei == NULL) {
 		sprintf(errmsg, "open of '%s' for input failed: %s", filename, strerror(errno));
-		error(WARNING, errmsg);
+		error(USER, errmsg);
 	}
 	return Datei;
 }
@@ -235,7 +232,7 @@ int copy_file(char *original_file, char *copied_file)
  */
 char* prepend_path( char* path, char* str ) {
 	size_t	offset = 0;
-	size_t	n;
+	int		pos;
 	char 	token[PATH_SIZE];
 	char 	p[PATH_SIZE];
 	char* 	mpath= NULL;
@@ -256,9 +253,9 @@ char* prepend_path( char* path, char* str ) {
 		p[path_l]= '\0';
 	}
 
-	while( sscanf( str + offset, "%s%n", token, &n ) == 1 ) {
-		offset+= n;
-		n= strlen( token );
+	while( sscanf( str + offset, "%s%n", token, &pos ) == 1 ) {
+		size_t n = strlen(token);
+		offset += pos;
 
 		while( mpath_l + n + path_l + 1 > mpath_c ) {
 			mpath_c= mpath_c ? 2*mpath_c : PATH_SIZE;
