@@ -1,4 +1,4 @@
-#${CMAKE_COMMAND} -DVERSION_OUT_FILE=v  -DVERSION_IN_FILE=src/rt/VERSION -DVERSION_GOLD=src/rt/Version.c -P src/common/create_version.cmake
+#${CMAKE_COMMAND} -DRADIANCE_VERSION=v -DVERSION_OUT_FILE=v -DVERSION_IN_FILE=src/rt/VERSION -DVERSION_GOLD=src/rt/Version.c -P src/common/create_version.cmake
 
 # if the gold version exists then use that instead
 if(EXISTS "${VERSION_GOLD}")
@@ -21,8 +21,10 @@ ENDMACRO (TODAY)
 
 find_program(DATE date)
 if(DATE)
-  execute_process(COMMAND ${DATE} OUTPUT_VARIABLE DATE_STR)
-  string(STRIP "${DATE_STR}" DATE_STR)
+  execute_process(COMMAND ${DATE} "+%F"
+    OUTPUT_VARIABLE DATE_STR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
 else()
   #execute_process(COMMAND echo %DATE% %TIME% OUTPUT_VARIABLE DATE_STR)
   TODAY(DATE_STR)
@@ -30,17 +32,22 @@ else()
 endif()
 find_program(WHO whoami)
 if(WHO)
-  execute_process(COMMAND ${WHO} OUTPUT_VARIABLE WHO_STR)
-  string(STRIP "${WHO_STR}" WHO_STR)
+  execute_process(COMMAND ${WHO}
+    OUTPUT_VARIABLE WHO_STR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
 endif()
 find_program(HOSTNAME hostname)
 if(HOSTNAME)
-  execute_process(COMMAND ${HOSTNAME} OUTPUT_VARIABLE HOST_STR)
-  string(STRIP "${HOST_STR}" HOST_STR)
+  execute_process(COMMAND ${HOSTNAME}
+    OUTPUT_VARIABLE HOST_STR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
 endif()
+
 file(READ "${VERSION_IN_FILE}" VERSION)
 string(STRIP "${VERSION}" VERSION)
-set(CONTENTS "${VERSION} lastmod ${DATE_STR} by ${WHO_STR} on ${HOST_STR}")
+set(CONTENTS "DAYSIM lastmod ${DATE_STR} by ${WHO_STR} on ${HOST_STR} (based on RADIANCE ${VERSION} by G. Ward)")
 message("${CONTENTS}")
 string(REPLACE "\\" "\\\\" CONTENTS "${CONTENTS}") # look for instances of the escape character
 file(WRITE "${VERSION_OUT_FILE}" "char VersionID[]=\"${CONTENTS}\";\n")

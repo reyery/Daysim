@@ -9,8 +9,8 @@
 
 
 # Build results
-
-
+/build
+/build_win
 [Dd]ebug/
 [Rr]elease/
 x64/
