@@ -140,6 +140,7 @@ void get_daylight_illuminances( )
 			}			
 		}	
 	}
+	return;
 memerr:
 	error(SYSTEM, "out of memory in get_daylight_illuminances");
 }

@@ -1,5 +1,5 @@
 #include "cPerezSkyModel.h"
-#include "ClimateFile.h"
+#include "climateFile.h"
 #include "ds_constants.h"
 
 /////////////////////////////////////////////
