@@ -243,7 +243,7 @@ double cClimateFile::GetDiffuseRad(double hour, int day)
 	diff=m_ptIdh[pointer+1]-m_ptIdh[pointer];
 	assert(isfinite(diff));
 
-	auto res = m_ptIdh[pointer] + diff*ratio;
+	double res = m_ptIdh[pointer] + diff*ratio;
 	assert(!isnan(res));
 	return res;
 }
