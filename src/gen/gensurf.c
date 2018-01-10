@@ -1,5 +1,5 @@
 #ifndef lint
-static const char RCSid[] = "$Id$";
+static const char RCSid[] = "$Id: gensurf.c,v 2.23 2017/01/28 23:09:24 greg Exp $";
 #endif
 /*
  *  gensurf.c - program to generate functional surfaces

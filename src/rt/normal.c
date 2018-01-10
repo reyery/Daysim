@@ -1,5 +1,5 @@
 #ifndef lint
-static const char RCSid[] = "$Id$";
+static const char RCSid[] = "$Id: normal.c,v 2.75 2017/08/03 16:41:52 greg Exp $";
 #endif
 /*
  *  normal.c - shading function for normal materials.

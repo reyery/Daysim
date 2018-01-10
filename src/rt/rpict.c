@@ -1,5 +1,5 @@
 #ifndef lint
-static const char RCSid[] = "$Id$";
+static const char RCSid[] = "$Id: rpict.c,v 2.90 2015/04/22 20:28:16 rschregle Exp $";
 #endif
 /*
  *  rpict.c - routines and variables for picture generation.

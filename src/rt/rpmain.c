@@ -1,5 +1,5 @@
 #ifndef lint
-static const char	RCSid[] = "$Id$";
+static const char	RCSid[] = "$Id: rpmain.c,v 2.18 2016/03/10 18:25:46 schorsch Exp $";
 #endif
 /*
  *  rpmain.c - main for rpict batch rendering program

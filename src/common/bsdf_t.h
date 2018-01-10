@@ -1,4 +1,4 @@
-/* RCSid $Id$ */
+/* RCSid $Id: bsdf_t.h,v 3.13 2018/01/05 21:00:24 greg Exp $ */
 /*
  *  bsdf_t.h
  *  

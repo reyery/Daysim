@@ -1,5 +1,5 @@
 #ifndef lint
-static const char RCSid[] = "$Id$";
+static const char RCSid[] = "$Id: pmapcontrib.c,v 2.14 2017/08/14 21:12:10 rschregle Exp $";
 #endif
 
 /* 
@@ -11,7 +11,7 @@ static const char RCSid[] = "$Id$";
        supported by the Swiss National Science Foundation (SNSF, #147053)
    ======================================================================
    
-   $Id$
+   $Id: pmapcontrib.c,v 2.14 2017/08/14 21:12:10 rschregle Exp $
 */
 
 
@@ -184,7 +184,7 @@ void distribPhotonContrib (PhotonMap* pm, unsigned numProc)
    FILE              **primaryHeap = NULL;
    char              **primaryHeapFname = NULL;
    PhotonPrimaryIdx  *primaryOfs = NULL;
-
+                                    
    if (!pm)
       error(USER, "no photon map defined in distribPhotonContrib");
       

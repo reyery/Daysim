@@ -1,5 +1,5 @@
 #ifndef lint
-static const char	RCSid[] = "$Id$";
+static const char	RCSid[] = "$Id: gcalc.c,v 1.4 2011/12/01 18:47:35 greg Exp $";
 #endif
 /*
  *  gcalc.c - routines to do calculations on graph files.

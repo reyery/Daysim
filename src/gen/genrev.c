@@ -1,5 +1,5 @@
 #ifndef lint
-static const char	RCSid[] = "$Id$";
+static const char	RCSid[] = "$Id: genrev.c,v 2.10 2008/10/11 04:39:34 greg Exp $";
 #endif
 /*
  *  genrev.c - program to generate functions of rotation about z

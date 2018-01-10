@@ -1,4 +1,4 @@
-/* RCSid $Id$ */
+/* RCSid $Id: view.h,v 2.18 2008/03/11 02:21:46 greg Exp $ */
 /*
  *  view.h - header file for image generation.
  *

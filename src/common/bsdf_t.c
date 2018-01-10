@@ -1,5 +1,5 @@
 #ifndef lint
-static const char RCSid[] = "$Id$";
+static const char RCSid[] = "$Id: bsdf_t.c,v 3.45 2018/01/05 21:00:24 greg Exp $";
 #endif
 /*
  *  bsdf_t.c
@@ -1336,6 +1336,7 @@ subtract_min_RGB(C_COLOR *cs, SDNode *stc[])
 static void
 extract_diffuse(SDValue *dv, SDSpectralDF *df)
 {
+	int	n;
 	SDTre	*sdt;
 
 	if (df == NULL || df->ncomp <= 0) {
