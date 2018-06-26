@@ -1,5 +1,5 @@
 #ifndef lint
-static const char RCSid[] = "$Id: gensurf.c,v 2.23 2017/01/28 23:09:24 greg Exp $";
+static const char RCSid[] = "$Id: gensurf.c,v 2.25 2018/05/04 23:56:49 greg Exp $";
 #endif
 /*
  *  gensurf.c - program to generate functional surfaces
@@ -86,6 +86,8 @@ char  *argv[];
 	int  i, j, m, n;
 	char  stmp[256];
 
+	esupport |= E_VARIABLE|E_FUNCTION|E_RCONST;
+	esupport &= ~(E_OUTCHAN|E_INCHAN);
 	varset("PI", ':', PI);
 	funset("hermite", 5, ':', l_hermite);
 	funset("bezier", 5, ':', l_bezier);
@@ -97,9 +99,15 @@ char  *argv[];
 	for (i = 8; i < argc; i++)
 		if (!strcmp(argv[i], "-e"))
 			scompile(argv[++i], NULL, 0);
-		else if (!strcmp(argv[i], "-f"))
-			fcompile(argv[++i]);
-		else if (!strcmp(argv[i], "-s"))
+		else if (!strcmp(argv[i], "-f")) {
+			char  *fpath = getpath(argv[++i], getrlibpath(), 0);
+			if (fpath == NULL) {
+				fprintf(stderr, "%s: cannot find file '%s'\n",
+						argv[0], argv[i]);
+				quit(1);
+			}
+			fcompile(fpath);
+		} else if (!strcmp(argv[i], "-s"))
 			smooth++;
 		else if (!strcmp(argv[i], "-o"))
 			objout++;

@@ -79,11 +79,11 @@ endif()
 if(APPLE)
   find_library(OPENGL_gl_LIBRARY
     NAMES GL MesaGL
-    PATHS /usr/X11R6/lib
+    PATHS ${X11_LIB_SEARCH_PATH}
   )
   find_library(OPENGL_glu_LIBRARY
     NAMES GLU MesaGLU
-    PATHS /usr/X11R6/lib
+    PATHS ${X11_LIB_SEARCH_PATH}
   )
   set(OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
 else()
@@ -178,6 +178,7 @@ else()
     objview.pl
     raddepend.csh
     rlux.csh
+    rtpict.pl
     trad.wsh
     vinfo.csh
   )

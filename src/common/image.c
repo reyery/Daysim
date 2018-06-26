@@ -1,5 +1,5 @@
 #ifndef lint
-static const char	RCSid[] = "$Id: image.c,v 2.40 2013/04/03 00:35:09 greg Exp $";
+static const char	RCSid[] = "$Id: image.c,v 2.48 2018/04/27 18:09:26 greg Exp $";
 #endif
 /*
  *  image.c - routines for image generation.
@@ -226,13 +226,14 @@ double  y
 }
 
 
-void
+int
 viewloc(			/* find image location for point */
 FVECT  ip,
 VIEW  *v,
 FVECT  p
-)
+)	/* Use VL_* flags to interpret return value */
 {
+	int	rflags = VL_GOOD;
 	double  d, d2;
 	FVECT  disp;
 
@@ -244,17 +245,19 @@ FVECT  p
 		break;
 	case VT_PER:			/* perspective view */
 		d = DOT(disp,v->vdir);
+		if ((v->vaft > FTINY) & (d >= v->vaft))
+			rflags |= VL_BEYOND;
 		ip[2] = VLEN(disp);
-		if (d < 0.0) {		/* fold pyramid */
+		if (d < -FTINY) {	/* fold pyramid */
 			ip[2] = -ip[2];
 			d = -d;
-		}
-		if (d > FTINY) {
-			d = 1.0/d;
-			disp[0] *= d;
-			disp[1] *= d;
-			disp[2] *= d;
-		}
+		} else if (d <= FTINY)
+			return(VL_BAD);	/* at infinite edge */
+		d = 1.0/d;
+		disp[0] *= d;
+		disp[1] *= d;
+		disp[2] *= d;
+		if (ip[2] < 0.0) d = -d;
 		ip[2] *= (1.0 - v->vfore*d);
 		break;
 	case VT_HEM:			/* hemispherical fisheye */
@@ -269,41 +272,57 @@ FVECT  p
 		d = DOT(disp,v->hvec);
 		d2 = DOT(disp,v->vdir);
 		ip[0] = 180.0/PI * atan2(d,d2) / v->horiz + 0.5 - v->hoff;
-		d = 1.0/sqrt(d*d + d2*d2);
+		d = d*d + d2*d2;
+		if (d <= FTINY*FTINY)
+			return(VL_BAD);	/* at pole */
+		if ((v->vaft > FTINY) & (d >= v->vaft*v->vaft))
+			rflags |= VL_BEYOND;
+		d = 1.0/sqrt(d);
 		ip[1] = DOT(disp,v->vvec)*d/v->vn2 + 0.5 - v->voff;
 		ip[2] = VLEN(disp);
 		ip[2] *= (1.0 - v->vfore*d);
-		return;
+		goto gotall;
 	case VT_ANG:			/* angular fisheye */
 		ip[0] = 0.5 - v->hoff;
 		ip[1] = 0.5 - v->voff;
 		ip[2] = normalize(disp) - v->vfore;
 		d = DOT(disp,v->vdir);
 		if (d >= 1.0-FTINY)
-			return;
+			goto gotall;
 		if (d <= -(1.0-FTINY)) {
 			ip[0] += 180.0/v->horiz;
-			return;
+			goto gotall;
 		}
 		d = (180.0/PI)*acos(d) / sqrt(1.0 - d*d);
 		ip[0] += DOT(disp,v->hvec)*d/v->horiz;
 		ip[1] += DOT(disp,v->vvec)*d/v->vert;
-		return;
+		goto gotall;
 	case VT_PLS:			/* planispheric fisheye */
 		ip[0] = 0.5 - v->hoff;
 		ip[1] = 0.5 - v->voff;
 		ip[2] = normalize(disp) - v->vfore;
 		d = DOT(disp,v->vdir);
 		if (d >= 1.0-FTINY)
-			return;
+			goto gotall;
 		if (d <= -(1.0-FTINY))
-			return;		/* really an error */
+			return(VL_BAD);
 		ip[0] += DOT(disp,v->hvec)/((1. + d)*sqrt(v->hn2));
 		ip[1] += DOT(disp,v->vvec)/((1. + d)*sqrt(v->vn2));
-		return;
+		goto gotall;
+	default:
+		return(VL_BAD);
 	}
 	ip[0] = DOT(disp,v->hvec)/v->hn2 + 0.5 - v->hoff;
 	ip[1] = DOT(disp,v->vvec)/v->vn2 + 0.5 - v->voff;
+gotall:					/* add appropriate return flags */
+	if (ip[2] <= 0.0)
+		rflags |= VL_BEHIND;
+	else if ((v->type != VT_PER) & (v->type != VT_CYL))
+		rflags |= VL_BEYOND*((v->vaft > FTINY) &
+					(ip[2] >= v->vaft - v->vfore));
+	rflags |= VL_OUTSIDE*((0.0 >= ip[0]) | (ip[0] >= 1.0) |
+				(0.0 >= ip[1]) | (ip[1] >= 1.0));
+	return(rflags);
 }
 
 

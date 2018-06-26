@@ -13,7 +13,7 @@ macro(create_version_file version_file)
   add_custom_command(
     OUTPUT "${version_file}"
     COMMAND "${CMAKE_COMMAND}"
-      -DDAYSIM_VERSION="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}.${PROJECT_VERSION_TWEAK}"
+      -DDAYSIM_VERSION="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_TWEAK}"
       -DVERSION_OUT_FILE="${version_file}"
       -DVERSION_IN_FILE="${daysim_SOURCE_DIR}/src/rt/VERSION"
       -DVERSION_GOLD="${daysim_SOURCE_DIR}/src/rt/Version.c"

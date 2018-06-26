@@ -1,5 +1,5 @@
 #ifndef lint
-static const char RCSid[] = "$Id: pmap.c,v 2.13 2017/08/14 21:12:10 rschregle Exp $";
+static const char RCSid[] = "$Id: pmap.c,v 2.15 2018/06/07 19:26:04 rschregle Exp $";
 #endif
 
 
@@ -13,7 +13,7 @@ static const char RCSid[] = "$Id: pmap.c,v 2.13 2017/08/14 21:12:10 rschregle Ex
        supported by the Swiss National Science Foundation (SNSF, #147053)
    ======================================================================
    
-   $Id: pmap.c,v 2.13 2017/08/14 21:12:10 rschregle Exp $
+   $Id: pmap.c,v 2.15 2018/06/07 19:26:04 rschregle Exp $
 */
 
 
@@ -69,7 +69,13 @@ static int photonParticipate (RAY *ray)
       colorNorm(ray -> rcol);
       VCOPY(ray -> rorg, ray -> rop);
       
+#if 0
       if (albedo > FTINY && ray -> rlvl > 0)
+#else
+      /* Store volume photons unconditionally in mist to also account for
+         direct inscattering from sources */
+      if (albedo > FTINY)
+#endif
          /* Add to volume photon map */
          newPhoton(volumePmap, ray);
          
@@ -333,9 +339,8 @@ void distribPhotons (PhotonMap **pmaps, unsigned numProc)
    initPhotonEmissionFuncs();
    initPhotonScatterFuncs();
    
-   /* Get photon ports if specified */
-   if (ambincl == 1) 
-      getPhotonPorts();
+   /* Get photon ports from modifier list */
+   getPhotonPorts(photonPortList);
 
    /* Get photon sensor modifiers */
    getPhotonSensors(photonSensorList);
@@ -445,7 +450,18 @@ void distribPhotons (PhotonMap **pmaps, unsigned numProc)
          pmapSeed(randSeed + (proc + 3) % numProc, mediumState);
          pmapSeed(randSeed + (proc + 4) % numProc, scatterState);
          pmapSeed(randSeed + (proc + 5) % numProc, rouletteState);
-                  
+               
+#ifdef DEBUG_PMAP          
+         /* Output child process PID after random delay to prevent corrupted
+          * console output due to race condition */
+         usleep(1e6 * pmapRandom(rouletteState));
+         fprintf(stderr, "Proc %d: PID = %d "
+                 "(waiting 10 sec to attach debugger...)\n", 
+                 proc, getpid());
+         /* Allow time for debugger to attach to child process */
+         sleep(10);
+#endif            
+
          for (t = 0; t < NUM_PMAP_TYPES; t++)
             lastNumPhotons [t] = 0;
             

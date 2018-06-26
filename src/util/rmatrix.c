@@ -1,5 +1,5 @@
 #ifndef lint
-static const char RCSid[] = "$Id: rmatrix.c,v 2.25 2017/08/28 15:59:46 greg Exp $";
+static const char RCSid[] = "$Id: rmatrix.c,v 2.28 2018/06/13 18:36:38 greg Exp $";
 #endif
 /*
  * General matrix operations.
@@ -146,20 +146,12 @@ rmx_load_float(RMATRIX *rm, FILE *fp)
 static int
 rmx_load_double(RMATRIX *rm, FILE *fp)
 {
-	int	i, j, k;
-	double	val[100];
+	int	i, j;
 
-	if (rm->ncomp > 100) {
-		fputs("Unsupported # components in rmx_load_double()\n", stderr);
-		exit(1);
-	}
 	for (i = 0; i < rm->nrows; i++)
-	    for (j = 0; j < rm->ncols; j++) {
-		if (getbinary(val, sizeof(val[0]), rm->ncomp, fp) != rm->ncomp)
+	    for (j = 0; j < rm->ncols; j++)
+		if (getbinary(&rmx_lval(rm,i,j,0), sizeof(double), rm->ncomp, fp) != rm->ncomp)
 		    return(0);
-	        for (k = rm->ncomp; k--; )
-		     rmx_lval(rm,i,j,k) = val[k];
-	    }
 	return(1);
 }
 
@@ -334,37 +326,29 @@ rmx_write_float(const RMATRIX *rm, FILE *fp)
 static int
 rmx_write_double(const RMATRIX *rm, FILE *fp)
 {
-	int	i, j, k;
-	double	val[100];
+	int	i, j;
 
-	if (rm->ncomp > 100) {
-		fputs("Unsupported # components in rmx_write_double()\n", stderr);
-		exit(1);
-	}
 	for (i = 0; i < rm->nrows; i++)
-	    for (j = 0; j < rm->ncols; j++) {
-	        for (k = rm->ncomp; k--; )
-		    val[k] = rmx_lval(rm,i,j,k);
-		if (putbinary(val, sizeof(val[0]), rm->ncomp, fp) != rm->ncomp)
+	    for (j = 0; j < rm->ncols; j++)
+		if (putbinary(&rmx_lval(rm,i,j,0), sizeof(double), rm->ncomp, fp) != rm->ncomp)
 			return(0);
-	    }
 	return(1);
 }
 
 static int
 rmx_write_rgbe(const RMATRIX *rm, FILE *fp)
 {
-	COLOR	*scan = (COLOR *)malloc(sizeof(COLOR)*rm->ncols);
+	COLR	*scan = (COLR *)malloc(sizeof(COLR)*rm->ncols);
 	int	i, j;
 
 	if (scan == NULL)
 		return(0);
 	for (i = 0; i < rm->nrows; i++) {
 	    for (j = rm->ncols; j--; )
-	        setcolor(scan[j],	rmx_lval(rm,i,j,0),
+	        setcolr(scan[j],	rmx_lval(rm,i,j,0),
 					rmx_lval(rm,i,j,1),
 					rmx_lval(rm,i,j,2)	);
-	    if (fwritescan(scan, rm->ncols, fp) < 0) {
+	    if (fwritecolrs(scan, rm->ncols, fp) < 0) {
 		free(scan);
 		return(0);
 	    }
@@ -627,6 +611,8 @@ rmx_scale(RMATRIX *rm, const double sf[])
 		for (k = rm->ncomp; k--; )
 		    rmx_lval(rm,i,j,k) *= sf[k];
 
+	if (rm->info)
+		rmx_addinfo(rm, "Applied scalar\n");
 	return(1);
 }
 
@@ -642,6 +628,13 @@ rmx_transform(const RMATRIX *msrc, int n, const double cmat[])
 	dnew = rmx_alloc(msrc->nrows, msrc->ncols, n);
 	if (dnew == NULL)
 		return(NULL);
+	if (msrc->info) {
+		char	buf[128];
+		sprintf(buf, "Applied %dx%d matrix transform\n",
+				dnew->ncomp, msrc->ncomp);
+		rmx_addinfo(dnew, msrc->info);
+		rmx_addinfo(dnew, buf);
+	}
 	dnew->dtype = msrc->dtype;
 	for (i = dnew->nrows; i--; )
 	    for (j = dnew->ncols; j--; )
