@@ -56,16 +56,7 @@ Programs maintained on the main RADIANCE repository and included here:
 1. Open the Visual Studio project file, which is located in your build folder. Mine is _D:/myname/Daysim64/daysim.sln_.
 2. In the toolbar, you may choose either "Debug" or "Release" settings. Debug (the default) will take longer to compile and run, but will allow you to step through running code using the debugger. Use Release settings for creating distributable packages.
 3. Choose Build > Build Solution from the menus.
-    - Optional: You may see errors related to the normtiff and ra_tiff projects. To fix these, you need to build libtiff.lib.
-        1. Navigate to _Start_ > _All Programs_ > _Visual Studio 2013_ > _Visual Studio Tools_ and run VS2013 x64 Native Tools Command Prompt (assuming you are creating a 64-bit build).
-		2. Navigate to the libtiff directory, which downloaded when you built the DAYSIM project. Mine is _D:\myname\Daysim64\Downloads\Source\radiance_support\src\px\tiff\libtiff_.
-		3. Run this command:
-`nmake /f makefile.vc all`
-		4. In CMake, set the following variables:
-			- TIFF_HEADER: `D:/myname/Daysim64/Downloads/Source/radiance_support/src/px/tiff/libtiff`
-			- TIFF_LIBRARY: `D:/myname/Daysim64/Downloads/Source/radiance_support/src/px/tiff/libtiff/libtiff.lib`
-		5. In CMake, click _Generate_.
-		6. In Visual Studio, choose _Build_ > _Build Solution_.
+    - Optional: You may see errors related to the normtiff and ra_tiff projects. To fix these, select the BUILD_LIBTIFF option in CMake and repeat steps 4 and 5 from _Create the DAYSIM project_.
 4. Check that the executables have been built to your bin folder. Mine are in _D:\myname\Daysim64\bin\Debug_ or _D:\myname\Daysim64\bin\Release_.
 
 #### Mac
@@ -74,6 +65,12 @@ Programs maintained on the main RADIANCE repository and included here:
 2. In the top left corner, choose ALL_BUILD (default) to build all executables, or select certain programs from the drop-down menu. Press the play button to build the project according to specifications.
 3. View any warnings or errors in the navigation panel on the left. Even if XCode indicates "Build Failed", errors that caused the failure may not have occurred in crucial programs.
 4. Check that the executables have been built to your bin folder. Mine are in _Users/myname/DS_Build/bin/Debug_.
+
+### Compile _rtrace_dc_ and _rtrace_dc_2305_
+
+1. In _src/rt/CMakeLists.txt_, uncomment the line `add_definitions(-DDAYSIM)` and build _rtrace_. Rename the resulting _rtrace_ program to _rtrace_dc_.
+2. In _src/rt/CMakeLists.txt_, uncomment the lines `add_definitions(-DDAYSIM)` and `add_definitions(-DDDS)` and build _rtrace_. Rename the resulting _rtrace_ program to _rtrace_dc_2305_.
+3. Comment both lines from _src/rt/CMakeLists.txt_ before building the other programs.
 
 ### Pull updates from RADIANCE
 
