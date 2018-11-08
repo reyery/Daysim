@@ -1,5 +1,5 @@
 #ifndef lint
-static const char RCSid[] = "$Id: m_bsdf.c,v 2.53 2018/08/02 22:44:35 greg Exp $";
+static const char RCSid[] = "$Id: m_bsdf.c,v 2.55 2018/08/21 23:31:01 greg Exp $";
 #endif
 /*
  *  Shading for materials with BSDFs taken from XML data files
@@ -162,7 +162,6 @@ compute_through(BSDFDAT *ndp)
 		goto baderror;
 	if (tomega > 1.5*dfp->minProjSA)
 		return;				/* not really a peak? */
-	tomega /= fabs(pdir[2]);		/* remove cosine factor */
 	if ((bright(vpeak) - ndp->sd->tLamb.cieY*(1./PI))*tomega <= .001)
 		return;				/* < 0.1% transmission */
 	for (i = 3; i--; )			/* remove peak from average */
@@ -638,8 +637,10 @@ m_bsdf(OBJREC *m, RAY *r)
 						/* get BSDF data */
 	nd.sd = loadBSDF(m->oargs.sarg[hasthick]);
 						/* early shadow check #2 */
-	if (r->crtype & SHADOW && (nd.sd->tf == NULL) & (nd.sd->tb == NULL))
+	if (r->crtype & SHADOW && (nd.sd->tf == NULL) & (nd.sd->tb == NULL)) {
+		SDfreeCache(nd.sd);
 		return(1);
+	}
 						/* diffuse reflectance */
 	if (hitfront) {
 		cvt_sdcolor(nd.rdiff, &nd.sd->rLambFront);
@@ -695,6 +696,7 @@ m_bsdf(OBJREC *m, RAY *r)
 	}
 	if (ec) {
 		objerror(m, WARNING, "Illegal orientation vector");
+		SDfreeCache(nd.sd);
 		return(1);
 	}
 	setcolor(nd.cthru, 0, 0, 0);		/* consider through component */
@@ -702,6 +704,7 @@ m_bsdf(OBJREC *m, RAY *r)
 		compute_through(&nd);
 		if (r->crtype & SHADOW) {
 			RAY	tr;		/* attempt to pass shadow ray */
+			SDfreeCache(nd.sd);
 			if (rayorigin(&tr, TRANS, r, nd.cthru) < 0)
 				return(1);	/* no through component */
 			VCOPY(tr.rdir, r->rdir);
