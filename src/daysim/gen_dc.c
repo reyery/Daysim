@@ -545,8 +545,7 @@ void createSkyFile( char *filename )
 
 	skyFile= open_output( filename );
 
-	fprintf( skyFile, "void brightfunc skyfunc\n2 skybright isotrop_sky.cal\n0\n\n1 1000\n\n");
-	fprintf( skyFile, "skyfunc glow sky\n0\n0\n4  1 1 1  0\n\n" );
+	fprintf( skyFile, "void glow sky\n0\n0\n4  1000 1000 1000  0\n\n" );
 	fprintf( skyFile, "sky source himmel\n0\n0\n4  0 0 1  360\n\n" );
 
 	close_file( skyFile );
