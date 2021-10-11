@@ -616,7 +616,7 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
 
 	fp= popen( cmd, "r" );
 	fgets( buf, 1024, fp );
-	fclose( fp );
+	pclose( fp );
 	if(!USE_RTRACE_DC_2305){
 		sprintf( cmd, "%srtrace_dc %s %s \"%s\" < \"%s\" >> \"%s\"",
 				 binDir, Radiance_Parameters,AdditionalRaidanceParameters, octree, sensorFile, dc );
