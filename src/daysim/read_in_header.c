@@ -516,7 +516,8 @@ void read_in_header( char *header_file )
 			fscanf(HEADER_FILE,"%s", MaterialDatabaseDirectory);
 		}
 		else if( !strcmp(keyword,"bin_directory")){
-			fscanf(HEADER_FILE,"%s", bin_dir);
+			fscanf(HEADER_FILE," "); // Skip leading whitespace
+			fscanf(HEADER_FILE,"%[^\n]", bin_dir);  // Read the entire path including spaces
 		}
 		else if( !strcmp(keyword,"Template_File")){
 			fscanf(HEADER_FILE,"%s", TemplateFileName);
