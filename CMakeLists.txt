@@ -27,7 +27,7 @@ enable_testing()
 include(CTest)
 
 option(BUILD_SHARED_LIBS "Build Daysim using shared libraries?" OFF)
-option(BUILD_HEADLESS "Build Daysim without any GUI components?" OFF)
+option(BUILD_HEADLESS "Build Daysim without any GUI components?" ON)
 option(BUILD_PABOPTO_UTILS "Build PABOpto Utilities?" OFF)
 option(BUILD_LIBTIFF "Build libtiff?" OFF)
 
