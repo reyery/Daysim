@@ -364,13 +364,13 @@ void callOconv( const int ExtendedOutput, const char* binDir, const char* sky,
 		for( i= 0; i < rotationNumber; i++ ) {
 			switch( rotationAxis[i] ) {
 			case XAxis:
-				sprintf( xform, "\"%sxform\" -rx %f", binDir, rotationAngle[i] );
+				sprintf( xform, "cd \"%s\" && xform -rx %f", binDir, rotationAngle[i] );
 				break;
 			case YAxis:
-				sprintf( xform, "\"%sxform\" -ry %f", binDir, rotationAngle[i] );
+				sprintf( xform, "cd \"%s\" && xform -ry %f", binDir, rotationAngle[i] );
 				break;
 			case ZAxis:
-				sprintf( xform, "\"%sxform\" -rz %f", binDir, rotationAngle[i] );
+				sprintf( xform, "cd \"%s\" && xform -rz %f", binDir, rotationAngle[i] );
 				break;
 			}
 		}
@@ -392,7 +392,7 @@ void callOconv( const int ExtendedOutput, const char* binDir, const char* sky,
 	}
 
 
-	sprintf( cmd, "\"%soconv\" -f \"%s\" %s > \"%s\"", binDir, sky, radFiles, octree );
+	sprintf( cmd, "cd \"%s\" && oconv -f \"%s\" %s > \"%s\"", binDir, sky, radFiles, octree );
 	//printf("%s\n",cmd);;
 
 	if( ExtendedOutput )
@@ -570,10 +570,10 @@ void callMkpmap( const int ExtendedOutput, const char* binDir, const char* octre
 
 
 	if( opts->illumination == DiffuseIllumination )
-		sprintf( cmd, "\"%smkpmap\" %s -N %d -Dd %s	", binDir,
+		sprintf( cmd, "cd \"%s\" && mkpmap %s -N %d -Dd %s	", binDir,
 				 Radiance_Parameters, numberOfSkySegments, octree );
 	else if( opts->illumination == DirectIllumination )
-		sprintf( cmd, "\"%smkpmap\" %s -N %d -Dm %s	", binDir,
+		sprintf( cmd, "cd \"%s\" && mkpmap %s -N %d -Dm %s	", binDir,
 				 Radiance_Parameters, number_direct_coefficients, octree );
 
 	if( ExtendedOutput )
@@ -612,16 +612,16 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
 	}
 
 	/* record radiance version */
-	sprintf( cmd, "%srtrace_dc -version", binDir );
+	sprintf( cmd, "cd \"%s\" && rtrace_dc -version", binDir );
 
 	fp= popen( cmd, "r" );
 	fgets( buf, 1024, fp );
 	pclose( fp );
 	if(!USE_RTRACE_DC_2305){
-		sprintf( cmd, "\"%srtrace_dc\" %s %s \"%s\" < \"%s\" >> \"%s\"",
+		sprintf( cmd, "cd \"%s\" && rtrace_dc %s %s \"%s\" < \"%s\" >> \"%s\"",
 				 binDir, Radiance_Parameters,AdditionalRaidanceParameters, octree, sensorFile, dc );
 	} else {
-		sprintf( cmd, "\"%srtrace_dc_2305\" %s %s \"%s\" < \"%s\" >> \"%s\"",
+		sprintf( cmd, "cd \"%s\" && rtrace_dc_2305 %s %s \"%s\" < \"%s\" >> \"%s\"",
 				 binDir, Radiance_Parameters,AdditionalRaidanceParameters, octree, sensorFile, dc );
 	}
 
