@@ -381,7 +381,7 @@ void callOconv( const int ExtendedOutput, const char* binDir, const char* sky,
 		while( fscanf( fp, "%s", buf ) != EOF ) {
 			printf("%s \n",buf);
 		}
-		fclose( fp );
+		pclose( fp );
 
 		rotateMeasuringPoints( sensors, rotationNumber, rotationAxis, rotationAngle );
 
