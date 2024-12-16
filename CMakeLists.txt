@@ -27,7 +27,7 @@ enable_testing()
 include(CTest)
 
 option(BUILD_SHARED_LIBS "Build Daysim using shared libraries?" OFF)
-option(BUILD_HEADLESS "Build Daysim without any GUI components?" OFF)
+option(BUILD_HEADLESS "Build Daysim without any GUI components?" ON)
 option(BUILD_PABOPTO_UTILS "Build PABOpto Utilities?" OFF)
 option(BUILD_LIBTIFF "Build libtiff?" OFF)
 
@@ -65,6 +65,7 @@ if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c11 -std=c++11 -stdlib=libc++")
   add_definitions(-DBSD -DNOSTEREO -Dfreebsd)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.7")
+  set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
 endif()
 
 if(BUILD_LIBTIFF)

@@ -64,7 +64,7 @@ extern float horizon[36];
 extern float horizon_factor[SKY_PATCHES];
 
 /* diverse functions */
-int  shadow_testing_new;
+extern int shadow_testing_new;
 void process_dc_shading(int number_direct_coefficients);
 
 
