@@ -79,34 +79,38 @@ if(X11_FOUND)
 endif()
 
 #glrad needs to link against OpenGL libraries
-if(APPLE)
-  find_library(OPENGL_gl_LIBRARY
-    NAMES GL MesaGL
-    PATHS ${X11_LIB_SEARCH_PATH}
-  )
-  find_library(OPENGL_glu_LIBRARY
-    NAMES GLU MesaGLU
-    PATHS ${X11_LIB_SEARCH_PATH}
-  )
-  set(OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
-else()
-  find_package(OpenGL REQUIRED)
-  include_directories(${OPENGL_INCLUDE_DIR})
-endif()
+#ignore if headless
+if(NOT BUILD_HEADLESS)
+  if(APPLE)
+    find_library(OPENGL_gl_LIBRARY
+      NAMES GL MesaGL
+      PATHS ${X11_LIB_SEARCH_PATH}
+    )
+    find_library(OPENGL_glu_LIBRARY
+      NAMES GLU MesaGLU
+      PATHS ${X11_LIB_SEARCH_PATH}
+    )
+    set(OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
+  else()
+    find_package(OpenGL REQUIRED)
+    include_directories(${OPENGL_INCLUDE_DIR})
+  endif()
 
-#check if we have SGIStereo.h
-find_file(HAVE_SGISTEREO_H "SGIStereo.h" ${OPENGL_INCLUDE_DIR})
-if(NOT HAVE_SGISTEREO_H)
-  add_definitions(-DNOSTEREO)
-endif()
-if(UNIX AND X11_FOUND)
-  add_executable(glrad glrad.c)
-  target_link_libraries(glrad rgl rtrad ${OPENGL_LIBRARIES} ${X11_LIBRARIES})
-  install(TARGETS glrad
-    RUNTIME DESTINATION "bin"
-  )
-  if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-    target_link_libraries(glrad rt)
+
+  #check if we have SGIStereo.h
+  find_file(HAVE_SGISTEREO_H "SGIStereo.h" ${OPENGL_INCLUDE_DIR})
+  if(NOT HAVE_SGISTEREO_H)
+    add_definitions(-DNOSTEREO)
+  endif()
+  if(UNIX AND X11_FOUND)
+    add_executable(glrad glrad.c)
+    target_link_libraries(glrad rgl rtrad ${OPENGL_LIBRARIES} ${X11_LIBRARIES})
+    install(TARGETS glrad
+      RUNTIME DESTINATION "bin"
+    )
+    if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+      target_link_libraries(glrad rt)
+    endif()
   endif()
 endif()
 
