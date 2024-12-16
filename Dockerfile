@@ -20,7 +20,7 @@ RUN cd build \
     && make radfiles2daysim \
     && cd bin \
     && mv ds_illum epw2wea gen_dc oconv radfiles2daysim /build \
-    && rm -rf ../../build/*
+    && make clean
 
 # uncommenting line in CMakeLists to build rtrace_dc
 RUN sed -i 's/#add_definitions(-DDAYSIM)/add_definitions(-DDAYSIM)/' /Daysim/src/rt/CMakeLists.txt \
@@ -28,8 +28,7 @@ RUN sed -i 's/#add_definitions(-DDAYSIM)/add_definitions(-DDAYSIM)/' /Daysim/src
     && cmake -DCMAKE_BUILD_TYPE=Release /Daysim \
     && make rtrace \
     && cd bin \
-    && mv rtrace /build/rtrace_dc \
-    && rm -rf ../../build/*
+    && mv rtrace /build/rtrace_dc
 
 FROM debian:12-slim AS run
 COPY --from=build /build /Daysim
