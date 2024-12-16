@@ -616,7 +616,7 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
 	}
 
 	/* record radiance version */
-	sprintf( cmd, "%srtrace_dc -version", binDir );
+	sprintf( cmd, "cd \"%s\" && rtrace_dc -version", binDir );
 
 	fp= popen( cmd, "r" );
 	fgets( buf, 1024, fp );
@@ -631,7 +631,7 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
 	}
 
 	if( ExtendedOutput )
-		printf( "\gen_dc: %s\n", cmd );
+		printf( "gen_dc: %s\n", cmd );
 
 	/* create also new file when pmap, wienold, July 2012*/
 	if( opts->calculationMode == RtracePhotonMap )
