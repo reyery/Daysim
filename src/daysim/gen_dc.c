@@ -601,7 +601,11 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
 	FILE *fp;
 	char cmd[99999];
 	char buf[1024];
+	char error_buf[1024];
 
+	char error_log[PATH_MAX];
+	strncpy(error_log, dc, sizeof(error_log) - 5);  // Leave room for ".err"
+	strncat(error_log, ".err", 4);
 
 	if( opts->calculationMode == RtracePhotonMap ) { /* create photon map */
 		callMkpmap( ExtendedOutput, binDir, octree, dc, opts );
@@ -612,21 +616,22 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
 	}
 
 	/* record radiance version */
-	sprintf( cmd, "cd \"%s\" && rtrace_dc -version", binDir );
+	sprintf( cmd, "%srtrace_dc -version", binDir );
 
 	fp= popen( cmd, "r" );
 	fgets( buf, 1024, fp );
 	pclose( fp );
+
 	if(!USE_RTRACE_DC_2305){
-		sprintf( cmd, "cd \"%s\" && rtrace_dc %s %s \"%s\" < \"%s\" >> \"%s\"",
-				 binDir, Radiance_Parameters,AdditionalRaidanceParameters, octree, sensorFile, dc );
+		sprintf( cmd, "cd \"%s\" && rtrace_dc %s %s \"%s\" < \"%s\" >> \"%s\" 2> \"%s\"",
+				 binDir, Radiance_Parameters,AdditionalRaidanceParameters, octree, sensorFile, dc, error_log);
 	} else {
-		sprintf( cmd, "cd \"%s\" && rtrace_dc_2305 %s %s \"%s\" < \"%s\" >> \"%s\"",
-				 binDir, Radiance_Parameters,AdditionalRaidanceParameters, octree, sensorFile, dc );
+		sprintf( cmd, "cd \"%s\" && rtrace_dc_2305 %s %s \"%s\" < \"%s\" >> \"%s\" 2> \"%s\"",
+				 binDir, Radiance_Parameters,AdditionalRaidanceParameters, octree, sensorFile, dc, error_log);
 	}
 
 	if( ExtendedOutput )
-		printf( "gen_dc: %s\n", cmd );
+		printf( "\gen_dc: %s\n", cmd );
 
 	/* create also new file when pmap, wienold, July 2012*/
 	if( opts->calculationMode == RtracePhotonMap )
@@ -642,6 +647,19 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
 		printf("%s \n",buf);
 	}
 	pclose( fp );
+
+	// Check for errors by reading the error file
+    FILE *error_file = fopen(error_log, "r");
+    if (error_file != NULL) {
+        // Read and print any error messages
+        while (fgets(error_buf, sizeof(error_buf), error_file) != NULL) {
+            fprintf(stderr, "ERROR: %s", error_buf);
+        }
+        fclose(error_file);
+        
+        // Remove the temporary error file
+        remove(error_log);
+    }
 }
 
 
