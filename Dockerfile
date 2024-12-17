@@ -20,7 +20,7 @@ RUN cd build \
     && make radfiles2daysim \
     && cd bin \
     && mv ds_illum epw2wea gen_dc oconv radfiles2daysim /build \
-    && make clean
+    && cd .. && make clean
 
 # uncommenting line in CMakeLists to build rtrace_dc
 RUN sed -i 's/#add_definitions(-DDAYSIM)/add_definitions(-DDAYSIM)/' /Daysim/src/rt/CMakeLists.txt \
