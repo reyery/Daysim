@@ -1,6 +1,6 @@
 # DAYSIM
 
-This repository is a fork of the [RADIANCE mirror repository maintained by NREL](https://github.com/NREL/Radiance) and includes the source code for the [DAYSIM](http://daysim.ning.com/) suite. _Programs in this repository compile on Windows (VS2013) and Mac (XCode), but **testing is not complete**._ The following DAYSIM programs are part of this repository:
+This repository is a fork of the [RADIANCE mirror repository maintained by NREL](https://github.com/NREL/Radiance) and includes the source code for the DAYSIM suite. _Programs in this repository compile on Windows (VS2013) and Mac (XCode), but **testing is not complete**._ The following DAYSIM programs are part of this repository:
 
 Programs maintained here (in src/daysim):
 * ds_el_lighting
@@ -44,9 +44,9 @@ Programs maintained on the main RADIANCE repository and included here:
 
 1. Open CMake. You can download CMake from https://cmake.org/.
 2. Enter the location of the DAYSIM project folder in the line "Where is the source code:". In the example above, mine is _D:/myname/Daysim_ for Windows and _Users/myname/Daysim_ for Mac. 
-3. Enter a **different** location in the line "Where to build the binaries:". Using a different location prevents your built project (which is specific to your operating system) from being committed to the repository. The location you select could be a folder that doesn’t exist yet. Mine is _D:/myname/Daysim64_ for Windows because I compile 64-bit programs and _Users/myname/DS_Build_ for Mac.
+3. Enter a **different** location in the line "Where to build the binaries:". Using a different location prevents your built project (which is specific to your operating system) from being committed to the repository. The location you select could be a folder that doesnâ€™t exist yet. Mine is _D:/myname/Daysim64_ for Windows because I compile 64-bit programs and _Users/myname/DS_Build_ for Mac.
 4. Click _Configure_ and select the generator for the project. I use Visual Studio 12 2013 Win64. For Mac, I use XCode.
-	- Optional: After the project configures, you may see some errors related to Qt5, which is used to build Radiance’s rvu program. If you have Qt5 installed, you can enter its location at the entry for Qt5Widgets_DIR, which currently says Qt5Widgets_DIR-NOTFOUND. For Windows, mine is _C:\Qt\5.5\msvc2013_64\lib\cmake\Qt5Widgets_. Then click _Configure_ again.
+	- Optional: After the project configures, you may see some errors related to Qt5, which is used to build Radianceâ€™s rvu program. If you have Qt5 installed, you can enter its location at the entry for Qt5Widgets_DIR, which currently says Qt5Widgets_DIR-NOTFOUND. For Windows, mine is _C:\Qt\5.5\msvc2013_64\lib\cmake\Qt5Widgets_. Then click _Configure_ again.
 5. Click _Generate_ to build the project for your operating system.
 
 ### Compile DAYSIM
