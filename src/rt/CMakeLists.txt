@@ -81,13 +81,13 @@ add_executable(rtrace rtmain.c rtrace.c duphead.c persist.c)
 target_link_libraries(rtrace raycalls radiance rtrad)
 
 # rtrace_dc (built by default)
-add_executable(rtrace_dc rtmain.c rtrace.c duphead.c persist.c)
+add_executable(rtrace_dc rtmain.c rtrace.c duphead.c persist.c daysim.c)
 target_link_libraries(rtrace_dc raycalls radiance rtrad)
 target_compile_definitions(rtrace_dc PRIVATE DAYSIM)
 
 # rtrace_dc_2305
 if(BUILD_RTRACE_DC_2305)
-    add_executable(rtrace_dc_2305 rtmain.c rtrace.c duphead.c persist.c)
+    add_executable(rtrace_dc_2305 rtmain.c rtrace.c duphead.c persist.c daysim.c)
     target_link_libraries(rtrace_dc_2305 raycalls radiance rtrad)
     target_compile_definitions(rtrace_dc_2305 PRIVATE DAYSIM DDS)
 endif()
