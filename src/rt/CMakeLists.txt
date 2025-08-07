@@ -1,11 +1,9 @@
 set(VERSION_FILE "${daysim_BINARY_DIR}/src/rt/Version.c")
 create_version_file("${VERSION_FILE}")
 
-# Special instructions for rtrace_dc and rtrace_dc_2305:
-# To compile rtrace_dc, uncomment only the definition "DAYSIM" below, and rename the resulting rtrace program to rtrace_dc.
-# to compile rtrace_dc_2305, uncomment the definitions "DAYSIM" and "DDS" below, and rename the resulting rtrace program to rtrace_dc_2305.
-#add_definitions(-DDAYSIM)
-#add_definitions(-DDDS)
+# CMake options for building rtrace variants
+option(BUILD_RTRACE_DC "Build rtrace_dc variant with DAYSIM definition" OFF)
+option(BUILD_RTRACE_DC_2305 "Build rtrace_dc_2305 variant with DAYSIM and DDS definitions" OFF)
 
 add_library(radiance
   "${VERSION_FILE}"
@@ -83,6 +81,20 @@ add_library(raycalls raycalls.c ${rayp_SOURCES} rayfifo.c)
 add_executable(rtrace rtmain.c rtrace.c duphead.c persist.c)
 target_link_libraries(rtrace raycalls radiance rtrad)
 
+# rtrace_dc
+if(BUILD_RTRACE_DC)
+    add_executable(rtrace_dc rtmain.c rtrace.c duphead.c persist.c)
+    target_link_libraries(rtrace_dc raycalls radiance rtrad)
+    target_compile_definitions(rtrace_dc PRIVATE DAYSIM)
+endif()
+
+# rtrace_dc_2305
+if(BUILD_RTRACE_DC_2305)
+    add_executable(rtrace_dc_2305 rtmain.c rtrace.c duphead.c persist.c)
+    target_link_libraries(rtrace_dc_2305 raycalls radiance rtrad)
+    target_compile_definitions(rtrace_dc_2305 PRIVATE DAYSIM DDS)
+endif()
+
 add_executable(rpict rpmain.c rpict.c srcdraw.c duphead.c persist.c)
 target_link_libraries(rpict radiance rtrad)
 
@@ -107,6 +119,14 @@ set(targets_to_install
   rpict
   rtrace
 )
+
+# Add conditional rtrace variants to install targets
+if(BUILD_RTRACE_DC)
+  list(APPEND targets_to_install rtrace_dc)
+endif()
+if(BUILD_RTRACE_DC_2305)
+  list(APPEND targets_to_install rtrace_dc_2305)
+endif()
 
 if(X11_FOUND)
   set(X11_SOURCES x11.c x11twind.c)
