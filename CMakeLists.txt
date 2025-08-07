@@ -144,6 +144,12 @@ endif()
 
 add_subdirectory("src")
 
+# Custom target for CEA programs
+add_custom_target(cea_targets
+  DEPENDS ds_illum epw2wea gen_dc oconv radfiles2daysim rtrace_dc
+  COMMENT "Building CEA target programs: ds_illum, epw2wea, gen_dc, oconv, radfiles2daysim, rtrace_dc"
+)
+
 set(test_dir "${CMAKE_CURRENT_SOURCE_DIR}/test/test data")
 
 add_subdirectory(resources)
