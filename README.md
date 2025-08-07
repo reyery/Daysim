@@ -16,9 +16,9 @@ Programs maintained here (in src/daysim):
 * rotate_scene
 * scale_dc
 
-Programs maintained here that require manual intervention to compile (in src/rt):
-* rtrace_dc
-* rtrace_dc_2305
+Programs maintained here (in src/rt):
+* rtrace_dc (built by default)
+* rtrace_dc_2305 (requires BUILD_RTRACE_DC_2305=ON)
 
 Programs maintained on the main RADIANCE repository and included here:
 * epw2wea
@@ -68,11 +68,9 @@ Programs maintained on the main RADIANCE repository and included here:
 
 ### Compile _rtrace_dc_ and _rtrace_dc_2305_
 
-These specialized rtrace variants can now be built using CMake options without manual file editing:
-
-#### Build rtrace_dc (with DAYSIM definition)
+#### rtrace_dc (built by default)
+The `rtrace_dc` variant with DAYSIM definition is built automatically:
 ```bash
-cmake . -DBUILD_RTRACE_DC=ON
 make rtrace_dc
 ```
 
@@ -82,13 +80,11 @@ cmake . -DBUILD_RTRACE_DC_2305=ON
 make rtrace_dc_2305
 ```
 
-#### Build all rtrace variants at once
+#### Build both rtrace variants at once
 ```bash
-cmake . -DBUILD_RTRACE_DC=ON -DBUILD_RTRACE_DC_2305=ON
+cmake . -DBUILD_RTRACE_DC_2305=ON
 make
 ```
-
-This approach automatically creates the correctly named binaries without requiring manual renaming or CMakeLists.txt modifications.
 
 ### Pull updates from RADIANCE
 

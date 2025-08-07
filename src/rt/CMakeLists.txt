@@ -2,7 +2,6 @@ set(VERSION_FILE "${daysim_BINARY_DIR}/src/rt/Version.c")
 create_version_file("${VERSION_FILE}")
 
 # CMake options for building rtrace variants
-option(BUILD_RTRACE_DC "Build rtrace_dc variant with DAYSIM definition" OFF)
 option(BUILD_RTRACE_DC_2305 "Build rtrace_dc_2305 variant with DAYSIM and DDS definitions" OFF)
 
 add_library(radiance
@@ -81,12 +80,10 @@ add_library(raycalls raycalls.c ${rayp_SOURCES} rayfifo.c)
 add_executable(rtrace rtmain.c rtrace.c duphead.c persist.c)
 target_link_libraries(rtrace raycalls radiance rtrad)
 
-# rtrace_dc
-if(BUILD_RTRACE_DC)
-    add_executable(rtrace_dc rtmain.c rtrace.c duphead.c persist.c)
-    target_link_libraries(rtrace_dc raycalls radiance rtrad)
-    target_compile_definitions(rtrace_dc PRIVATE DAYSIM)
-endif()
+# rtrace_dc (built by default)
+add_executable(rtrace_dc rtmain.c rtrace.c duphead.c persist.c)
+target_link_libraries(rtrace_dc raycalls radiance rtrad)
+target_compile_definitions(rtrace_dc PRIVATE DAYSIM)
 
 # rtrace_dc_2305
 if(BUILD_RTRACE_DC_2305)
@@ -120,10 +117,10 @@ set(targets_to_install
   rtrace
 )
 
+# Add rtrace_dc to install targets (built by default)
+list(APPEND targets_to_install rtrace_dc)
+
 # Add conditional rtrace variants to install targets
-if(BUILD_RTRACE_DC)
-  list(APPEND targets_to_install rtrace_dc)
-endif()
 if(BUILD_RTRACE_DC_2305)
   list(APPEND targets_to_install rtrace_dc_2305)
 endif()
