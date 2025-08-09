@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0048 NEW)
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.1")
@@ -143,12 +143,6 @@ if(WIN32)
 endif()
 
 add_subdirectory("src")
-
-# Custom target for CEA programs
-add_custom_target(cea_targets
-  DEPENDS ds_illum epw2wea gen_dc oconv radfiles2daysim rtrace_dc
-  COMMENT "Building CEA target programs: ds_illum, epw2wea, gen_dc, oconv, radfiles2daysim, rtrace_dc"
-)
 
 set(test_dir "${CMAKE_CURRENT_SOURCE_DIR}/test/test data")
 

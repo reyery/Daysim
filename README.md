@@ -16,9 +16,9 @@ Programs maintained here (in src/daysim):
 * rotate_scene
 * scale_dc
 
-Programs maintained here (in src/rt):
-* rtrace_dc (built by default)
-* rtrace_dc_2305 (requires BUILD_RTRACE_DC_2305=ON)
+Programs maintained here that require manual intervention to compile (in src/rt):
+* rtrace_dc
+* rtrace_dc_2305
 
 Programs maintained on the main RADIANCE repository and included here:
 * epw2wea
@@ -44,9 +44,9 @@ Programs maintained on the main RADIANCE repository and included here:
 
 1. Open CMake. You can download CMake from https://cmake.org/.
 2. Enter the location of the DAYSIM project folder in the line "Where is the source code:". In the example above, mine is _D:/myname/Daysim_ for Windows and _Users/myname/Daysim_ for Mac. 
-3. Enter a **different** location in the line "Where to build the binaries:". Using a different location prevents your built project (which is specific to your operating system) from being committed to the repository. The location you select could be a folder that doesnï¿½t exist yet. Mine is _D:/myname/Daysim64_ for Windows because I compile 64-bit programs and _Users/myname/DS_Build_ for Mac.
+3. Enter a **different** location in the line "Where to build the binaries:". Using a different location prevents your built project (which is specific to your operating system) from being committed to the repository. The location you select could be a folder that doesn’t exist yet. Mine is _D:/myname/Daysim64_ for Windows because I compile 64-bit programs and _Users/myname/DS_Build_ for Mac.
 4. Click _Configure_ and select the generator for the project. I use Visual Studio 12 2013 Win64. For Mac, I use XCode.
-	- Optional: After the project configures, you may see some errors related to Qt5, which is used to build Radianceï¿½s rvu program. If you have Qt5 installed, you can enter its location at the entry for Qt5Widgets_DIR, which currently says Qt5Widgets_DIR-NOTFOUND. For Windows, mine is _C:\Qt\5.5\msvc2013_64\lib\cmake\Qt5Widgets_. Then click _Configure_ again.
+	- Optional: After the project configures, you may see some errors related to Qt5, which is used to build Radiance’s rvu program. If you have Qt5 installed, you can enter its location at the entry for Qt5Widgets_DIR, which currently says Qt5Widgets_DIR-NOTFOUND. For Windows, mine is _C:\Qt\5.5\msvc2013_64\lib\cmake\Qt5Widgets_. Then click _Configure_ again.
 5. Click _Generate_ to build the project for your operating system.
 
 ### Compile DAYSIM
@@ -68,23 +68,9 @@ Programs maintained on the main RADIANCE repository and included here:
 
 ### Compile _rtrace_dc_ and _rtrace_dc_2305_
 
-#### rtrace_dc (built by default)
-The `rtrace_dc` variant with DAYSIM definition is built automatically:
-```bash
-make rtrace_dc
-```
-
-#### Build rtrace_dc_2305 (with DAYSIM and DDS definitions)
-```bash
-cmake . -DBUILD_RTRACE_DC_2305=ON
-make rtrace_dc_2305
-```
-
-#### Build both rtrace variants at once
-```bash
-cmake . -DBUILD_RTRACE_DC_2305=ON
-make
-```
+1. In _src/rt/CMakeLists.txt_, uncomment the line `add_definitions(-DDAYSIM)` and build _rtrace_. Rename the resulting _rtrace_ program to _rtrace_dc_.
+2. In _src/rt/CMakeLists.txt_, uncomment the lines `add_definitions(-DDAYSIM)` and `add_definitions(-DDDS)` and build _rtrace_. Rename the resulting _rtrace_ program to _rtrace_dc_2305_.
+3. Comment both lines from _src/rt/CMakeLists.txt_ before building the other programs.
 
 ### Pull updates from RADIANCE
 
