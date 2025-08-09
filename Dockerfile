@@ -10,25 +10,12 @@ WORKDIR /Daysim
 # create build folders at root
 RUN mkdir build /build 
 
-# only build required binaries
+# build all CEA required programs using automated cea_targets
 RUN cd build \
     && cmake -DCMAKE_BUILD_TYPE=Release /Daysim \
-    && make ds_illum \
-    && make epw2wea \
-    && make gen_dc \
-    && make oconv \
-    && make radfiles2daysim \
+    && make cea_targets \
     && cd bin \
-    && mv ds_illum epw2wea gen_dc oconv radfiles2daysim /build \
-    && cd .. && make clean
-
-# uncommenting line in CMakeLists to build rtrace_dc
-RUN sed -i 's/#add_definitions(-DDAYSIM)/add_definitions(-DDAYSIM)/' /Daysim/src/rt/CMakeLists.txt \
-    && cd build \
-    && cmake -DCMAKE_BUILD_TYPE=Release /Daysim \
-    && make rtrace \
-    && cd bin \
-    && mv rtrace /build/rtrace_dc
+    && mv ds_illum epw2wea gen_dc oconv radfiles2daysim rtrace_dc /build
 
 FROM debian:12-slim AS run
 COPY --from=build /build /Daysim
