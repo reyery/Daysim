@@ -7,7 +7,8 @@ create_version_file("${VERSION_FILE}")
 #add_definitions(-DDAYSIM)
 #add_definitions(-DDDS)
 
-add_library(radiance
+# Shared source files for radiance libraries
+set(RADIANCE_SOURCES
   "${VERSION_FILE}"
   ../common/paths.c
   ../common/platform.h
@@ -72,6 +73,8 @@ add_library(radiance
   virtuals.c
 )
 
+add_library(radiance ${RADIANCE_SOURCES})
+
 if(WIN32)
   set(rayp_SOURCES raypwin.c)
 else()
@@ -82,6 +85,24 @@ add_library(raycalls raycalls.c ${rayp_SOURCES} rayfifo.c)
 
 add_executable(rtrace rtmain.c rtrace.c duphead.c persist.c)
 target_link_libraries(rtrace raycalls radiance rtrad)
+
+# radiance_daysim: radiance library compiled with DAYSIM definitions
+add_library(radiance_daysim ${RADIANCE_SOURCES})
+target_compile_definitions(radiance_daysim PRIVATE DAYSIM)
+
+# radiance_daysim_dds: radiance library compiled with DAYSIM and DDS definitions  
+add_library(radiance_daysim_dds ${RADIANCE_SOURCES})
+target_compile_definitions(radiance_daysim_dds PRIVATE DAYSIM DDS)
+
+# rtrace_dc: rtrace with DAYSIM definitions for Daysim integration
+add_executable(rtrace_dc rtmain.c rtrace.c duphead.c persist.c)
+target_compile_definitions(rtrace_dc PRIVATE DAYSIM)
+target_link_libraries(rtrace_dc raycalls radiance_daysim rtrad)
+
+# rtrace_dc_2305: rtrace with DAYSIM and DDS definitions for enhanced Daysim features
+add_executable(rtrace_dc_2305 rtmain.c rtrace.c duphead.c persist.c)
+target_compile_definitions(rtrace_dc_2305 PRIVATE DAYSIM DDS)
+target_link_libraries(rtrace_dc_2305 raycalls radiance_daysim_dds rtrad)
 
 add_executable(rpict rpmain.c rpict.c srcdraw.c duphead.c persist.c)
 target_link_libraries(rpict radiance rtrad)
@@ -106,6 +127,8 @@ set(targets_to_install
   rcontrib
   rpict
   rtrace
+  rtrace_dc
+  rtrace_dc_2305
 )
 
 if(X11_FOUND)
