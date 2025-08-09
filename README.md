@@ -44,9 +44,9 @@ Programs maintained on the main RADIANCE repository and included here:
 
 1. Open CMake. You can download CMake from https://cmake.org/.
 2. Enter the location of the DAYSIM project folder in the line "Where is the source code:". In the example above, mine is _D:/myname/Daysim_ for Windows and _Users/myname/Daysim_ for Mac. 
-3. Enter a **different** location in the line "Where to build the binaries:". Using a different location prevents your built project (which is specific to your operating system) from being committed to the repository. The location you select could be a folder that doesn’t exist yet. Mine is _D:/myname/Daysim64_ for Windows because I compile 64-bit programs and _Users/myname/DS_Build_ for Mac.
+3. Enter a **different** location in the line "Where to build the binaries:". Using a different location prevents your built project (which is specific to your operating system) from being committed to the repository. The location you select could be a folder that doesnï¿½t exist yet. Mine is _D:/myname/Daysim64_ for Windows because I compile 64-bit programs and _Users/myname/DS_Build_ for Mac.
 4. Click _Configure_ and select the generator for the project. I use Visual Studio 12 2013 Win64. For Mac, I use XCode.
-	- Optional: After the project configures, you may see some errors related to Qt5, which is used to build Radiance’s rvu program. If you have Qt5 installed, you can enter its location at the entry for Qt5Widgets_DIR, which currently says Qt5Widgets_DIR-NOTFOUND. For Windows, mine is _C:\Qt\5.5\msvc2013_64\lib\cmake\Qt5Widgets_. Then click _Configure_ again.
+	- Optional: After the project configures, you may see some errors related to Qt5, which is used to build Radianceï¿½s rvu program. If you have Qt5 installed, you can enter its location at the entry for Qt5Widgets_DIR, which currently says Qt5Widgets_DIR-NOTFOUND. For Windows, mine is _C:\Qt\5.5\msvc2013_64\lib\cmake\Qt5Widgets_. Then click _Configure_ again.
 5. Click _Generate_ to build the project for your operating system.
 
 ### Compile DAYSIM
@@ -66,11 +66,28 @@ Programs maintained on the main RADIANCE repository and included here:
 3. View any warnings or errors in the navigation panel on the left. Even if XCode indicates "Build Failed", errors that caused the failure may not have occurred in crucial programs.
 4. Check that the executables have been built to your bin folder. Mine are in _Users/myname/DS_Build/bin/Debug_.
 
-### Compile _rtrace_dc_ and _rtrace_dc_2305_
+### Compile _rtrace_dc_ and _rtrace_dc_2305_ (Automated)
+
+**New Automated Build System**: No manual file editing required!
+
+Use these CMake targets to build rtrace_dc variants automatically:
+
+- `make cea_targets` - Builds all CEA required programs: ds_illum, epw2wea, gen_dc, oconv, radfiles2daysim, rtrace_dc
+- `make rtrace_dc` - Builds rtrace with DAYSIM definitions  
+- `make rtrace_dc_2305` - Builds rtrace with DAYSIM and DDS definitions
+
+The build system now handles the special compilation requirements automatically without manual intervention.
+
+### Manual Method (Legacy - No Longer Required)
+
+<details>
+<summary>Click to expand legacy manual instructions</summary>
 
 1. In _src/rt/CMakeLists.txt_, uncomment the line `add_definitions(-DDAYSIM)` and build _rtrace_. Rename the resulting _rtrace_ program to _rtrace_dc_.
-2. In _src/rt/CMakeLists.txt_, uncomment the lines `add_definitions(-DDAYSIM)` and `add_definitions(-DDDS)` and build _rtrace_. Rename the resulting _rtrace_ program to _rtrace_dc_2305_.
+2. In _src/rt/CMakeLists.txt_, uncomment the lines `add_definitions(-DDAYSIM)` and `add_definitions(-DDDS)` and build _rtrace_. Rename the resulting _rtrace_ program to _rtrace_dc_2305_.  
 3. Comment both lines from _src/rt/CMakeLists.txt_ before building the other programs.
+
+</details>
 
 ### Pull updates from RADIANCE
 
