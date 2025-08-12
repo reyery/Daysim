@@ -484,7 +484,9 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 				return NULL;
 			}
 
-			sprintf( options, "%s @%s ",options, sensorOptionFile );
+			strcat( options, " @" );
+			strcat( options, sensorOptionFile );
+			strcat( options, " " );
 
 			if( !sf_exists ) { /* file does not exist from previous pass */
 				FILE* fp= fopen( sensorOptionFile, "w" );
@@ -503,14 +505,14 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 		}
 
 		if( opts->illumination == DirectIllumination ){
+			char temp[100];
 			if(dds_file_format)
-				sprintf( options, "%s -N %d -Dm -dt %f",
-						 options, 145, opts->rad.dt );
+				sprintf( temp, " -N %d -Dm -dt %f", 145, opts->rad.dt );
 			else
-				sprintf( options, "%s -N %d -Dm -dt %f",
-						 options, number_direct_coefficients, opts->rad.dt );
+				sprintf( temp, " -N %d -Dm -dt %f", number_direct_coefficients, opts->rad.dt );
+			strcat( options, temp );
 		} else if( opts->illumination == DiffuseIllumination ){
-			sprintf( options, "%s -N %d -Dd", options, 148 );
+			strcat( options, " -N 148 -Dd" );
 		}
 		break;
 	case OptionsMkpmap:
