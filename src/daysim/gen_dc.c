@@ -453,6 +453,7 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 				 opts->rad.sj, opts->rad.st,
 				 opts->rad.additional,
 				 luminanceOfSkySegments );
+		printf("DEBUG: options string: %s\n", options);
 #endif
 
 
