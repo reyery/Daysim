@@ -436,6 +436,7 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 		     */
 
 #ifdef __MINGW32__
+		printf("DEBUG: Using MINGW32 branch\n");
 		sprintf( options, "%s -h %s%s -oc -aa %f -ab %d -ad %d -ar %d -as %d -dj %f -dr %d -ds %f  -lr %d -lw %f  -sj %f -st %f  %s  -L %f ",
 				 options,
 				 strlen(opts->rad.irradianceSwitch) ? "-" : "", opts->rad.irradianceSwitch,
@@ -445,6 +446,7 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 				 opts->rad.additional,
 				 luminanceOfSkySegments );
 #else
+		printf("DEBUG: Using non-MINGW32 branch (Linux)\n");
 		sprintf( options, "%s -h %s%s -oc -aa %f -ab %d -ad %d -ar %d -as %d -dj %f -dr %d -ds %f  -lr %d -lw %f  -ss %f -st %f  %s  -L %f ",
 				 options,
 				 strlen(opts->rad.irradianceSwitch) ? "-" : "", opts->rad.irradianceSwitch,
