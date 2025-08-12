@@ -429,15 +429,6 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 
 	case OptionsRtrace:
 		printf("DEBUG: Entering OptionsRtrace case\n");
-		printf("DEBUG: opts->rad.irradianceSwitch='%s'\n", opts->rad.irradianceSwitch);
-		printf("DEBUG: opts->rad.aa=%f, ab=%d, ad=%d, ar=%d, as=%d\n", 
-			   opts->rad.aa, opts->rad.ab, opts->rad.ad, opts->rad.ar, opts->rad.as);
-		printf("DEBUG: opts->rad.dj=%f, dr=%d, ds=%f\n", 
-			   opts->rad.dj, opts->rad.dr, opts->rad.ds);
-		printf("DEBUG: opts->rad.lr=%d, lw=%f, sj=%f, st=%f\n", 
-			   opts->rad.lr, opts->rad.lw, opts->rad.sj, opts->rad.st);
-		printf("DEBUG: opts->rad.additional='%s'\n", opts->rad.additional);
-		printf("DEBUG: luminanceOfSkySegments=%f\n", luminanceOfSkySegments);
 
 /*         --------- for the old rtrace_dc version for windows the -sj option has to be supplied
                      the current rtrace_dc version uses -ss  instead (as rtrace does)
@@ -446,8 +437,7 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 
 #ifdef __MINGW32__
 		printf("DEBUG: Using MINGW32 branch\n");
-		sprintf( options, "%s -h %s%s -oc -aa %f -ab %d -ad %d -ar %d -as %d -dj %f -dr %d -ds %f  -lr %d -lw %f  -sj %f -st %f  %s  -L %f ",
-				 options,
+		sprintf( options, " -h %s%s -oc -aa %f -ab %d -ad %d -ar %d -as %d -dj %f -dr %d -ds %f  -lr %d -lw %f  -sj %f -st %f  %s  -L %f ",
 				 strlen(opts->rad.irradianceSwitch) ? "-" : "", opts->rad.irradianceSwitch,
 				 opts->rad.aa, opts->rad.ab, opts->rad.ad, opts->rad.ar, opts->rad.as,
 				 opts->rad.dj, opts->rad.dr, opts->rad.ds, opts->rad.lr, opts->rad.lw,
@@ -456,8 +446,7 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 				 luminanceOfSkySegments );
 #else
 		printf("DEBUG: Using non-MINGW32 branch (Linux)\n");
-		sprintf( options, "%s -h %s%s -oc -aa %f -ab %d -ad %d -ar %d -as %d -dj %f -dr %d -ds %f  -lr %d -lw %f  -ss %f -st %f  %s  -L %f ",
-				 options,
+		sprintf( options, " -h %s%s -oc -aa %f -ab %d -ad %d -ar %d -as %d -dj %f -dr %d -ds %f  -lr %d -lw %f  -ss %f -st %f  %s  -L %f ",
 				 strlen(opts->rad.irradianceSwitch) ? "-" : "", opts->rad.irradianceSwitch,
 				 opts->rad.aa, opts->rad.ab, opts->rad.ad, opts->rad.ar, opts->rad.as,
 				 opts->rad.dj, opts->rad.dr, opts->rad.ds, opts->rad.lr, opts->rad.lw,
