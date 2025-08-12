@@ -109,6 +109,11 @@ main(int  argc, char  *argv[])
 			break;			/* break from options */
 		if (!strcmp(argv[i], "-version")) {
 			puts(VersionID);
+#ifdef DAYSIM
+			printf("DAYSIM support: ENABLED\n");
+#else
+			printf("DAYSIM support: DISABLED\n");
+#endif
 			quit(0);
 		}
 		if (!strcmp(argv[i], "-defaults") ||
