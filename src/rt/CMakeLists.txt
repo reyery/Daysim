@@ -97,12 +97,12 @@ target_compile_definitions(radiance_daysim_dds PRIVATE DAYSIM DDS)
 # rtrace_dc: rtrace with DAYSIM definitions for Daysim integration
 add_executable(rtrace_dc rtmain.c rtrace.c duphead.c persist.c)
 target_compile_definitions(rtrace_dc PRIVATE DAYSIM)
-target_link_libraries(rtrace_dc raycalls radiance_daysim rtrad)
+target_link_libraries(rtrace_dc radiance_daysim raycalls rtrad)
 
 # rtrace_dc_2305: rtrace with DAYSIM and DDS definitions for enhanced Daysim features
 add_executable(rtrace_dc_2305 rtmain.c rtrace.c duphead.c persist.c)
 target_compile_definitions(rtrace_dc_2305 PRIVATE DAYSIM DDS)
-target_link_libraries(rtrace_dc_2305 raycalls radiance_daysim_dds rtrad)
+target_link_libraries(rtrace_dc_2305 radiance_daysim_dds raycalls rtrad)
 
 add_executable(rpict rpmain.c rpict.c srcdraw.c duphead.c persist.c)
 target_link_libraries(rpict radiance rtrad)
