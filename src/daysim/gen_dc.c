@@ -415,6 +415,8 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 	int i=0;
 	int DifferentSensorUnitTest=0;
 	options[0]= '\0';
+	
+	printf("DEBUG: getOptionString called with type=%d\n", type);
 
 	switch( type ) {
 	case OptionsRtracePmap:
@@ -426,6 +428,7 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 					 options, opts->pmap.causticPmap, opts->pmap.causticCollect );
 
 	case OptionsRtrace:
+		printf("DEBUG: Entering OptionsRtrace case\n");
 
 /*         --------- for the old rtrace_dc version for windows the -sj option has to be supplied
                      the current rtrace_dc version uses -ss  instead (as rtrace does)
@@ -532,6 +535,8 @@ char* getOptionString( int type, const RtraceOptions* opts, char* options )
 		break;
 	}
 
+	printf("DEBUG: Final options string: '%s'\n", options);
+	printf("DEBUG: Final options length: %zu\n", strlen(options));
 	return options;
 }
 
@@ -614,6 +619,9 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
 	} else {
 		getOptionString( OptionsRtrace, opts, Radiance_Parameters );
 	}
+	
+	printf("DEBUG: Radiance_Parameters length: %zu\n", strlen(Radiance_Parameters));
+	printf("DEBUG: Radiance_Parameters content: '%s'\n", Radiance_Parameters);
 
 	/* record radiance version */
 	sprintf( cmd, "cd \"%s\" && rtrace_dc -version", binDir );
