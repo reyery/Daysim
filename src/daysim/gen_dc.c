@@ -625,6 +625,8 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
 	if(!USE_RTRACE_DC_2305){
 		sprintf( cmd, "cd \"%s\" && rtrace_dc %s %s \"%s\" < \"%s\" >> \"%s\" 2> \"%s\"",
 				 binDir, Radiance_Parameters,AdditionalRaidanceParameters, octree, sensorFile, dc, error_log);
+		printf("DEBUG: Using standard rtrace_dc\n");
+		printf("DEBUG: Command: %s\n", cmd);
 	} else {
 		sprintf( cmd, "cd \"%s\" && rtrace_dc_2305 %s %s \"%s\" < \"%s\" >> \"%s\" 2> \"%s\"",
 				 binDir, Radiance_Parameters,AdditionalRaidanceParameters, octree, sensorFile, dc, error_log);
@@ -643,10 +645,22 @@ void callRtraceDC( const int ExtendedOutput, const char* binDir, char *Additiona
 	fclose( fp );
 
 	fp= popen( cmd, "r" );
-	while( fscanf( fp, "%s", buf ) != EOF ) {
-		printf("%s \n",buf);
+	if (fp == NULL) {
+		fprintf(stderr, "ERROR: Failed to execute rtrace_dc command\n");
+		fprintf(stderr, "Command was: %s\n", cmd);
+		return;
 	}
-	pclose( fp );
+	
+	while( fscanf( fp, "%s", buf ) != EOF ) {
+		printf("RTRACE_OUTPUT: %s \n",buf);
+	}
+	
+	int exit_code = pclose( fp );
+	printf("DEBUG: rtrace_dc exit code: %d\n", exit_code);
+	if (exit_code != 0) {
+		fprintf(stderr, "ERROR: rtrace_dc command failed with exit code %d\n", exit_code);
+		fprintf(stderr, "Command was: %s\n", cmd);
+	}
 
 	// Check for errors by reading the error file
     FILE *error_file = fopen(error_log, "r");
