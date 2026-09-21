@@ -10,6 +10,36 @@ static const char	RCSid[] = "$Id: urand.c,v 2.11 2015/05/27 08:42:06 greg Exp $"
 #include  "standard.h"
 #include  "random.h"
 
+
+/* 48 bit linear congruential generator, identical to POSIX drand48()/lrand48()/srand48() */
+static unsigned long long	rad_rand48_state = 0x1234ABCD330EULL;	/* POSIX default state before srand48() */
+
+static void
+rad_rand48_step(void)
+{
+	rad_rand48_state = (rad_rand48_state * 0x5DEECE66DULL + 0xBULL) & 0xFFFFFFFFFFFFULL;
+}
+
+void
+rad_srand48(long seed)
+{
+	rad_rand48_state = (((unsigned long long)seed & 0xFFFFFFFFULL) << 16) | 0x330EULL;
+}
+
+long
+rad_lrand48(void)
+{
+	rad_rand48_step();
+	return (long)(rad_rand48_state >> 17);
+}
+
+double
+rad_drand48(void)
+{
+	rad_rand48_step();
+	return (double)rad_rand48_state / 281474976710656.0;	/* 2^48 */
+}
+
 #undef initurand
 
 #define  MAXORDER	(8*sizeof(unsigned short))

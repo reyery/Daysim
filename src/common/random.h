@@ -11,24 +11,24 @@
 extern "C" {
 #endif
 
-#if defined(_WIN32) || defined(_WIN64)
-#if (RAND_MAX <= 65536)
-#define random()	((long)rand()<<16^(long)rand()<<6^(long)rand()>>4)
+#if defined(_WIN32) || defined(_WIN64) || defined(RAD_PORTABLE_RANDOM)
+/*
+ * The Windows C runtime has no drand48() family and its rand() is a different, 15 bit generator, so the random
+ * sample streams (and therefore the results) differed from Linux and macOS. Use the same 48 bit linear
+ * congruential generator as POSIX drand48()/lrand48()/srand48(), so all platforms draw the same numbers.
+ * RAD_PORTABLE_RANDOM forces this on other platforms, to check the two implementations agree.
+ */
+extern void	rad_srand48(long seed);
+extern long	rad_lrand48(void);
+extern double	rad_drand48(void);
+#define	 random()	rad_lrand48()
+#define  srandom(s)	rad_srand48((long)(s))
+#define	 frandom()	rad_drand48()
 #else
-#define random()	rand()
-#endif
-#define srandom(s)	srand((unsigned)(s))
-
-#define frandom()	(rand()*(1./(RAND_MAX+.5)))
-
-#else
-
 #define	 random()	lrand48()
 #define  srandom(s)	srand48((long)(s))
 #define	 frandom()	drand48()
-
 #endif
-
 extern unsigned short	*urperm;
 extern int	urmask;
 
